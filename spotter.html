@@ -184,28 +184,30 @@
 
   .collapse-btn{
     margin-left:auto;
-    width:28px; height:28px;
+    width:18px; height:18px;
     display:inline-flex; align-items:center; justify-content:center;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:8px;
-    color:var(--text-2);
+    background:transparent;
+    border:none;
+    border-radius:0;
+    color:var(--text-3);
     cursor:pointer;
     padding:0;
     flex-shrink:0;
-    box-shadow:0 1px 1px rgba(20,50,35,.04);
-    transition:background .15s, border-color .15s, color .15s, transform .12s;
+    box-shadow:none;
+    transition:color .15s, transform .12s;
     font-family:inherit;
+    opacity:.75;
   }
   .collapse-btn:hover{
-    background:#fafcfb;
-    border-color:var(--border-hover);
-    color:var(--text);
+    background:transparent;
+    border:none;
+    color:var(--primary);
+    opacity:1;
   }
-  .collapse-btn:active{transform:scale(.94)}
+  .collapse-btn:active{transform:scale(.9)}
   .collapse-btn svg{
-    width:14px; height:14px;
-    stroke-width:2; fill:none; stroke:currentColor;
+    width:12px; height:12px;
+    stroke-width:2.2; fill:none; stroke:currentColor;
     stroke-linecap:round; stroke-linejoin:round;
   }
   .collapse-btn .chev-down{display:none}
@@ -301,8 +303,8 @@
     .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px}
     .legend{font-size:11px; gap:8px}
     .legend span{gap:3px}
-    .collapse-btn{width:26px; height:26px; border-radius:7px}
-    .collapse-btn svg{width:12px; height:12px}
+	.collapse-btn{width:16px; height:16px}
+	.collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
     .canvas-wrap{padding:8px}
 
     .footer{font-size:11px}
@@ -421,7 +423,7 @@
       deadzone: 'Deadzone',
       initialVel: 'Velocity',
       best: 'Best',
-      gap: 'Gap',
+      gap: 'Middle',
       corner: 'Suboptimal',
       arrival: 'Arrival',
       net: 'Net',
