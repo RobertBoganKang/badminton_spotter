@@ -167,11 +167,13 @@
   }
   .deadzone-legend{
     width:10px; height:10px; border-radius:50%;
-    border:1.2px dashed #b4beb8; display:inline-block;
+    background:rgba(30,136,229,.14);
+    border:1px solid rgba(30,136,229,.28);
+    display:inline-block;
   }
   .arrow-legend{
     display:inline-block; width:0; height:0;
-    border-left:11px solid #d32f2f;
+    border-left:11px solid #1e88e5;
     border-top:4px solid transparent;
     border-bottom:4px solid transparent;
     vertical-align:middle; margin:0 1px;
@@ -303,8 +305,8 @@
     .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px}
     .legend{font-size:11px; gap:8px}
     .legend span{gap:3px}
-	.collapse-btn{width:16px; height:16px}
-	.collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
+    .collapse-btn{width:16px; height:16px}
+    .collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
     .canvas-wrap{padding:8px}
 
     .footer{font-size:11px}
@@ -390,7 +392,7 @@
       title: '羽毛球落点推荐',
       subDouble: '双打模式 · 拖动 A / B 调整位置',
       subSingle: '单打模式 · 拖动对手调整位置',
-      subVel: ' · 可拖红色手柄设置初速度',
+      subVel: ' · 可拖蓝色手柄设置初速度',
       heat: '热力图',
       vel: '速度手柄',
       doubles: '双打',
@@ -413,7 +415,7 @@
       title: 'Badminton Landing Spot',
       subDouble: 'Doubles · Drag A / B to adjust',
       subSingle: 'Singles · Drag opponent to adjust',
-      subVel: ' · Drag red handle to set initial velocity',
+      subVel: ' · Drag blue handle to set initial velocity',
       heat: 'Heatmap',
       vel: 'Velocity',
       doubles: 'Doubles',
@@ -423,7 +425,7 @@
       deadzone: 'Deadzone',
       initialVel: 'Velocity',
       best: 'Best',
-      gap: 'Middle',
+      gap: 'Gap',
       corner: 'Suboptimal',
       arrival: 'Arrival',
       net: 'Net',
@@ -478,9 +480,15 @@
   const S0_DIST = 1.5;
   const VMAG_BLEND = 1.0;
 
+  // ==== 颜色：速度手柄用蓝色，其他保持不变 ====
   const COLOR_PLAYER = '#111111';
-  const COLOR_VEL    = '#d32f2f';
-  const COLOR_VEL_DZ = 'rgba(180,190,185,0.55)';
+  const COLOR_VEL    = '#1e88e5';                       // 主色：蓝色
+  const COLOR_VEL_DZ = 'rgba(30,136,229,0.10)';         // 死区填充：极透明蓝
+  const COLOR_VEL_DZ_EDGE = 'rgba(30,136,229,0.22)';    // 死区描边：更浅的蓝
+  const COLOR_VEL_GLOW = 'rgba(30,136,229,0.20)';       // 手柄高亮光晕
+  const COLOR_VEL_TRI = 'rgba(30,136,229,0.65)';        // 零速手柄内部小三角
+  const COLOR_VEL_TXT = 'rgba(30,136,229,0.95)';        // "速度"文字
+
   const COLOR_BEST   = '#d32f2f';
   const COLOR_GAP    = '#757575';
   const COLOR_RANK   = '#8e44ad';
@@ -644,7 +652,6 @@
       ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
       : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
     if (velMode){
-      html += `<span><i class="deadzone-legend"></i>${t('deadzone')}</span>`;
       html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
     }
     html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
@@ -1048,14 +1055,21 @@
     return {x: pt.x + ux * dist, y: pt.y + uy * dist};
   }
 
+  // 死区：半透明蓝色填充圆 + 极细描边
   function drawDeadzone(pt){
     const p = w2c(pt);
+    const r = V_DEADZONE * SCALE;
     ctx.save();
+    // 半透明蓝色填充
     ctx.beginPath();
-    ctx.strokeStyle = COLOR_VEL_DZ;
-    ctx.lineWidth = 1.3;
-    ctx.setLineDash([4, 4]);
-    ctx.arc(p.x, p.y, V_DEADZONE * SCALE, 0, Math.PI * 2);
+    ctx.fillStyle = COLOR_VEL_DZ;
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    // 极细描边（仅用来强调边界）
+    ctx.beginPath();
+    ctx.strokeStyle = COLOR_VEL_DZ_EDGE;
+    ctx.lineWidth = 1;
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -1068,9 +1082,10 @@
     ctx.save();
 
     if (mag < 0.01){
+      // 零速手柄（蓝色）
       if (isActive){
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(211,47,47,0.18)';
+        ctx.fillStyle = COLOR_VEL_GLOW;
         ctx.arc(h.x, h.y, V_HANDLE_DOT + 8, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -1082,8 +1097,9 @@
       ctx.lineWidth = 2.4;
       ctx.stroke();
 
+      // 内部小三角（蓝色）
       ctx.beginPath();
-      ctx.fillStyle = 'rgba(211,47,47,0.55)';
+      ctx.fillStyle = COLOR_VEL_TRI;
       const ts = V_HANDLE_DOT * 0.42;
       ctx.moveTo(h.x, h.y - ts);
       ctx.lineTo(h.x - ts, h.y + ts * 0.7);
@@ -1094,13 +1110,14 @@
       ctx.font = `bold ${isTouch ? 12 : 10}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = 'rgba(211,47,47,0.9)';
+      ctx.fillStyle = COLOR_VEL_TXT;
       ctx.fillText(t('speed'), h.x, h.y + V_HANDLE_DOT + 4);
 
       ctx.restore();
       return;
     }
 
+    // 有速箭头（蓝色）
     ctx.strokeStyle = COLOR_VEL;
     ctx.fillStyle = COLOR_VEL;
     ctx.lineWidth = isTouch ? 3 : 2.2;
@@ -1128,7 +1145,7 @@
 
     if (isActive){
       ctx.beginPath();
-      ctx.fillStyle = 'rgba(211,47,47,0.18)';
+      ctx.fillStyle = COLOR_VEL_GLOW;
       ctx.arc(h.x, h.y, V_HANDLE_TIP + 9, 0, Math.PI * 2);
       ctx.fill();
     }
@@ -1141,22 +1158,26 @@
     ctx.lineWidth = isTouch ? 2.4 : 2;
     ctx.stroke();
 
+    // 速度值 + 单位，显示在手柄正下方居中
     if (mag >= 0.3){
-      ctx.font = `bold ${isTouch ? 12 : 10}px system-ui`;
+      const lx = h.x;
+      const ly = h.y + V_HANDLE_TIP + 5;
+
+      ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#ffffff';
-      const lx = h.x + (isTouch ? 12 : 9);
-      const ly = h.y + 4;
-      ctx.strokeText(mag.toFixed(1), lx, ly);
       ctx.fillStyle = COLOR_VEL;
-      ctx.fillText(mag.toFixed(1), lx, ly);
+
+      const fullText = `${mag.toFixed(1)} m/s`;
+      ctx.strokeText(fullText, lx, ly);
+      ctx.fillText(fullText, lx, ly);
     }
 
     ctx.restore();
   }
-
+  
   // ================= 点 / 线 / 标签 =================
   function drawDot(pt, color, label, radius, labelDx, labelDy, isShrunk){
     const p = w2c(pt);
@@ -1529,10 +1550,10 @@
       </ul>
 
       <h3>二、速度手柄与死区</h3>
-      <p>点击<b>「速度手柄」</b>按钮后，每个对手点外出现浅灰虚线圈（死区）与红色手柄。拖动红圈手柄：</p>
+      <p>点击<b>「速度手柄」</b>按钮后，每个对手点外出现淡蓝色圆形区域（死区）与蓝色手柄。拖动蓝色手柄：</p>
       <ul>
         <li><b>拖在死区内</b>：速度 = 0</li>
-        <li><b>拖出死区外</b>：出现红色箭头，长度与速度成正比，上限 6 m/s</li>
+        <li><b>拖出死区外</b>：出现蓝色箭头，长度与速度成正比，上限 6 m/s</li>
         <li><b>拖回死区内</b>：速度清零</li>
       </ul>
 
