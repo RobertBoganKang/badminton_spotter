@@ -26,14 +26,24 @@
   }
   .app{max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
   .card{background:var(--card); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow)}
-  .header{padding:18px 20px; position:relative; overflow:hidden}
+
+  /* Header */
+  .header{
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    position:relative;
+    overflow:hidden;
+  }
   .header::before{
     content:''; position:absolute; top:-80px; right:-80px;
     width:240px; height:240px;
     background:radial-gradient(circle, rgba(31,138,91,.1) 0%, transparent 65%);
     pointer-events:none;
   }
-  .title-row{display:flex; gap:14px; align-items:flex-start; position:relative}
+  .header-left{display:flex; gap:14px; align-items:flex-start; flex:1; min-width:0; position:relative}
   .logo{
     width:44px; height:44px; flex-shrink:0; border-radius:12px;
     background:linear-gradient(135deg, var(--primary-bright), var(--primary));
@@ -43,48 +53,18 @@
   h1{margin:0 0 3px; font-size:17px; font-weight:700; letter-spacing:.2px; line-height:1.4}
   .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5}
 
-  .toolbar{
-    padding:12px 16px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-
-  .segmented{
-    position:relative; display:inline-flex; background:#e8eee9;
-    border-radius:10px; padding:3px; flex-shrink:0;
-  }
-  .segmented-indicator{
-    position:absolute; top:3px; bottom:3px; left:3px;
-    width:calc(50% - 3px); background:#fff; border-radius:7px;
-    box-shadow:0 1px 2px rgba(20,50,35,.1), 0 1px 1px rgba(20,50,35,.06);
-    transition:transform .25s cubic-bezier(.4,0,.2,1); pointer-events:none;
-  }
-  .segmented[data-mode="single"] .segmented-indicator{transform:translateX(100%)}
-  .segmented button{
-    position:relative; z-index:1; flex:1;
-    background:transparent !important; box-shadow:none !important;
-    border:none;
-    color:var(--text-2); padding:6px 16px; border-radius:7px;
-    font-weight:600; font-size:13px; font-family:inherit;
-    transition:color .2s; cursor:pointer; white-space:nowrap;
-  }
-  .segmented button:hover{color:var(--primary)}
-  .segmented button.active{color:var(--primary)}
+  .header-actions{display:flex; gap:8px; align-items:center; flex-shrink:0; position:relative}
 
   .tool-btn{
     appearance:none; cursor:pointer;
     display:inline-flex; align-items:center; gap:6px;
-    padding:7px 13px;
+    padding:7px 12px;
     background:#fff;
     border:1px solid var(--border);
     border-radius:9px;
     color:var(--text-2);
-    font-size:12.5px;
-    font-weight:600;
-    font-family:inherit;
-    line-height:1;
+    font-size:12.5px; font-weight:600;
+    font-family:inherit; line-height:1;
     transition:background .15s, border-color .15s, color .15s, box-shadow .15s, transform .15s;
     box-shadow:0 1px 1px rgba(20,50,35,.03);
   }
@@ -96,24 +76,18 @@
   }
   .tool-btn:active{transform:translateY(0); box-shadow:0 1px 1px rgba(20,50,35,.05)}
   .tool-btn .ico{
-    width:14px; height:14px;
-    flex-shrink:0;
-    stroke-width:1.8;
-    fill:none;
-    stroke:currentColor;
-    stroke-linecap:round;
-    stroke-linejoin:round;
+    width:14px; height:14px; flex-shrink:0;
+    stroke-width:1.8; fill:none; stroke:currentColor;
+    stroke-linecap:round; stroke-linejoin:round;
   }
   .tool-btn.active{
-    color:#fff;
-    border-color:transparent;
+    color:#fff; border-color:transparent;
     background:linear-gradient(135deg, var(--primary-bright), var(--primary));
     box-shadow:0 2px 6px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.18);
   }
   .tool-btn.active:hover{
     box-shadow:0 4px 10px rgba(22,107,70,.32), inset 0 1px 0 rgba(255,255,255,.18);
-    border-color:transparent;
-    color:#fff;
+    border-color:transparent; color:#fff;
   }
   .tool-btn.active.danger{
     background:linear-gradient(135deg, var(--danger), var(--danger-2));
@@ -123,32 +97,70 @@
     box-shadow:0 4px 10px rgba(150,45,34,.32), inset 0 1px 0 rgba(255,255,255,.18);
   }
 
-  .spacer{flex:1; min-width:8px}
-
-  .badge{
-    padding:4px 11px; border-radius:999px; background:#e8f5ee; color:var(--primary);
-    font-size:12px; font-weight:600;
-    white-space:nowrap; display:inline-flex; align-items:center; gap:6px;
+  /* 语言按钮 */
+  .lang-btn{
+    padding:7px 10px;
+    font-weight:700;
+    letter-spacing:.4px;
+    min-width:42px;
+    justify-content:center;
   }
-  .badge::before{content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0}
-  .badge.busy{background:#fdf3e3; color:#b07614}
-  .badge.busy::before{animation:pulse 1.1s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1} 50%{opacity:.35}}
 
-  .legend-bar{
-    padding:0 16px 12px;
-    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
-    font-size:11.5px; color:var(--text-3);
+  .app.collapsed .header{ display:none }
+
+  /* 画布卡片 */
+  .canvas-card{padding:0; overflow:hidden}
+
+  .canvas-topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px 8px;
+    flex-wrap:wrap;
+    border-bottom:1px solid #f0f4f1;
   }
-  .legend-bar span{display:inline-flex; align-items:center; gap:5px; white-space:nowrap; font-weight:500}
-  .dot{width:9px; height:9px; border-radius:50%; display:inline-block}
+
+  /* 单/双 切换按钮 */
+  .mode-toggle{
+    appearance:none;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:5px 14px;
+    background:#e8eee9;
+    border:1px solid transparent;
+    border-radius:7px;
+    color:var(--primary);
+    font-weight:700;
+    font-size:12px;
+    font-family:inherit;
+    line-height:1;
+    letter-spacing:.3px;
+    min-width:46px;
+    transition:background .15s, color .15s, box-shadow .15s, transform .12s;
+  }
+  .mode-toggle:hover{background:#dde6e0}
+  .mode-toggle:active{transform:scale(.96)}
+  .mode-toggle[data-mode="single"]{
+    background:#e8f0f7;
+    color:#1e6bb8;
+  }
+  .mode-toggle[data-mode="single"]:hover{background:#dbe7f3}
+
+  .legend{
+    display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap; font-size:11.5px; color:var(--text-3);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block}
   .ring{
     width:10px; height:10px; border-radius:50%;
-    border:1.8px dashed #757575; display:inline-block;
+    border:1.6px dashed #757575; display:inline-block;
   }
   .num{
     display:inline-flex; align-items:center; justify-content:center;
-    width:16px; height:16px; border-radius:50%;
+    width:15px; height:15px; border-radius:50%;
     background:#f3e8fa; color:#8e44ad;
     font-size:10px; font-weight:700; font-style:normal;
   }
@@ -158,66 +170,55 @@
   }
   .arrow-legend{
     display:inline-block; width:0; height:0;
-    border-left:12px solid #d32f2f;
+    border-left:11px solid #d32f2f;
     border-top:4px solid transparent;
     border-bottom:4px solid transparent;
-    vertical-align:middle; margin:0 2px;
+    vertical-align:middle; margin:0 1px;
   }
   .heat-legend{
-    display:inline-block; width:30px; height:9px; border-radius:5px;
+    display:inline-block; width:26px; height:8px; border-radius:4px;
     background:linear-gradient(to right, #4575b4, #91bfdb, #ffffbf, #fc8d59, #d73027);
     vertical-align:middle;
   }
 
-  .canvas-wrap{padding:0 12px 12px; display:flex; justify-content:center; position:relative}
+  .collapse-btn{
+    margin-left:auto;
+    width:28px; height:28px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text-2);
+    cursor:pointer;
+    padding:0;
+    flex-shrink:0;
+    box-shadow:0 1px 1px rgba(20,50,35,.04);
+    transition:background .15s, border-color .15s, color .15s, transform .12s;
+    font-family:inherit;
+  }
+  .collapse-btn:hover{
+    background:#fafcfb;
+    border-color:var(--border-hover);
+    color:var(--text);
+  }
+  .collapse-btn:active{transform:scale(.94)}
+  .collapse-btn svg{
+    width:14px; height:14px;
+    stroke-width:2; fill:none; stroke:currentColor;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .collapse-btn .chev-down{display:none}
+  .app.collapsed .collapse-btn .chev-up{display:none}
+  .app.collapsed .collapse-btn .chev-down{display:inline}
+
+  .canvas-wrap{padding:10px 12px 12px; display:flex; justify-content:center}
   canvas{
     display:block; border-radius:10px; touch-action:none; cursor:default;
     background:#f7fbf9; max-width:100%;
     box-shadow:0 1px 3px rgba(20,50,35,.06), 0 4px 14px rgba(20,50,35,.05);
   }
-  .canvas-badge{
-    position:absolute;
-    top:12px; left:24px;
-    padding:3px 10px;
-    background:rgba(22,107,70,.92);
-    color:#fff;
-    font-size:11px;
-    font-weight:700;
-    border-radius:999px;
-    letter-spacing:.6px;
-    pointer-events:none;
-    z-index:2;
-    backdrop-filter:blur(4px);
-    -webkit-backdrop-filter:blur(4px);
-    box-shadow:0 2px 6px rgba(20,50,35,.15);
-  }
 
-  .result{
-    padding:14px 20px;
-    display:grid;
-    grid-template-columns:1fr 1fr 1.35fr;
-    gap:14px;
-    align-items:center;
-  }
-  .metric{display:flex; flex-direction:column; gap:3px; min-width:0}
-  .metric-label{
-    font-size:11px; color:var(--text-3); font-weight:600;
-    letter-spacing:.5px; text-transform:uppercase;
-  }
-  .metric-value{
-    display:flex; align-items:baseline; gap:3px;
-    font-size:17px; font-weight:700; line-height:1.2; color:var(--text);
-    font-variant-numeric:tabular-nums; letter-spacing:-.2px;
-  }
-  .metric-value b{color:#d32f2f; font-weight:700}
-  .metric-value em{font-style:normal; font-size:12px; color:var(--text-3); font-weight:500}
-  .metric-primary{
-    padding-left:16px;
-    border-left:1.5px solid #edf2ef;
-  }
-  .metric-primary .metric-value{font-size:24px; color:#d32f2f}
-  .metric-primary .metric-label{color:var(--primary)}
-
+  /* Footer */
   .footer{
     padding:4px 8px 6px; text-align:center; font-size:12px;
     color:var(--text-3); letter-spacing:.3px; line-height:1.7;
@@ -225,6 +226,7 @@
   .footer b{color:var(--text-2); font-weight:600}
   #credit{cursor:pointer; user-select:none}
 
+  /* Modal */
   .modal-mask{
     position:fixed; inset:0; z-index:50; background:rgba(10,30,20,.46);
     display:none; align-items:flex-start; justify-content:center;
@@ -284,27 +286,24 @@
   @media (max-width: 520px){
     body{padding:12px 10px}
     .app{gap:10px}
-    .header{padding:14px 14px}
-    .title-row{gap:10px}
-    .logo{width:38px; height:38px; font-size:19px; border-radius:10px}
-    h1{font-size:15px}
-    .header p{font-size:12.5px}
-    .toolbar{padding:10px 12px; gap:8px}
-    .segmented{order:-1; width:100%}
-    .segmented button{padding:6px 12px; font-size:12.5px}
+    .header{padding:12px 14px; gap:10px}
+    .header-left{gap:10px}
+    .logo{width:36px; height:36px; font-size:18px; border-radius:10px}
+    h1{font-size:14.5px}
+    .header p{font-size:12px}
+    .header-actions{width:100%; gap:6px}
     .tool-btn{padding:6px 10px; font-size:12px; gap:5px; flex:1; justify-content:center}
     .tool-btn .ico{width:13px; height:13px}
-    .spacer{display:none}
-    .badge{padding:3px 9px; font-size:11.5px; margin-left:auto}
-    .legend-bar{padding:0 12px 10px; gap:10px; font-size:11px}
-    .canvas-wrap{padding:0 8px 8px}
-    .canvas-badge{top:10px; left:16px; font-size:10px; padding:2px 8px}
-    .result{padding:12px 14px; gap:10px; grid-template-columns:1fr 1fr 1.25fr}
-    .metric-label{font-size:10px}
-    .metric-value{font-size:15px}
-    .metric-value em{font-size:10px}
-    .metric-primary{padding-left:10px}
-    .metric-primary .metric-value{font-size:19px}
+    .lang-btn{flex:0 0 auto; min-width:38px; padding:6px 9px}
+
+    .canvas-topbar{padding:8px 12px 6px; gap:8px}
+    .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px}
+    .legend{font-size:11px; gap:8px}
+    .legend span{gap:3px}
+    .collapse-btn{width:26px; height:26px; border-radius:7px}
+    .collapse-btn svg{width:12px; height:12px}
+    .canvas-wrap{padding:8px}
+
     .footer{font-size:11px}
     .modal-mask{padding:8px 6px}
     .modal{border-radius:13px}
@@ -320,73 +319,61 @@
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
 
   <header class="card header">
-    <div class="title-row">
+    <div class="header-left">
       <div class="logo">🏸</div>
       <div>
-        <h1>羽毛球落点推荐</h1>
+        <h1 data-i18n="title">羽毛球落点推荐</h1>
         <p id="pageSub">双打模式 · 拖动 A / B 调整位置</p>
       </div>
     </div>
+    <div class="header-actions">
+      <button id="toggleHeat" class="tool-btn danger">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="2" y="2" width="5" height="5" rx="1"/>
+          <rect x="9" y="2" width="5" height="5" rx="1"/>
+          <rect x="2" y="9" width="5" height="5" rx="1"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span data-i18n="heat">热力图</span>
+      </button>
+
+      <button id="toggleVel" class="tool-btn">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 13L13 3"/>
+          <path d="M13 3H8.5"/>
+          <path d="M13 3v4.5"/>
+        </svg>
+        <span data-i18n="vel">速度手柄</span>
+      </button>
+
+      <button id="langBtn" class="tool-btn lang-btn" aria-label="Switch language">EN</button>
+    </div>
   </header>
 
-  <div class="card toolbar">
-    <div class="segmented" id="modeSwitch" data-mode="double">
-      <div class="segmented-indicator"></div>
-      <button data-mode="double" class="active">双打</button>
-      <button data-mode="single">单打</button>
+  <div class="card canvas-card">
+    <div class="canvas-topbar">
+      <button class="mode-toggle" id="modeToggle" data-mode="double" data-i18n="doubles">双打</button>
+      <div class="legend" id="legendBar"></div>
+      <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
+        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4 10l4-4 4 4"/>
+        </svg>
+        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4 6l4 4 4-4"/>
+        </svg>
+      </button>
     </div>
 
-    <button id="toggleHeat" class="tool-btn danger">
-      <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
-        <rect x="2" y="2" width="5" height="5" rx="1"/>
-        <rect x="9" y="2" width="5" height="5" rx="1"/>
-        <rect x="2" y="9" width="5" height="5" rx="1"/>
-        <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
-      </svg>
-      <span>热力图</span>
-    </button>
-
-    <button id="toggleVel" class="tool-btn">
-      <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M3 13L13 3"/>
-        <path d="M13 3H8.5"/>
-        <path d="M13 3v4.5"/>
-      </svg>
-      <span>速度手柄</span>
-    </button>
-
-    <div class="spacer"></div>
-    <span class="badge" id="status">就绪</span>
-  </div>
-
-  <div class="card" style="padding-top:12px">
-    <div class="legend-bar" id="legendBar"></div>
     <div class="canvas-wrap">
-      <div class="canvas-badge" id="canvasBadge">双打</div>
       <canvas id="canvas"></canvas>
     </div>
   </div>
 
-  <div class="card result">
-    <div class="metric">
-      <span class="metric-label">X 坐标</span>
-      <span class="metric-value"><b id="rx">--</b><em>m</em></span>
-    </div>
-    <div class="metric">
-      <span class="metric-label">Y 坐标</span>
-      <span class="metric-value"><b id="ry">--</b><em>m</em></span>
-    </div>
-    <div class="metric metric-primary">
-      <span class="metric-label">评分 J</span>
-      <span class="metric-value"><b id="rj">--</b></span>
-    </div>
-  </div>
-
   <footer class="footer" id="credit">
-    © <b>Robert Bogan Kang</b> 创作 · 保留所有权利
+    © <b>Robert Bogan Kang</b> <span data-i18n="footer">创作 · 保留所有权利</span>
   </footer>
 
 </div>
@@ -394,6 +381,62 @@
 (() => {
   'use strict';
 
+  // ================= 国际化 =================
+  const I18N = {
+    zh: {
+      title: '羽毛球落点推荐',
+      subDouble: '双打模式 · 拖动 A / B 调整位置',
+      subSingle: '单打模式 · 拖动对手调整位置',
+      subVel: ' · 可拖红色手柄设置初速度',
+      heat: '热力图',
+      vel: '速度手柄',
+      doubles: '双打',
+      singles: '单打',
+      player: '球员',
+      opponent: '对手',
+      deadzone: '死区',
+      initialVel: '初速度',
+      best: '最优',
+      gap: '结合',
+      corner: '四角次优',
+      arrival: '到达时间',
+      net: '球网',
+      speed: '速度',
+      footer: '创作 · 保留所有权利',
+      langBtn: 'EN',
+      principleTitle: '落点推荐 · 计算原理'
+    },
+    en: {
+      title: 'Badminton Landing Spot',
+      subDouble: 'Doubles · Drag A / B to adjust',
+      subSingle: 'Singles · Drag opponent to adjust',
+      subVel: ' · Drag red handle to set initial velocity',
+      heat: 'Heatmap',
+      vel: 'Velocity',
+      doubles: 'Doubles',
+      singles: 'Singles',
+      player: 'Players',
+      opponent: 'Opponent',
+      deadzone: 'Deadzone',
+      initialVel: 'Velocity',
+      best: 'Best',
+      gap: 'Gap',
+      corner: 'Suboptimal',
+      arrival: 'Arrival',
+      net: 'Net',
+      speed: 'Speed',
+      footer: 'Created · All Rights Reserved',
+      langBtn: '中',
+      principleTitle: 'Methodology'
+    }
+  };
+
+  let lang = 'zh';
+  function t(key){
+    return (I18N[lang] && I18N[lang][key]) || (I18N.zh[key] || key);
+  }
+
+  // ================= 参数 =================
   const L = 13.40, W = 5.18;
   const HALF_W = W / 2, NET_Y = L / 2;
   const SAFE_DELTA = 0.20;
@@ -445,6 +488,7 @@
 
   const ZERO_V = {x: 0, y: 0};
 
+  // ================= 状态 =================
   let mode = 'double';
   let velMode = false;
 
@@ -463,19 +507,49 @@
   let cacheBest = {pt: null, J: 0};
   let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
 
+  const appEl = document.getElementById('app');
+  const collapseBtn = document.getElementById('collapseBtn');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const toggleBtn = document.getElementById('toggleHeat');
   const toggleVelBtn = document.getElementById('toggleVel');
-  const statusText = document.getElementById('status');
-  const rxEl = document.getElementById('rx');
-  const ryEl = document.getElementById('ry');
-  const rjEl = document.getElementById('rj');
+  const langBtnEl = document.getElementById('langBtn');
   const pageSub = document.getElementById('pageSub');
   const legendBar = document.getElementById('legendBar');
-  const modeSwitchEl = document.getElementById('modeSwitch');
-  const canvasBadge = document.getElementById('canvasBadge');
+  const modeToggleEl = document.getElementById('modeToggle');
 
+  // ================= 语言切换 =================
+  function applyLanguage(){
+    document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      el.textContent = t(key);
+    });
+
+    langBtnEl.textContent = t('langBtn');
+    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
+
+    updateSubtitle();
+    updateLegend();
+
+    const pTitle = document.getElementById('pTitle');
+    if (pTitle) pTitle.textContent = t('principleTitle');
+  }
+
+  langBtnEl.addEventListener('click', () => {
+    lang = (lang === 'zh') ? 'en' : 'zh';
+    applyLanguage();
+  });
+
+  // ================= 折叠 =================
+  collapseBtn.addEventListener('click', () => {
+    const collapsed = appEl.classList.toggle('collapsed');
+    collapseBtn.setAttribute('aria-label', collapsed ? '展开顶部' : '隐藏顶部');
+    requestAnimationFrame(setupCanvas);
+  });
+
+  // ================= Canvas 自适应 =================
   function setupCanvas(){
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const wrap = canvas.parentElement;
@@ -509,6 +583,7 @@
   window.addEventListener('resize', setupCanvas);
   window.addEventListener('orientationchange', () => setTimeout(setupCanvas, 250));
 
+  // ================= 坐标 =================
   function w2c(pt){
     return {x: (HALF_W + pt.x) * SCALE + PAD, y: (L - pt.y) * SCALE + PAD};
   }
@@ -517,6 +592,7 @@
   }
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+  // ================= 按钮 =================
   toggleBtn.addEventListener('click', () => {
     showHeat = !showHeat;
     toggleBtn.classList.toggle('active', showHeat);
@@ -533,32 +609,47 @@
     lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
   });
 
-  const modeButtons = document.querySelectorAll('#modeSwitch button');
+  // ================= 单/双 单击切换 =================
+  modeToggleEl.addEventListener('click', () => {
+    mode = (mode === 'double') ? 'single' : 'double';
+
+    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
+    modeToggleEl.dataset.mode = mode;
+
+    if (mode === 'single' && dragTarget === 2){
+      dragTarget = null;
+      isDragging = false;
+      canvas.style.cursor = 'default';
+    }
+
+    updateUIForMode();
+    pendingFine = true;
+    lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
+  });
 
   function updateSubtitle(){
     const single = mode === 'single';
-    const vel = velMode ? ' · 可拖红色手柄设置初速度' : '';
-    pageSub.textContent = (single ? '单打模式 · 拖动对手调整位置' : '双打模式 · 拖动 A / B 调整位置') + vel;
-    canvasBadge.textContent = single ? '单打' : '双打';
+    const vel = velMode ? t('subVel') : '';
+    pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + vel;
   }
 
   function updateLegend(){
     const single = mode === 'single';
     let html = '';
     html += single
-      ? '<span><i class="dot" style="background:#111"></i>对手</span>'
-      : '<span><i class="dot" style="background:#111"></i>球员</span>';
+      ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
+      : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
     if (velMode){
-      html += '<span><i class="deadzone-legend"></i>死区</span>';
-      html += '<span><i class="arrow-legend"></i>初速度</span>';
+      html += `<span><i class="deadzone-legend"></i>${t('deadzone')}</span>`;
+      html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
     }
-    html += '<span><i class="dot" style="background:#d32f2f"></i>最优</span>';
+    html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
     if (!single){
-      html += '<span><i class="ring"></i>结合</span>';
+      html += `<span><i class="ring"></i>${t('gap')}</span>`;
     }
-    html += '<span><i class="num">2</i>四角次优</span>';
+    html += `<span><i class="num">2</i>${t('corner')}</span>`;
     if (showHeat){
-      html += '<span><i class="heat-legend"></i>到达时间</span>';
+      html += `<span><i class="heat-legend"></i>${t('arrival')}</span>`;
     }
     legendBar.innerHTML = html;
   }
@@ -569,26 +660,7 @@
   }
   updateUIForMode();
 
-  modeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const m = btn.dataset.mode;
-      if (m === mode) return;
-      mode = m;
-      modeButtons.forEach(b => b.classList.toggle('active', b.dataset.mode === m));
-      modeSwitchEl.dataset.mode = m;
-
-      if (mode === 'single' && dragTarget === 2){
-        dragTarget = null;
-        isDragging = false;
-        canvas.style.cursor = 'default';
-      }
-
-      updateUIForMode();
-      pendingFine = true;
-      lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-    });
-  });
-
+  // ================= 核心：难度 / 到达时间 =================
   function startFactor(s, vmag){
     if (vmag < 0.01) return 1.0;
     const projDist = s / vmag;
@@ -626,6 +698,7 @@
     return t;
   }
 
+  // ================= 栅格计算 =================
   function computeGrid(o1, o2, v1, v2, step, m){
     function evalJ(x, y){
       if (m === 'single'){
@@ -645,16 +718,25 @@
       return Math.min(t1, reachTime(x, y, o2, v2));
     }
 
+    const xMin = -HALF_W + SAFE_DELTA;
+    const xMax =  HALF_W - SAFE_DELTA;
+    const yMin =  OPP_SIDE_Y_MIN + SAFE_DELTA;
+    const yMax =  OPP_SIDE_Y_MAX - SAFE_DELTA;
+    const nX = Math.max(1, Math.round((xMax - xMin) / step));
+    const nY = Math.max(1, Math.round((yMax - yMin) / step));
+
     const heat = [];
     let bestPt = null, bestJ = -Infinity;
     let minTime = Infinity, maxTime = -Infinity;
 
-    for (let x = -HALF_W + SAFE_DELTA; x <= HALF_W - SAFE_DELTA + 1e-9; x += step){
-      for (let y = OPP_SIDE_Y_MIN + SAFE_DELTA; y <= OPP_SIDE_Y_MAX - SAFE_DELTA + 1e-9; y += step){
-        const j = evalJ(x, y);
+    for (let i = 0; i <= nX; i++){
+      const x = xMin + (xMax - xMin) * i / nX;
+      for (let j = 0; j <= nY; j++){
+        const y = yMin + (yMax - yMin) * j / nY;
+        const jv = evalJ(x, y);
         const t = evalTime(x, y);
-        heat.push({x, y, val: j, time: t});
-        if (j > bestJ){ bestJ = j; bestPt = {x, y}; }
+        heat.push({x, y, val: jv, time: t});
+        if (jv > bestJ){ bestJ = jv; bestPt = {x, y}; }
         if (t < minTime) minTime = t;
         if (t > maxTime) maxTime = t;
       }
@@ -667,22 +749,20 @@
       {x:  HALF_W - SAFE_DELTA, y: NET_Y + SAFE_DELTA}
     ];
 
-    const raw = [];
-    for (const s of seeds){
-      const x0 = Math.max(-HALF_W + SAFE_DELTA, s.x - CORNER_R);
-      const x1 = Math.min( HALF_W - SAFE_DELTA, s.x + CORNER_R);
-      const y0 = Math.max(OPP_SIDE_Y_MIN + SAFE_DELTA, s.y - CORNER_R);
-      const y1 = Math.min(OPP_SIDE_Y_MAX - SAFE_DELTA, s.y + CORNER_R);
-
+    const raw = seeds.map(s => {
       let bx = s.x, by = s.y, bj = -Infinity;
-      for (let x = x0; x <= x1 + 1e-9; x += step){
-        for (let y = y0; y <= y1 + 1e-9; y += step){
-          const j = evalJ(x, y);
-          if (j > bj){ bj = j; bx = x; by = y; }
+      for (let k = 0; k < heat.length; k++){
+        const h = heat[k];
+        if (Math.abs(h.x - s.x) <= CORNER_R + 1e-9 &&
+            Math.abs(h.y - s.y) <= CORNER_R + 1e-9){
+          if (h.val > bj){ bj = h.val; bx = h.x; by = h.y; }
         }
       }
-      raw.push({x: bx, y: by, val: bj, rank: null, distToSeed: Math.hypot(bx - s.x, by - s.y)});
-    }
+      return {
+        x: bx, y: by, val: bj, rank: null,
+        distToSeed: Math.hypot(bx - s.x, by - s.y)
+      };
+    });
 
     const visible = raw.filter(c => c.distToSeed <= CORNER_SHOW_R);
     visible.sort((a, b) => b.val - a.val);
@@ -702,6 +782,7 @@
     return {best: {pt: bestPt, J: bestJ}, heat, step, cornerBests: visible};
   }
 
+  // ================= 等难度线 =================
   function equiLocus(o1, o2, v1, v2){
     const F = (x, y) => difficulty({x, y}, o1, v1) - difficulty({x, y}, o2, v2);
     const xMin = -HALF_W - 0.5, xMax = HALF_W + 0.5;
@@ -789,6 +870,7 @@
     ];
   }
 
+  // ================= Worker =================
   const workerCode = `
     const L=${L}, W=${W}, HALF_W=${HALF_W}, NET_Y=${NET_Y};
     const SAFE_DELTA=${SAFE_DELTA}, OPP_SIDE_Y_MIN=${OPP_SIDE_Y_MIN}, OPP_SIDE_Y_MAX=${OPP_SIDE_Y_MAX};
@@ -829,14 +911,6 @@
     if (data && data.heat)        cacheHeat = data.heat;
     if (data && data.step)        cacheStep = data.step;
     if (data && data.cornerBests) cacheCorners = data.cornerBests;
-
-    if (cacheBest.pt){
-      statusText.textContent = '就绪';
-      statusText.classList.remove('busy');
-      rxEl.textContent = cacheBest.pt.x.toFixed(2);
-      ryEl.textContent = cacheBest.pt.y.toFixed(2);
-      rjEl.textContent = cacheBest.J.toFixed(2);
-    }
   }
 
   function runCalc(payload){
@@ -867,8 +941,6 @@
     pendingFine = false;
     lastCalcTime = now;
     working = true;
-    statusText.textContent = '计算中...';
-    statusText.classList.add('busy');
 
     const eV1 = velMode ? opp1_v : ZERO_V;
     const eV2 = (mode === 'double' && velMode) ? opp2_v : ZERO_V;
@@ -880,6 +952,7 @@
     });
   }
 
+  // ================= 色阶 =================
   function rampColor(t){
     if (t < 0) t = 0; else if (t > 1) t = 1;
     const stops = [
@@ -909,9 +982,12 @@
   function drawHeat(heat, step){
     if (!heat.length) return;
     const xMin = -HALF_W + SAFE_DELTA;
+    const xMax =  HALF_W - SAFE_DELTA;
     const yMin = OPP_SIDE_Y_MIN + SAFE_DELTA;
-    const cols = Math.round((HALF_W - SAFE_DELTA - xMin) / step) + 1;
-    const rows = Math.round((OPP_SIDE_Y_MAX - SAFE_DELTA - yMin) / step) + 1;
+    const yMax = OPP_SIDE_Y_MAX - SAFE_DELTA;
+
+    const cols = Math.round((xMax - xMin) / step) + 1;
+    const rows = Math.round((yMax - yMin) / step) + 1;
 
     if (!heatCanvas){
       heatCanvas = document.createElement('canvas');
@@ -927,8 +1003,8 @@
 
     for (let i = 0; i < heat.length; i++){
       const h = heat[i];
-      const ix = Math.round((h.x - xMin) / step);
-      const iy = Math.round((h.y - yMin) / step);
+      const ix = Math.round((h.x - xMin) / (xMax - xMin) * (cols - 1));
+      const iy = Math.round((h.y - yMin) / (yMax - yMin) * (rows - 1));
       if (ix < 0 || ix >= cols || iy < 0 || iy >= rows) continue;
       const [r, g, b] = rampColor(h.norm);
       const row = rows - 1 - iy;
@@ -956,6 +1032,7 @@
     ctx.restore();
   }
 
+  // ================= 速度手柄 =================
   function getHandlePos(pt, vel){
     const mag = Math.hypot(vel.x, vel.y);
     if (mag < 0.01){
@@ -1013,7 +1090,7 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = 'rgba(211,47,47,0.9)';
-      ctx.fillText('速度', h.x, h.y + V_HANDLE_DOT + 4);
+      ctx.fillText(t('speed'), h.x, h.y + V_HANDLE_DOT + 4);
 
       ctx.restore();
       return;
@@ -1075,6 +1152,7 @@
     ctx.restore();
   }
 
+  // ================= 点 / 线 / 标签 =================
   function drawDot(pt, color, label, radius, labelDx, labelDy, isShrunk){
     const p = w2c(pt);
     const r = (radius || 10) * (isShrunk ? 0.8 : 1);
@@ -1088,7 +1166,10 @@
     if (label){
       ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
       ctx.fillStyle = color;
-      ctx.fillText(label, p.x + (labelDx ?? -6), p.y + (labelDy ?? -(r + 6)));
+      const metrics = ctx.measureText(label);
+      const cx = p.x - metrics.width / 2;
+      const cy = p.y + (labelDy ?? -(r + 6));
+      ctx.fillText(label, cx, cy);
     }
   }
 
@@ -1122,9 +1203,9 @@
     ctx.font = 'bold 14px system-ui';
     ctx.lineWidth = 4;
     ctx.strokeStyle = '#ffffff';
-    ctx.strokeText('结合', p.x, p.y + 13);
+    ctx.strokeText(t('gap'), p.x, p.y + 13);
     ctx.fillStyle = COLOR_GAP;
-    ctx.fillText('结合', p.x, p.y + 13);
+    ctx.fillText(t('gap'), p.x, p.y + 13);
     ctx.restore();
   }
 
@@ -1136,7 +1217,7 @@
     ctx.fill();
   }
 
-  function drawBestPoint(pt){
+  function drawBestPoint(pt, J){
     const p = w2c(pt);
     ctx.beginPath();
     ctx.fillStyle = COLOR_BEST;
@@ -1146,36 +1227,69 @@
     ctx.lineWidth = 1.8;
     ctx.stroke();
 
+    const labelY = p.y - 10;
+    const hasJ = (typeof J === 'number' && isFinite(J));
+
     ctx.save();
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.font = 'bold 15px system-ui';
     ctx.lineWidth = 4;
     ctx.strokeStyle = '#ffffff';
-    ctx.strokeText('最优', p.x, p.y - 10);
+
+    ctx.font = `bold ${isTouch ? 14 : 15}px system-ui`;
+    ctx.textAlign = 'right';
     ctx.fillStyle = COLOR_BEST;
-    ctx.fillText('最优', p.x, p.y - 10);
+    ctx.strokeText(t('best'), p.x - 2, labelY);
+    ctx.fillText(t('best'), p.x - 2, labelY);
+
+    if (hasJ){
+      ctx.font = `bold ${isTouch ? 13 : 12}px system-ui`;
+      ctx.textAlign = 'left';
+      ctx.lineWidth = 3;
+      ctx.fillStyle = 'rgba(211,47,47,0.72)';
+      const jText = `[${J.toFixed(1)}]`;
+      ctx.strokeText(jText, p.x - 2, labelY);
+      ctx.fillText(jText, p.x - 2, labelY);
+    }
     ctx.restore();
   }
 
   function drawCornerRanks(list){
     ctx.save();
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = 'bold 22px system-ui';
+
     for (const cb of list){
       if (cb.rank == null) continue;
       const p = w2c(cb);
+      const hasV = (typeof cb.val === 'number' && isFinite(cb.val));
       const text = String(cb.rank);
+
+      ctx.font = 'bold 22px system-ui';
       ctx.lineWidth = 5;
       ctx.strokeStyle = '#ffffff';
-      ctx.strokeText(text, p.x, p.y);
       ctx.fillStyle = COLOR_RANK;
-      ctx.fillText(text, p.x, p.y);
+
+      if (!hasV){
+        ctx.textAlign = 'center';
+        ctx.strokeText(text, p.x, p.y);
+        ctx.fillText(text, p.x, p.y);
+      } else {
+        ctx.textAlign = 'right';
+        ctx.strokeText(text, p.x - 3, p.y);
+        ctx.fillText(text, p.x - 3, p.y);
+
+        ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
+        ctx.textAlign = 'left';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(142,68,173,0.82)';
+        const vText = `[${cb.val.toFixed(1)}]`;
+        ctx.strokeText(vText, p.x + 3, p.y);
+        ctx.fillText(vText, p.x + 3, p.y);
+      }
     }
     ctx.restore();
   }
 
+  // ================= 主绘制 =================
   function draw(gaps, v1, v2, locusSegs){
     ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
 
@@ -1234,7 +1348,7 @@
     ctx.textBaseline = 'top';
     ctx.font = 'bold 14px system-ui';
     ctx.fillStyle = C_NET;
-    ctx.fillText('球网', n1.x + 8, n1.y + 9);
+    ctx.fillText(t('net'), n1.x + 8, n1.y + 9);
     ctx.restore();
 
     if (mode === 'double' && (gaps[0] || gaps[1])) drawEquiLocusFromSegs(locusSegs);
@@ -1244,7 +1358,7 @@
       if (gaps[0]) drawGapRing(gaps[0]);
       if (gaps[1]) drawGapRing(gaps[1]);
     }
-    if (cacheBest.pt) drawBestPoint(cacheBest.pt);
+    if (cacheBest.pt) drawBestPoint(cacheBest.pt, cacheBest.J);
 
     const isA3 = (dragTarget === 3 || hoverTarget === 3);
     const isA4 = (dragTarget === 4 || hoverTarget === 4);
@@ -1263,7 +1377,7 @@
     }
 
     if (mode === 'single'){
-      drawDot(opp1, COLOR_PLAYER, '对手', 10, -14, -16, isA3);
+      drawDot(opp1, COLOR_PLAYER, t('opponent'), 10, -14, -16, isA3);
     } else {
       drawDot(opp1, COLOR_PLAYER, 'A', 10, -6, -16, isA3);
       drawDot(opp2, COLOR_PLAYER, 'B', 10, -6, -16, isA4);
@@ -1272,6 +1386,7 @@
     if (cacheCorners.length) drawCornerRanks(cacheCorners);
   }
 
+  // ================= 主循环 =================
   function loop(){
     const eV1 = velMode ? opp1_v : ZERO_V;
     const eV2 = (mode === 'double' && velMode) ? opp2_v : ZERO_V;
@@ -1288,6 +1403,7 @@
     requestAnimationFrame(loop);
   }
 
+  // ================= 交互 =================
   function getWorldPos(e){
     let cx = e.clientX, cy = e.clientY;
     if (e.touches && e.touches.length){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
@@ -1384,6 +1500,8 @@
   canvas.addEventListener('touchcancel', endDrag);
   window.addEventListener('blur', endDrag);
 
+  applyLanguage();
+
   loop();
 })();
 </script>
@@ -1392,7 +1510,7 @@
 <div class="modal-mask" id="principleModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pTitle">
     <div class="modal-head">
-      <h2 id="pTitle">落点推荐 · 计算原理</h2>
+      <h2 id="pTitle" data-i18n="principleTitle">落点推荐 · 计算原理</h2>
       <button class="modal-close" id="principleClose" aria-label="关闭">×</button>
     </div>
     <div class="modal-body">
@@ -1442,12 +1560,13 @@
         <li><b>单打</b>：<code>J = 对手难度 − 0.3 × 到 (0, 3.35) 的距离</code></li>
         <li><b>双打</b>：<code>J = min(难度A, 难度B)</code></li>
       </ul>
+      <p class="muted">红点标签旁用方括号显示 J 值，如「最优[12.3]」，四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上保证不超过红点分数。</p>
 
       <h3>八、等难度线与结合部</h3>
       <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。</p>
 
       <h3>九、红点与四角次优</h3>
-      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大，按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
+      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
 
       <h3>十、可调参数</h3>
       <ul>
