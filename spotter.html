@@ -79,12 +79,27 @@
 
   /* 语言按钮 */
   .lang-btn{
-    padding:7px 10px;
+    padding:3px 7px;
+    min-width:0;
+    font-size:11.5px;
     font-weight:700;
-    letter-spacing:.4px;
-    min-width:42px;
-    justify-content:center;
+    letter-spacing:.3px;
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    color:var(--text-3);
+    border-radius:5px;
+    opacity:.85;
   }
+  .lang-btn:hover{
+    background:transparent;
+    border:none;
+    color:var(--primary);
+    box-shadow:none;
+    transform:none;
+    opacity:1;
+  }
+  .lang-btn:active{transform:scale(.92)}
 
   .app.collapsed .header{ display:none }
 
@@ -270,7 +285,7 @@
     h1{font-size:14.5px}
     .header p{font-size:12px}
     .header-actions{width:100%; gap:6px; justify-content:flex-end}
-    .lang-btn{flex:0 0 auto; min-width:38px; padding:6px 9px}
+    .lang-btn{flex:0 0 auto; min-width:0; padding:2px 5px; font-size:11px}
 
     .canvas-topbar{padding:8px 12px 6px; gap:8px}
     .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px}
