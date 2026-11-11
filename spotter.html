@@ -279,20 +279,43 @@
   @media (max-width: 520px){
     body{padding:12px 10px}
     .app{gap:10px}
-    .header{padding:12px 14px; gap:10px}
-    .header-left{gap:10px}
-    .logo{width:36px; height:36px; font-size:18px; border-radius:10px}
-    h1{font-size:14.5px}
-    .header p{font-size:12px}
-    .header-actions{width:100%; gap:6px; justify-content:flex-end}
+
+    /* Header：logo+标题 左，EN 右，强制一行 */
+    .header{padding:12px 14px; gap:10px; flex-wrap:nowrap}
+    .header-left{gap:10px; flex:1; min-width:0}
+    .logo{width:36px; height:36px; font-size:18px; border-radius:10px; flex-shrink:0}
+    h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .header p{font-size:12px; line-height:1.35}
+    .header-actions{width:auto; gap:6px; flex-shrink:0}
     .lang-btn{flex:0 0 auto; min-width:0; padding:2px 5px; font-size:11px}
 
-    .canvas-topbar{padding:8px 12px 6px; gap:8px}
-    .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px}
-    .legend{font-size:11px; gap:8px}
-    .legend span{gap:3px}
-    .collapse-btn{width:16px; height:16px}
+    /* Topbar：mode 左，collapse 右；legend 单独换到第二行 */
+    .canvas-topbar{padding:8px 12px 6px; gap:6px 8px}
+    .mode-toggle{
+      padding:4px 12px;
+      font-size:11.5px;
+      min-width:42px;
+      flex-shrink:0;
+      order:1;
+    }
+    .collapse-btn{
+      width:16px;
+      height:16px;
+      flex-shrink:0;
+      margin-left:auto;
+      order:2;
+    }
     .collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
+    .legend{
+      font-size:11px;
+      gap:8px;
+      order:3;
+      flex-basis:100%;
+      padding-top:6px;
+      border-top:1px solid #f0f4f1;
+    }
+    .legend span{gap:3px}
+
     .canvas-wrap{padding:8px}
 
     .footer{font-size:11px}
