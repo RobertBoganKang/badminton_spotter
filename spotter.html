@@ -472,6 +472,7 @@
   const DRAG_R        = isTouch ? 0.85 : 0.60;
   const V_DEADZONE    = isTouch ? 0.55 : 0.45;
   const V_SCALE       = isTouch ? 0.18 : 0.20;
+  const V_GAMMA       = 3.0;
   const V_MAX         = 6.0;
   const V_HANDLE_HIT  = isTouch ? 0.75 : 0.45;
   const V_HANDLE_DOT  = isTouch ? 9 : 7;
@@ -1050,8 +1051,11 @@
     if (mag < 0.01){
       return {x: pt.x, y: pt.y + V_DEADZONE};
     }
+    // 速度 → 死区外距离（曲线逆映射），保证松手后手柄位置与拖动时一致
+    const t = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
+    const extra = t * V_MAX * V_SCALE;
+    const dist = V_DEADZONE + extra;
     const ux = vel.x / mag, uy = vel.y / mag;
-    const dist = V_DEADZONE + mag * V_SCALE;
     return {x: pt.x + ux * dist, y: pt.y + uy * dist};
   }
 
@@ -1159,7 +1163,7 @@
     ctx.stroke();
 
     // 速度值 + 单位，显示在手柄正下方居中
-    if (mag >= 0.3){
+    if (mag >= 0.1){
       const lx = h.x;
       const ly = h.y + V_HANDLE_TIP + 5;
 
@@ -1497,7 +1501,10 @@
       if (dist < V_DEADZONE){
         vel.x = 0; vel.y = 0;
       } else {
-        const speed = Math.min((dist - V_DEADZONE) / V_SCALE, V_MAX);
+        const extra = dist - V_DEADZONE;
+        const maxExtra = V_MAX * V_SCALE;         // 死区外达到满速所需距离
+        const t = Math.min(extra / maxExtra, 1);  // 归一化到 0~1
+        const speed = V_MAX * Math.pow(t, V_GAMMA);
         vel.x = dx / dist * speed;
         vel.y = dy / dist * speed;
       }
