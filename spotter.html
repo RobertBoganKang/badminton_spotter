@@ -448,6 +448,7 @@
   const K_REV = 1.8, K_ADV = 0.7;
   const B0 = 0.30, K_EDGE = 1.2;
   const BODY_R = 0.45, K_BODY = 1.6;
+  const MIN_GAP_DIST = 1.0;
 
   const SINGLE_RETURN = {x: 0, y: 3.35};
   const W_ME_SINGLE = 0.3;
@@ -785,6 +786,7 @@
 
   // ================= 等难度线 =================
   function equiLocus(o1, o2, v1, v2){
+    if (Math.hypot(o2.x - o1.x, o2.y - o1.y) < MIN_GAP_DIST) return [];
     const F = (x, y) => difficulty({x, y}, o1, v1) - difficulty({x, y}, o2, v2);
     const xMin = -HALF_W - 0.5, xMax = HALF_W + 0.5;
     const yMin = OPP_SIDE_Y_MIN - 0.5, yMax = OPP_SIDE_Y_MAX + 0.5;
