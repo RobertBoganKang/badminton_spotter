@@ -11,7 +11,6 @@
     --border:#e4ebe6; --border-hover:#cfd9d2;
     --shadow:0 1px 2px rgba(20,50,35,.04), 0 8px 24px rgba(20,50,35,.05);
     --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
-    --danger:#d4453a; --danger-2:#a8342a;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -56,49 +55,28 @@
 
   .header-actions{display:flex; gap:8px; align-items:center; flex-shrink:0; position:relative}
 
-  .tool-btn{
-    appearance:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:6px;
-    padding:7px 12px;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:9px;
-    color:var(--text-2);
-    font-size:12.5px; font-weight:600;
-    font-family:inherit; line-height:1;
-    transition:background .15s, border-color .15s, color .15s, box-shadow .15s, transform .15s;
-    box-shadow:0 1px 1px rgba(20,50,35,.03);
-  }
-  .tool-btn:hover{
-    border-color:var(--border-hover);
-    color:var(--text);
-    box-shadow:0 2px 4px rgba(20,50,35,.06);
-    transform:translateY(-1px);
-  }
-  .tool-btn:active{transform:translateY(0); box-shadow:0 1px 1px rgba(20,50,35,.05)}
-
-  /* 语言按钮 */
+  /* 语言按钮（独立样式，不依赖 tool-btn） */
   .lang-btn{
+    appearance:none;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     padding:3px 7px;
-    min-width:0;
-    font-size:11.5px;
-    font-weight:700;
-    letter-spacing:.3px;
     background:transparent;
     border:none;
+    border-radius:5px;
     box-shadow:none;
     color:var(--text-3);
-    border-radius:5px;
+    font-size:11.5px;
+    font-weight:700;
+    font-family:inherit;
+    line-height:1;
+    letter-spacing:.3px;
     opacity:.85;
+    transition:color .15s, opacity .15s, transform .12s;
   }
-  .lang-btn:hover{
-    background:transparent;
-    border:none;
-    color:var(--primary);
-    box-shadow:none;
-    transform:none;
-    opacity:1;
-  }
+  .lang-btn:hover{color:var(--primary); opacity:1}
   .lang-btn:active{transform:scale(.92)}
 
   .app.collapsed .header{ display:none }
@@ -188,12 +166,7 @@
     font-family:inherit;
     opacity:.75;
   }
-  .collapse-btn:hover{
-    background:transparent;
-    border:none;
-    color:var(--primary);
-    opacity:1;
-  }
+  .collapse-btn:hover{color:var(--primary); opacity:1}
   .collapse-btn:active{transform:scale(.9)}
   .collapse-btn svg{
     width:12px; height:12px;
@@ -287,7 +260,7 @@
     h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .header p{font-size:12px; line-height:1.35}
     .header-actions{width:auto; gap:6px; flex-shrink:0}
-    .lang-btn{flex:0 0 auto; min-width:0; padding:2px 5px; font-size:11px}
+    .lang-btn{flex:0 0 auto; padding:2px 5px; font-size:11px}
 
     /* Topbar：mode 左，collapse 右；legend 单独换到第二行 */
     .canvas-topbar{padding:8px 12px 6px; gap:6px 8px}
@@ -344,7 +317,7 @@
       </div>
     </div>
     <div class="header-actions">
-      <button id="langBtn" class="tool-btn lang-btn" aria-label="Switch language">EN</button>
+      <button id="langBtn" class="lang-btn" aria-label="Switch language">EN</button>
     </div>
   </header>
 
@@ -382,7 +355,7 @@
       title: '羽毛球落点推荐',
       subDouble: '双打模式 · 拖动 A / B 调整位置',
       subSingle: '单打模式 · 拖动对手调整位置',
-      subHint: ' · 双击球员调速度，双击空白调热力图',
+      subHint: ' · 长按球员调速度，双击空白调热力图',
       subVelActive: ' · 拖动蓝色手柄调速度，双击空白调热力图',
       doubles: '双打',
       singles: '单打',
@@ -403,7 +376,7 @@
       title: 'Badminton Landing Spot',
       subDouble: 'Doubles · Drag A / B to adjust',
       subSingle: 'Singles · Drag opponent to adjust',
-      subHint: ' · Double-click player: velocity, blank: heatmap',
+      subHint: ' · Long-press player: velocity, double-click blank: heatmap',
       subVelActive: ' · Drag handle: velocity, blank: heatmap',
       doubles: 'Doubles',
       singles: 'Singles',
@@ -467,8 +440,10 @@
   const S0_DIST = 1.5;
   const VMAG_BLEND = 1.0;
 
-  const DBLCLICK_MS = 350;
-  const DBLCLICK_DIST = 30;
+  const DBLCLICK_MS = 420;
+  const DBLCLICK_DIST = 60;
+  const DRAG_START_THRESHOLD = 5;
+  const LONG_PRESS_MS = 500;
 
   const COLOR_PLAYER = '#111111';
   const COLOR_VEL    = '#1e88e5';
@@ -502,7 +477,7 @@
   let dragTarget = null;
   let hoverTarget = null;
   let dragHandlePos = null;
-  let isDragging = false, showHeat = false;
+  let showHeat = false;
   let lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
   let working = false, pendingFine = false;
   let lastCalcTime = 0, lastMoveTime = 0;
@@ -510,6 +485,9 @@
   let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
 
   let lastTouchTap = {t: 0, x: 0, y: 0};
+  let dragStartPos = null;
+  let dragActive = false;
+  let longPressTimer = null;
 
   const appEl = document.getElementById('app');
   const collapseBtn = document.getElementById('collapseBtn');
@@ -520,13 +498,25 @@
   const legendBar = document.getElementById('legendBar');
   const modeToggleEl = document.getElementById('modeToggle');
 
+  // ================= 工具函数 =================
+  function forceRecalc(){
+    pendingFine = true;
+    lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
+  }
+
+  function clearLongPress(){
+    if (longPressTimer){
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
+
   // ================= 语言切换 =================
   function applyLanguage(){
     document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.dataset.i18n;
-      el.textContent = t(key);
+      el.textContent = t(el.dataset.i18n);
     });
 
     langBtnEl.textContent = t('langBtn');
@@ -594,7 +584,7 @@
   }
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // ================= 单/双 单击切换 =================
+  // ================= 单/双 切换 =================
   modeToggleEl.addEventListener('click', () => {
     mode = (mode === 'double') ? 'single' : 'double';
 
@@ -603,13 +593,12 @@
 
     if (mode === 'single' && dragTarget === 2){
       dragTarget = null;
-      isDragging = false;
+      dragActive = false;
       canvas.style.cursor = 'default';
     }
 
     updateUIForMode();
-    pendingFine = true;
-    lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
+    forceRecalc();
   });
 
   function updateSubtitle(){
@@ -645,36 +634,18 @@
   }
   updateUIForMode();
 
-  // ================= 双击：优先级判定 =================
+  // ================= 双击：切换热力图 =================
   function handleDoubleTap(clientX, clientY){
     const rect = canvas.getBoundingClientRect();
     const lx = (clientX - rect.left) / rect.width * LOGICAL_W;
     const ly = (clientY - rect.top) / rect.height * LOGICAL_H;
     const w = c2w(lx, ly);
 
-    // ① 优先：点在 A 点附近 → 切换 A 手柄
-    if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R){
-      opp1_velVisible = !opp1_velVisible;
-      if (!opp1_velVisible){ opp1_v.x = 0; opp1_v.y = 0; }
-      pendingFine = true;
-      lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-      updateSubtitle();
-      updateLegend();
-      return;
-    }
+    // 球员点附近 → 忽略（手柄由长按控制）
+    if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R) return;
+    if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R) return;
 
-    // ② 优先：点在 B 点附近 → 切换 B 手柄
-    if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R){
-      opp2_velVisible = !opp2_velVisible;
-      if (!opp2_velVisible){ opp2_v.x = 0; opp2_v.y = 0; }
-      pendingFine = true;
-      lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-      updateSubtitle();
-      updateLegend();
-      return;
-    }
-
-    // ③ 手柄附近 → 忽略（防止双击手柄误触热力图）
+    // 手柄附近 → 忽略（防止拖动时误触）
     if (opp1_velVisible){
       const h1 = getHandlePos(opp1, opp1_v);
       if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return;
@@ -684,19 +655,18 @@
       if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return;
     }
 
-    // ④ 其余场地空白 → 切换热力图
+    // 其余场地空白 → 切换热力图
     showHeat = !showHeat;
     updateLegend();
   }
 
-  // 鼠标双击
   canvas.addEventListener('dblclick', (e) => {
     if (dragTarget !== null) return;
     handleDoubleTap(e.clientX, e.clientY);
     e.preventDefault();
   });
 
-  // ================= 核心：难度 / 到达时间 =================
+  // ================= 难度 / 到达时间 =================
   function startFactor(s, vmag){
     if (vmag < 0.01) return 1.0;
     const projDist = s / vmag;
@@ -710,9 +680,7 @@
     const dx = pt.x - opp.x, dy = pt.y - opp.y;
     const wy = dy >= 0 ? W_BACK : W_FWD;
     let run = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    const vmag = v ? Math.hypot(v.x, v.y) : 0;
-    const s = v ? (dx*v.x + dy*v.y) : 0;
-    run *= startFactor(s, vmag);
+    run *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
     const dBody = Math.sqrt(dx*dx + dy*dy);
     if (dBody < BODY_R) run *= K_BODY;
     const dEdge = Math.min(
@@ -727,21 +695,18 @@
   function reachTime(x, y, opp, v){
     const dx = x - opp.x, dy = y - opp.y;
     const wy = dy >= 0 ? W_BACK : W_FWD;
-    let t = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    const vmag = v ? Math.hypot(v.x, v.y) : 0;
-    const s = v ? (dx*v.x + dy*v.y) : 0;
-    t *= startFactor(s, vmag);
-    return t;
+    let time = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
+    time *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
+    return time;
   }
 
-  // ================= 栅格计算 =================
+  // ================= 栅格搜索 =================
   function computeGrid(o1, o2, v1, v2, step, m){
     function evalJ(x, y){
       if (m === 'single'){
         const oppScore = difficulty({x, y}, o1, v1);
         const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
-        const myCost = Math.sqrt(dx*dx + dy*dy);
-        return oppScore - W_ME_SINGLE * myCost;
+        return oppScore - W_ME_SINGLE * Math.sqrt(dx*dx + dy*dy);
       }
       return Math.min(
         difficulty({x, y}, o1, v1),
@@ -836,8 +801,8 @@
     const lerp = (ax, ay, bx, by, fa, fb) => {
       const denom = fa - fb;
       if (Math.abs(denom) < 1e-9) return [ax, ay];
-      const t = fa / denom;
-      return [ax + (bx - ax)*t, ay + (by - ay)*t];
+      const u = fa / denom;
+      return [ax + (bx - ax)*u, ay + (by - ay)*u];
     };
     const segs = [];
     for (let j = 0; j < ny; j++){
@@ -880,8 +845,8 @@
     };
     for (const [a, b] of segs){
       for (let k = 0; k <= 4; k++){
-        const t = k / 4;
-        push(a[0] + (b[0]-a[0])*t, a[1] + (b[1]-a[1])*t);
+        const u = k / 4;
+        push(a[0] + (b[0]-a[0])*u, a[1] + (b[1]-a[1])*u);
       }
     }
     if (!cands.length) return [null, null];
@@ -894,8 +859,8 @@
 
     let bestPos = null, bestNeg = null;
     for (const c of cands){
-      const t = (c.x - midX) * perpX + (c.y - midY) * perpY;
-      if (t >= 0){
+      const s = (c.x - midX) * perpX + (c.y - midY) * perpY;
+      if (s >= 0){
         if (!bestPos || c.s > bestPos.s) bestPos = c;
       } else {
         if (!bestNeg || c.s > bestNeg.s) bestNeg = c;
@@ -962,7 +927,7 @@
   function submitCalc(){
     if (working) return;
     const now = performance.now();
-    if (isDragging && now - lastCalcTime < THROTTLE_MS) return;
+    if (dragActive && now - lastCalcTime < THROTTLE_MS) return;
 
     const moved =
       Math.hypot(opp1.x - lastSent.o1.x, opp1.y - lastSent.o1.y)
@@ -970,10 +935,9 @@
     + Math.hypot(opp1_v.x - lastSent.v1.x, opp1_v.y - lastSent.v1.y) * 0.1
     + (mode === 'double' ? Math.hypot(opp2_v.x - lastSent.v2.x, opp2_v.y - lastSent.v2.y) * 0.1 : 0);
 
-    const fine = pendingFine;
-    if (moved < MOVE_THRESHOLD && !fine) return;
+    if (moved < MOVE_THRESHOLD && !pendingFine) return;
 
-    const step = (isDragging && !fine) ? GRID_STEP_FAST : GRID_STEP_FINE;
+    const step = (dragActive && !pendingFine) ? GRID_STEP_FAST : GRID_STEP_FINE;
     lastSent = {o1: {...opp1}, o2: {...opp2}, v1: {...opp1_v}, v2: {...opp2_v}};
     pendingFine = false;
     lastCalcTime = now;
@@ -1075,8 +1039,8 @@
     if (mag < 0.01){
       return {x: pt.x, y: pt.y + V_DEADZONE};
     }
-    const t = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
-    const extra = t * V_MAX * V_SCALE;
+    const norm = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
+    const extra = norm * V_MAX * V_SCALE;
     const dist = V_DEADZONE + extra;
     const ux = vel.x / mag, uy = vel.y / mag;
     return {x: pt.x + ux * dist, y: pt.y + uy * dist};
@@ -1143,7 +1107,7 @@
     ctx.fillStyle = COLOR_VEL;
     ctx.lineWidth = isTouch ? 3 : 2.2;
 
-    const ux = (h.x - p.x), uy = (h.y - p.y);
+    const ux = h.x - p.x, uy = h.y - p.y;
     const ul = Math.hypot(ux, uy);
     const sz = V_DEADZONE * SCALE;
     const sx = p.x + ux / ul * sz;
@@ -1180,26 +1144,22 @@
     ctx.stroke();
 
     if (mag >= 0.1){
-      const lx = h.x;
-      const ly = h.y + V_HANDLE_TIP + 5;
-
       ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = COLOR_VEL;
-
-      const fullText = `${mag.toFixed(1)} m/s`;
-      ctx.strokeText(fullText, lx, ly);
-      ctx.fillText(fullText, lx, ly);
+      const txt = `${mag.toFixed(1)} m/s`;
+      ctx.strokeText(txt, h.x, h.y + V_HANDLE_TIP + 5);
+      ctx.fillText(txt, h.x, h.y + V_HANDLE_TIP + 5);
     }
 
     ctx.restore();
   }
 
   // ================= 点 / 线 / 标签 =================
-  function drawDot(pt, color, label, radius, labelDx, labelDy, isShrunk){
+  function drawDot(pt, color, label, radius, labelDy, isShrunk){
     const p = w2c(pt);
     const r = (radius || 10) * (isShrunk ? 0.8 : 1);
     ctx.beginPath();
@@ -1212,10 +1172,8 @@
     if (label){
       ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
       ctx.fillStyle = color;
-      const metrics = ctx.measureText(label);
-      const cx = p.x - metrics.width / 2;
-      const cy = p.y + (labelDy ?? -(r + 6));
-      ctx.fillText(label, cx, cy);
+      const m = ctx.measureText(label);
+      ctx.fillText(label, p.x - m.width / 2, p.y + (labelDy ?? -(r + 6)));
     }
   }
 
@@ -1353,6 +1311,7 @@
     ctx.lineWidth = 1.8;
     ctx.setLineDash([]);
 
+    // 单打边线 + 中线 + 发球线
     for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]){
       const a = w2c({x: sx, y: VIEW_Y_MIN});
       const b = w2c({x: sx, y: L});
@@ -1369,6 +1328,7 @@
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
 
+    // 外框
     ctx.strokeStyle = C_FRAME;
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -1378,6 +1338,7 @@
     ctx.lineTo(br.x, br.y);
     ctx.stroke();
 
+    // 球网
     const n1 = w2c({x: -HALF_W, y: NET_Y});
     const n2 = w2c({x:  HALF_W, y: NET_Y});
     ctx.beginPath();
@@ -1422,10 +1383,10 @@
     }
 
     if (mode === 'single'){
-      drawDot(opp1, COLOR_PLAYER, t('opponent'), 10, -14, -16, isA3);
+      drawDot(opp1, COLOR_PLAYER, t('opponent'), 10, -16, isA3);
     } else {
-      drawDot(opp1, COLOR_PLAYER, 'A', 10, -6, -16, isA3);
-      drawDot(opp2, COLOR_PLAYER, 'B', 10, -6, -16, isA4);
+      drawDot(opp1, COLOR_PLAYER, 'A', 10, -16, isA3);
+      drawDot(opp2, COLOR_PLAYER, 'B', 10, -16, isA4);
     }
 
     if (cacheCorners.length) drawCornerRanks(cacheCorners);
@@ -1454,9 +1415,10 @@
     if (e.touches && e.touches.length){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
     else if (e.changedTouches && e.changedTouches.length){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
     const rect = canvas.getBoundingClientRect();
-    const lx = (cx - rect.left) / rect.width * LOGICAL_W;
-    const ly = (cy - rect.top) / rect.height * LOGICAL_H;
-    return c2w(lx, ly);
+    return c2w(
+      (cx - rect.left) / rect.width * LOGICAL_W,
+      (cy - rect.top) / rect.height * LOGICAL_H
+    );
   }
 
   function hitTest(w){
@@ -1478,9 +1440,37 @@
     const t = hitTest(w);
     if (!t) return;
     dragTarget = t;
-    isDragging = true;
+    dragActive = false;
+    dragStartPos = {
+      x: (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX,
+      y: (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY
+    };
     lastMoveTime = performance.now();
     canvas.style.cursor = 'grabbing';
+
+    // 命中球员点 → 启动长按计时器
+    if (t === 1 || t === 2){
+      clearLongPress();
+      longPressTimer = setTimeout(() => {
+        if (dragTarget === 1){
+          opp1_velVisible = !opp1_velVisible;
+          if (!opp1_velVisible){ opp1_v.x = 0; opp1_v.y = 0; }
+        } else if (dragTarget === 2){
+          opp2_velVisible = !opp2_velVisible;
+          if (!opp2_velVisible){ opp2_v.x = 0; opp2_v.y = 0; }
+        }
+        forceRecalc();
+        updateSubtitle();
+        updateLegend();
+
+        // 取消拖动状态
+        dragTarget = null;
+        dragActive = false;
+        dragStartPos = null;
+        lastTouchTap = {t: 0, x: 0, y: 0};
+      }, LONG_PRESS_MS);
+    }
+
     e.preventDefault();
   }
 
@@ -1491,6 +1481,15 @@
       hoverTarget = t;
       canvas.style.cursor = t ? 'grab' : 'default';
       return;
+    }
+
+    // 未超过拖动阈值 → 不改坐标
+    if (!dragActive && dragStartPos){
+      const cx = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+      const cy = (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
+      if (Math.hypot(cx - dragStartPos.x, cy - dragStartPos.y) < DRAG_START_THRESHOLD) return;
+      dragActive = true;
+      clearLongPress();
     }
 
     if (dragTarget === 1 || dragTarget === 2){
@@ -1515,8 +1514,8 @@
       } else {
         const extra = dist - V_DEADZONE;
         const maxExtra = V_MAX * V_SCALE;
-        const t = Math.min(extra / maxExtra, 1);
-        const speed = V_MAX * Math.pow(t, V_GAMMA);
+        const norm = Math.min(extra / maxExtra, 1);
+        const speed = V_MAX * Math.pow(norm, V_GAMMA);
         vel.x = dx / dist * speed;
         vel.y = dy / dist * speed;
       }
@@ -1527,10 +1526,12 @@
   }
 
   function endDrag(){
+    clearLongPress();
     if (dragTarget === null) return;
     dragTarget = null;
     dragHandlePos = null;
-    isDragging = false;
+    dragActive = false;
+    dragStartPos = null;
     pendingFine = true;
     canvas.style.cursor = 'default';
   }
@@ -1539,30 +1540,36 @@
   canvas.addEventListener('mousemove', moveDrag);
   canvas.addEventListener('mouseup', endDrag);
   canvas.addEventListener('mouseleave', endDrag);
-  canvas.addEventListener('touchstart', startDrag, {passive:false});
-  canvas.addEventListener('touchmove',  moveDrag,  {passive:false});
-  canvas.addEventListener('touchend', (e) => {
-    endDrag();
 
-    const t = e.changedTouches && e.changedTouches[0];
-    if (!t) return;
+  // 触摸：在 touchstart 里做双击检测
+  canvas.addEventListener('touchstart', (e) => {
+    const t0 = e.touches && e.touches[0];
+    if (!t0){ startDrag(e); return; }
 
     const now = Date.now();
     const dt = now - lastTouchTap.t;
-    const distPx = Math.hypot(t.clientX - lastTouchTap.x, t.clientY - lastTouchTap.y);
+    const distPx = Math.hypot(t0.clientX - lastTouchTap.x, t0.clientY - lastTouchTap.y);
 
-    if (dt < DBLCLICK_MS && distPx < DBLCLICK_DIST){
-      handleDoubleTap(t.clientX, t.clientY);
-      lastTouchTap.t = 0;
-    } else {
-      lastTouchTap = {t: now, x: t.clientX, y: t.clientY};
+    if (lastTouchTap.t > 0 && dt < DBLCLICK_MS && distPx < DBLCLICK_DIST){
+      lastTouchTap = {t: 0, x: 0, y: 0};
+      handleDoubleTap(t0.clientX, t0.clientY);
+      e.preventDefault();
+      return;
     }
+
+    lastTouchTap = {t: now, x: t0.clientX, y: t0.clientY};
+    startDrag(e);
+  }, {passive:false});
+
+  canvas.addEventListener('touchmove', moveDrag, {passive:false});
+  canvas.addEventListener('touchend', endDrag);
+  canvas.addEventListener('touchcancel', (e) => {
+    endDrag();
+    lastTouchTap = {t: 0, x: 0, y: 0};
   });
-  canvas.addEventListener('touchcancel', endDrag);
   window.addEventListener('blur', endDrag);
 
   applyLanguage();
-
   loop();
 })();
 </script>
@@ -1576,7 +1583,7 @@
     </div>
     <div class="modal-body">
 
-      <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉“我方打完能不能回中场”的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
+      <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉"我方打完能不能回中场"的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
 
       <h3>一、场地与坐标系</h3>
       <ul>
@@ -1584,14 +1591,14 @@
         <li>合法落点区域：<code>|x| ≤ 2.39，0.2 ≤ y ≤ 13.2</code></li>
       </ul>
 
-      <h3>二、双击交互</h3>
-      <p>所有功能都通过<b>双击画布</b>触发，判定优先级：</p>
-      <ol>
-        <li><b>双击球员 A 点附近</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
-        <li><b>双击球员 B 点附近</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
+      <h3>二、长按与双击交互</h3>
+      <ul>
+        <li><b>长按球员 A 点（500ms）</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
+        <li><b>长按球员 B 点（500ms）</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
+        <li><b>双击球员点附近</b> → 忽略（手柄由长按控制）</li>
         <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
         <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
-      </ol>
+      </ul>
       <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
 
       <h3>三、三方向速度权重</h3>
@@ -1639,6 +1646,7 @@
         <li><code>K_BODY</code>：1.6，<code>K_EDGE</code>：1.2</li>
         <li><code>W_ME_SINGLE</code>：0.3</li>
         <li><code>V_GAMMA</code>：3.0（手柄曲线，越大低速越精细）</li>
+        <li><code>LONG_PRESS_MS</code>：500ms（长按球员点触发速度手柄）</li>
       </ul>
 
       <h3>十一、局限</h3>
