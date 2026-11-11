@@ -76,27 +76,6 @@
     transform:translateY(-1px);
   }
   .tool-btn:active{transform:translateY(0); box-shadow:0 1px 1px rgba(20,50,35,.05)}
-  .tool-btn .ico{
-    width:14px; height:14px; flex-shrink:0;
-    stroke-width:1.8; fill:none; stroke:currentColor;
-    stroke-linecap:round; stroke-linejoin:round;
-  }
-  .tool-btn.active{
-    color:#fff; border-color:transparent;
-    background:linear-gradient(135deg, var(--primary-bright), var(--primary));
-    box-shadow:0 2px 6px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.18);
-  }
-  .tool-btn.active:hover{
-    box-shadow:0 4px 10px rgba(22,107,70,.32), inset 0 1px 0 rgba(255,255,255,.18);
-    border-color:transparent; color:#fff;
-  }
-  .tool-btn.active.danger{
-    background:linear-gradient(135deg, var(--danger), var(--danger-2));
-    box-shadow:0 2px 6px rgba(150,45,34,.28), inset 0 1px 0 rgba(255,255,255,.18);
-  }
-  .tool-btn.active.danger:hover{
-    box-shadow:0 4px 10px rgba(150,45,34,.32), inset 0 1px 0 rgba(255,255,255,.18);
-  }
 
   /* 语言按钮 */
   .lang-btn{
@@ -290,9 +269,7 @@
     .logo{width:36px; height:36px; font-size:18px; border-radius:10px}
     h1{font-size:14.5px}
     .header p{font-size:12px}
-    .header-actions{width:100%; gap:6px}
-    .tool-btn{padding:6px 10px; font-size:12px; gap:5px; flex:1; justify-content:center}
-    .tool-btn .ico{width:13px; height:13px}
+    .header-actions{width:100%; gap:6px; justify-content:flex-end}
     .lang-btn{flex:0 0 auto; min-width:38px; padding:6px 9px}
 
     .canvas-topbar{padding:8px 12px 6px; gap:8px}
@@ -329,16 +306,6 @@
       </div>
     </div>
     <div class="header-actions">
-      <button id="toggleHeat" class="tool-btn danger">
-        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
-          <rect x="2" y="2" width="5" height="5" rx="1"/>
-          <rect x="9" y="2" width="5" height="5" rx="1"/>
-          <rect x="2" y="9" width="5" height="5" rx="1"/>
-          <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
-        </svg>
-        <span data-i18n="heat">热力图</span>
-      </button>
-
       <button id="langBtn" class="tool-btn lang-btn" aria-label="Switch language">EN</button>
     </div>
   </header>
@@ -377,9 +344,8 @@
       title: '羽毛球落点推荐',
       subDouble: '双打模式 · 拖动 A / B 调整位置',
       subSingle: '单打模式 · 拖动对手调整位置',
-      subVelHint: ' · 双击球员调出速度手柄',
-      subVelActive: ' · 拖动蓝色手柄设置速度',
-      heat: '热力图',
+      subHint: ' · 双击球员调速度，双击空白调热力图',
+      subVelActive: ' · 拖动蓝色手柄调速度，双击空白调热力图',
       doubles: '双打',
       singles: '单打',
       player: '球员',
@@ -399,9 +365,8 @@
       title: 'Badminton Landing Spot',
       subDouble: 'Doubles · Drag A / B to adjust',
       subSingle: 'Singles · Drag opponent to adjust',
-      subVelHint: ' · Double-click player to edit velocity',
-      subVelActive: ' · Drag blue handle to set velocity',
-      heat: 'Heatmap',
+      subHint: ' · Double-click player: velocity, blank: heatmap',
+      subVelActive: ' · Drag handle: velocity, blank: heatmap',
       doubles: 'Doubles',
       singles: 'Singles',
       player: 'Players',
@@ -464,9 +429,8 @@
   const S0_DIST = 1.5;
   const VMAG_BLEND = 1.0;
 
-  // 双击判定
   const DBLCLICK_MS = 350;
-  const DBLCLICK_DIST = 30;   // 像素
+  const DBLCLICK_DIST = 30;
 
   const COLOR_PLAYER = '#111111';
   const COLOR_VEL    = '#1e88e5';
@@ -483,14 +447,12 @@
   const C_GROUND = '#f7fbf9';
   const C_LINE   = '#3a7d5c';
   const C_FRAME  = '#1e4d38';
-  const C_NET    = '#0f6b3d';
+  const C_NET    = '#1e4d38';
 
   const ZERO_V = {x: 0, y: 0};
 
   // ================= 状态 =================
   let mode = 'double';
-
-  // 每个球员独立的手柄显示状态
   let opp1_velVisible = false;
   let opp2_velVisible = false;
 
@@ -509,14 +471,12 @@
   let cacheBest = {pt: null, J: 0};
   let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
 
-  // 触摸双击检测
   let lastTouchTap = {t: 0, x: 0, y: 0};
 
   const appEl = document.getElementById('app');
   const collapseBtn = document.getElementById('collapseBtn');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  const toggleBtn = document.getElementById('toggleHeat');
   const langBtnEl = document.getElementById('langBtn');
   const pageSub = document.getElementById('pageSub');
   const legendBar = document.getElementById('legendBar');
@@ -596,13 +556,6 @@
   }
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // ================= 按钮 =================
-  toggleBtn.addEventListener('click', () => {
-    showHeat = !showHeat;
-    toggleBtn.classList.toggle('active', showHeat);
-    updateLegend();
-  });
-
   // ================= 单/双 单击切换 =================
   modeToggleEl.addEventListener('click', () => {
     mode = (mode === 'double') ? 'single' : 'double';
@@ -624,7 +577,7 @@
   function updateSubtitle(){
     const single = mode === 'single';
     const anyVisible = opp1_velVisible || (mode === 'double' && opp2_velVisible);
-    const hint = anyVisible ? t('subVelActive') : t('subVelHint');
+    const hint = anyVisible ? t('subVelActive') : t('subHint');
     pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + hint;
   }
 
@@ -654,14 +607,14 @@
   }
   updateUIForMode();
 
-  // ================= 双击切换手柄 =================
+  // ================= 双击：优先级判定 =================
   function handleDoubleTap(clientX, clientY){
     const rect = canvas.getBoundingClientRect();
     const lx = (clientX - rect.left) / rect.width * LOGICAL_W;
     const ly = (clientY - rect.top) / rect.height * LOGICAL_H;
     const w = c2w(lx, ly);
 
-    // 点 A
+    // ① 优先：点在 A 点附近 → 切换 A 手柄
     if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R){
       opp1_velVisible = !opp1_velVisible;
       if (!opp1_velVisible){ opp1_v.x = 0; opp1_v.y = 0; }
@@ -672,7 +625,7 @@
       return;
     }
 
-    // 点 B（仅双打）
+    // ② 优先：点在 B 点附近 → 切换 B 手柄
     if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R){
       opp2_velVisible = !opp2_velVisible;
       if (!opp2_velVisible){ opp2_v.x = 0; opp2_v.y = 0; }
@@ -682,6 +635,20 @@
       updateLegend();
       return;
     }
+
+    // ③ 手柄附近 → 忽略（防止双击手柄误触热力图）
+    if (opp1_velVisible){
+      const h1 = getHandlePos(opp1, opp1_v);
+      if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return;
+    }
+    if (mode === 'double' && opp2_velVisible){
+      const h2 = getHandlePos(opp2, opp2_v);
+      if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return;
+    }
+
+    // ④ 其余场地空白 → 切换热力图
+    showHeat = !showHeat;
+    updateLegend();
   }
 
   // 鼠标双击
@@ -1404,14 +1371,12 @@
     const isA3 = (dragTarget === 3 || hoverTarget === 3);
     const isA4 = (dragTarget === 4 || hoverTarget === 4);
 
-    // A 的手柄（独立）
     if (opp1_velVisible){
       drawDeadzone(opp1);
       const h1 = (dragTarget === 3 && dragHandlePos) ? dragHandlePos : getHandlePos(opp1, opp1_v);
       drawVelocityHandle(opp1, opp1_v, h1, isA3);
     }
 
-    // B 的手柄（独立，仅双打）
     if (mode === 'double' && opp2_velVisible){
       drawDeadzone(opp2);
       const h2 = (dragTarget === 4 && dragHandlePos) ? dragHandlePos : getHandlePos(opp2, opp2_v);
@@ -1457,17 +1422,14 @@
   }
 
   function hitTest(w){
-    // A 手柄（仅 opp1_velVisible）
     if (opp1_velVisible){
       const h1 = getHandlePos(opp1, opp1_v);
       if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return 3;
     }
-    // B 手柄（仅双打 + opp2_velVisible）
     if (mode === 'double' && opp2_velVisible){
       const h2 = getHandlePos(opp2, opp2_v);
       if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return 4;
     }
-    // 点圆
     if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R) return 1;
     if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R) return 2;
     return null;
@@ -1535,13 +1497,10 @@
     canvas.style.cursor = 'default';
   }
 
-  // ===== 鼠标事件 =====
   canvas.addEventListener('mousedown', startDrag);
   canvas.addEventListener('mousemove', moveDrag);
   canvas.addEventListener('mouseup', endDrag);
   canvas.addEventListener('mouseleave', endDrag);
-
-  // ===== 触摸事件（含双击检测） =====
   canvas.addEventListener('touchstart', startDrag, {passive:false});
   canvas.addEventListener('touchmove',  moveDrag,  {passive:false});
   canvas.addEventListener('touchend', (e) => {
@@ -1587,13 +1546,15 @@
         <li>合法落点区域：<code>|x| ≤ 2.39，0.2 ≤ y ≤ 13.2</code></li>
       </ul>
 
-      <h3>二、双击调出速度手柄</h3>
-      <p>双击某个球员点，即可调出该球员的速度手柄（淡蓝色死区圆 + 蓝色手柄）。再双击一次收起手柄并将该球员速度归零。</p>
-      <ul>
-        <li><b>拖在死区内</b>：速度 = 0</li>
-        <li><b>拖出死区外</b>：出现蓝色箭头，长度与速度成正比，上限 6 m/s</li>
-        <li>A、B 两个手柄独立控制，互不影响</li>
-      </ul>
+      <h3>二、双击交互</h3>
+      <p>所有功能都通过<b>双击画布</b>触发，判定优先级：</p>
+      <ol>
+        <li><b>双击球员 A 点附近</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
+        <li><b>双击球员 B 点附近</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
+        <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
+        <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
+      </ol>
+      <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
 
       <h3>三、三方向速度权重</h3>
       <table>
@@ -1617,7 +1578,7 @@
       </ol>
 
       <h3>六、热力图</h3>
-      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。</p>
+      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。双击场地空白处开关。</p>
 
       <h3>七、总评分 J</h3>
       <ul>
