@@ -73,7 +73,6 @@
   .canvas-side.hidden{display:none}
   canvas{display:block; border-radius:12px; background:#f7fbf9; max-width:100%; height:auto; touch-action:none; border:1.5px solid #b9cfc4; box-shadow:0 0 0 3px rgba(255,255,255,.85), inset 0 0 0 1px rgba(255,255,255,.6), 0 1px 3px rgba(20,50,35,.07), 0 6px 18px rgba(20,50,35,.07); -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent}
   .main-col > canvas{align-self:center}
-  /* 信息栏：zoom 兜底，绕开浏览器「最小字号」强制放大 */
   .info-bar{display:flex; flex-wrap:wrap; gap:5px; row-gap:5px; padding:6px 8px; align-items:center; align-content:flex-start; background:#f7faf8; border:1px solid #e8efeb; border-radius:10px; zoom:0.9}
   .ib-item{display:flex; align-items:center; gap:5px; padding:3px 7px; border-radius:7px; background:#fff; border:1px solid #e8efeb; font-size:12px; line-height:1.15; min-width:0}
   .ib-k{color:#8a9a91; font-weight:800; font-size:11px; letter-spacing:.2px; flex-shrink:0}
@@ -288,7 +287,22 @@
         <input type="range" id="shotAzimSlider" min="0" max="90" step="5" value="30">
         <b class="val" id="shotAzimVal">30°</b>
       </label>
-      <p class="note" data-i18n="shotNote">法线 = 肩肘 · 肘腕平面法向量；须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。</p>
+      <p class="note" data-i18n="shotNote">法线 = 肩肘 · 肘腕平面法向量（可被手腕 ±旋前 / ±屈伸微调）。须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。</p>
+    </div>
+
+    <div class="group">
+      <div class="group-title" data-i18n="grpWrist">腕关节容差（拍面朝向微调）</div>
+      <label class="field">
+        <span data-i18n="wristPron">旋前 / 旋后 ±</span>
+        <input type="range" id="wristPronSlider" min="0" max="90" step="5" value="40">
+        <b class="val" id="wristPronVal">40°</b>
+      </label>
+      <label class="field">
+        <span data-i18n="wristFlex">屈 / 伸 ±</span>
+        <input type="range" id="wristFlexSlider" min="0" max="90" step="5" value="40">
+        <b class="val" id="wristFlexVal">40°</b>
+      </label>
+      <p class="note" data-i18n="wristNote">腕部围绕「肘→腕」轴（旋前 / 旋后）以及「手掌平面横轴」（屈 / 伸）微调拍面。搜索范围为 3×3 网格，命中即视为可达。填 0 则关闭腕自由度。</p>
     </div>
   </div>
 </aside>
@@ -318,35 +332,43 @@
           <li>肩 <b>外展 / 前屈 ≤ 175°</b>（0–180）、<b>后伸 ≤ 50°</b>（0–50/60）、<b>内收（过中线）≤ 25°</b>（0–20/30）
             <br>——本模型合成一条「<b>上举上限随上举平面变化</b>」：在正侧（外展面）/ 正前（前屈面）可到 175°，转到正后（后伸面）只剩 50°，转到正对躯干内侧（内收面）只剩 25°，中间线性插值。这条就是「正手大臂不可能伸到左下角」的根因：往躯干一侧（−x）越偏，允许的上举角越小</li>
           <li>肩 <b>内旋 ≤ 90° / 外旋 ≤ 90°</b>（绕上臂轴量「前臂方位」；中立位 = 上臂垂下、屈肘 90°、前臂指向前方，上臂上举时中立位跟着转）。手垂在身体下方而肘却甩到身前 / 身后，或低位正手要极度内旋才够得到，都会被这条剔掉</li>
-          <li>水平内收 0–135、水平外展 0–30；前臂旋前 / 旋后各 0–80（由「出球限位」的拍面朝向体现）；腕 背伸 70 / 掌屈 80 / 桡偏 20 / 尺偏 30（腕+手并为刚体，未建）</li>
+          <li>水平内收 0–135、水平外展 0–30；前臂旋前 / 旋后各 0–80（由「出球限位」的拍面朝向体现）；腕 背伸 70 / 掌屈 80 / 桡偏 20 / 尺偏 30（由「腕关节容差」近似，见第五节）</li>
         </ul>
         <h3>三、躯干碰撞（默认开启）</h3>
         <p>躯干按 x ∈ [−0.40, 0]、深度 ±0.14 m 的椭圆柱建模，<b>肩→肘、肘→腕任一段穿入身体即剔除</b>；它与「肩内收 ≤ 25°」配合，把左下（跨过身体）那一整片假可达区域删掉。</p>
         <p class="muted">取消勾选可与无限制版对照。热力图只显示有解（可达）的区域，其余位置保持透明。</p>
-        <h3>四、出球方向限位（默认开启）</h3>
-        <p>拍面法线 = 「肩→肘」与「肘→腕」两直线所构成<b>平面的法向量</b>（= 上臂方向 × 前臂方向，取朝前 +z 一侧）。击球点须同时满足三重朝向约束：</p>
+        <h3>四、出球方向限位 + 腕关节（默认开启）</h3>
+        <p>拍面基准法线 = 「肩→肘」与「肘→腕」两直线所构成<b>平面的法向量</b>（= 上臂方向 × 前臂方向，取朝前 +z 一侧）。击球点须同时满足三重朝向约束：</p>
         <ol>
           <li>有向前 (+z) 分量；</li>
           <li>朝上 / 朝下（仰角）在 [−30°, +60°] 内；</li>
           <li>朝左 / 朝右（水平偏角）在 ±30° 内。</li>
         </ol>
-        <p>任一不满足即被剔除。仰角、左右阈值均可调。</p>
+        <p><b>腕关节</b>可以在这个基准上继续微调拍面朝向，模型里允许两自由度：</p>
+        <ul>
+          <li>绕「肘→腕」轴旋转 = 前臂<b>旋前 / 旋后</b>，把拍面整体「转个角度」；</li>
+          <li>绕「手掌平面横轴」旋转 = 腕<b>屈 / 伸</b>（拜拜状），把拍面「抬起来 / 压下去」。</li>
+        </ul>
+        <p>求解器会在 (±旋前, ±屈伸) 的 3×3 网格里逐一尝试，只要存在一个组合把拍面扭进合法锥内，该点即视为可达。默认两轴各 ±40°，可以调小甚至填 0 关闭腕自由度。</p>
+        <p class="muted">腕角度只微调拍面朝向，不改变拍端位置（简化模型）。若关闭腕，则拍面严格锁定在手臂平面内。</p>
+        <h3>五、出球锥可视化</h3>
         <ul>
           <li><b>侧视图</b>（深度 z–高度）画绿色<b>仰角锥</b>与出球箭头 → 看朝上 / 朝下是否越界</li>
           <li><b>俯视图</b>（左右 x–深度 z）画绿色<b>左右锥</b>与出球箭头 → 看拍面水平朝向是否朝前</li>
+          <li>箭头方向 = 经过腕调整后<b>实际采用的拍面法线</b>；腕有参与时箭头会明显偏出原手臂平面</li>
         </ul>
-        <h3>五、视图与交互</h3>
+        <h3>六、视图与交互</h3>
         <ul>
           <li><b>主视图</b>（左右 x–高度 y）：热力图 + 人体 + 当前手臂姿势；左上角色标面板可任意拖动</li>
           <li><b>侧视图</b>（深度 z–高度 y）：高度与主图严格对齐，标出准备手 / 目标手的前后（深度）位置；<b>上下拖动圆点即可改高度 y 与深度 z</b></li>
-          <li><b>俯视图</b>（左右 x–深度 z）：前 = 上，看拍面法线的水平朝向</li>
+          <li><b>俯视图</b>（左右 x–深度 z）：前 = 上，看拍面法线的水平朝向；<b>开启左右镜像时会同步翻转</b></li>
           <li>初始点 z 独立：准备点的深度用侧视图单独拖动，不再和目标击球点的 z 绑定</li>
           <li><b>双击主视图</b>可显示 / 隐藏侧视图与俯视图；左上角滑块图标打开「参数调节」抽屉；顶部右侧箭头收起 / 展开标题栏</li>
         </ul>
-        <h3>六、身高与镜像</h3>
+        <h3>七、身高与镜像</h3>
         <ul>
           <li><b>身高滑块</b>（140–200cm）：按比例缩放全部骨骼长度，并重算画布可达视野</li>
-          <li><b>左右镜像</b>：仅翻转显示。正手/反手的<b>求解</b>不变，但屏幕上的形状标签会 L↔反 L 互换（因为左右翻转过）</li>
+          <li><b>左右镜像</b>：三个视图同步翻转显示。正手/反手的<b>求解</b>不变，但屏幕上的形状标签会 L↔反 L 互换，俯视图里球员与箭头一起镜像</li>
         </ul>
       </div>
       <div data-lang-block="en">
@@ -360,41 +382,38 @@
         <p class="muted">The rule only depends on shape, not left/right; both forehand and backhand cover both sides. The canvas draws the shoulder→racket dashed line and a vertical dashed line from the elbow to its foot of perpendicular, so the rule is visible. Depth z is now adjusted by dragging in the side view.</p>
         <h3>2. Joint limits (on by default)</h3>
         <p>After the 3D IK, a human range-of-motion (ROM) check is applied to remove "the linkage reaches, but the joint cannot" false-positives.</p>
-        <p><b>Full adult upper-limb ROM</b> (active ROM: AAOS values / Chinese goniometry standard / PMC upper-limb ROM; the trunk-fixed model takes the conservative end):</p>
         <ul>
-          <li>Elbow <b>flexion ≤ 145°</b> (140–150), no hyperextension; valgus 0–15 / varus 0–10 (not modeled)</li>
-          <li>Shoulder <b>abduction / flexion ≤ 175°</b> (0–180), <b>extension ≤ 50°</b> (0–50/60), <b>adduction (across midline) ≤ 25°</b> (0–20/30)
-            <br>— this model synthesizes one rule: "the elevation cap depends on the elevation plane": 175° in the pure lateral (abduction) / pure front (flexion) plane, only 50° in the pure back (extension) plane, only 25° toward the trunk (adduction) plane, linearly interpolated. This is the root cause of "the forehand upper arm cannot reach the lower-left corner": the more the arm goes toward the trunk side (−x), the smaller the allowed elevation.</li>
-          <li>Shoulder <b>internal rotation ≤ 90° / external rotation ≤ 90°</b> (the "forearm direction" is measured around the humeral axis; neutral = arm hanging, elbow flexed 90°, forearm pointing forward; the neutral reference rotates with the arm when raised). A forearm hanging below the body while the elbow swings forward / backward, or a low forehand that needs extreme internal rotation, is rejected by this rule</li>
-          <li>Horizontal adduction 0–135, horizontal abduction 0–30; forearm pronation / supination 0–80 each (reflected by the "shot-direction limits" on the racket face); wrist extension 70 / flexion 80 / radial deviation 20 / ulnar deviation 30 (wrist + hand treated as a rigid body, not modeled)</li>
+          <li>Elbow <b>flexion ≤ 145°</b>; no hyperextension</li>
+          <li>Shoulder <b>abduction / flexion ≤ 175°</b>, <b>extension ≤ 50°</b>, <b>adduction ≤ 25°</b>; the elevation cap depends on the elevation plane (interpolated)</li>
+          <li>Shoulder <b>IR ≤ 90° / ER ≤ 90°</b>; valgus / varus and wrist / forearm ROM are approximated via the shot-direction limits and the new wrist tolerance</li>
         </ul>
         <h3>3. Trunk collision (on by default)</h3>
-        <p>The trunk is modeled as an elliptical cylinder with x ∈ [−0.40, 0] and depth ±0.14 m. <b>If either shoulder→elbow or elbow→wrist enters the body, the pose is rejected</b>; together with "shoulder adduction ≤ 25°", this deletes the whole lower-left (cross-body) false-reachable region.</p>
-        <p class="muted">Uncheck to compare against the unrestricted version. The heatmap only paints reachable (solvable) cells; everything else stays transparent.</p>
-        <h3>4. Shot-direction limits (on by default)</h3>
-        <p>The racket-face normal = the <b>normal of the plane</b> formed by the shoulder→elbow and elbow→wrist lines (= upper-arm direction × forearm direction, taken on the forward (+z) side). The contact point must satisfy three orientation constraints simultaneously:</p>
-        <ol>
-          <li>has a forward (+z) component;</li>
-          <li>up / down (elevation) within [−30°, +60°];</li>
-          <li>left / right (azimuth) within ±30°.</li>
-        </ol>
-        <p>Any violation rejects the point. The elevation and lateral thresholds are adjustable.</p>
+        <p>Trunk modelled as an elliptical cylinder (x ∈ [−0.40, 0], depth ±0.14 m). <b>If shoulder→elbow or elbow→wrist enters the trunk, the pose is rejected.</b></p>
+        <h3>4. Shot-direction limits + wrist (on by default)</h3>
+        <p>Base racket-face normal = <b>normal of the shoulder-elbow · elbow-wrist plane</b> (taken on the forward +z side). Must satisfy: forward component, elevation ∈ [−down, +up], azimuth ∈ ±lateral.</p>
+        <p>The <b>wrist</b> can adjust the face from this base along two axes:</p>
         <ul>
-          <li><b>Side view</b> (depth z–height) draws the green <b>elevation cone</b> and the shot arrow → check the up / down limits.</li>
-          <li><b>Top view</b> (left–right x–depth z) draws the green <b>azimuth cone</b> and the shot arrow → check the horizontal heading.</li>
+          <li>Around the elbow→wrist axis = <b>forearm pronation / supination</b> — rotate the face as a whole</li>
+          <li>Around the palm-plane lateral axis = <b>wrist flexion / extension</b> (the "bye-bye" motion) — lift / drop the face</li>
         </ul>
-        <h3>5. Views and interaction</h3>
+        <p>The solver tries a 3×3 grid of (±pronation, ±flexion); if <i>any</i> combination brings the face into the legal cone, the point is reachable. Default ±40° each; set to 0 to disable.</p>
+        <p class="muted">The wrist only reorients the face — the racket-end position is unchanged (simplified model). With the wrist disabled, the face is locked to the arm plane.</p>
+        <h3>5. Cone visualization</h3>
         <ul>
-          <li><b>Main view</b> (left–right x–height y): heatmap + body + current arm pose; the color-bar panel can be dragged anywhere</li>
-          <li><b>Side view</b> (depth z–height y): height pixel-aligned with the main view, showing the front/back (depth) position of the ready / target hands; <b>drag the dots up/down to change height y and depth z</b></li>
-          <li><b>Top view</b> (left–right x–depth z): forward = up, shows the horizontal heading of the racket-face normal</li>
-          <li>Ready-point z is independent: its depth is dragged separately in the side view, no longer bound to the target contact z</li>
-          <li><b>Double-click the main view</b> to show / hide the side view and top view; the slider icon at top-left opens the "Parameters" drawer; the arrow at top-right collapses / expands the header</li>
+          <li><b>Side view</b> draws the green <b>elevation cone</b> and the shot arrow (using the wrist-adjusted normal)</li>
+          <li><b>Top view</b> draws the green <b>azimuth cone</b> and the shot arrow; it mirrors with the main view</li>
         </ul>
-        <h3>6. Height & mirror</h3>
+        <h3>6. Views and interaction</h3>
         <ul>
-          <li><b>Height slider</b> (140–200cm): scales all bone lengths proportionally and recomputes the reachable canvas view</li>
-          <li><b>Mirror</b>: visual only. Forehand/backhand <b>solving</b> stays the same, but the on-screen shape labels swap L↔anti-L (since left/right is flipped)</li>
+          <li><b>Main view</b>: heatmap + body + current arm pose; the color-bar panel can be dragged anywhere</li>
+          <li><b>Side view</b>: height pixel-aligned with the main view; drag the Ready / Target dots up/down to change y and z</li>
+          <li><b>Top view</b>: forward = up; mirrors with the main view when "Mirror" is on</li>
+          <li><b>Double-click the main view</b> to show / hide the side and top views; the slider icon opens the "Parameters" drawer</li>
+        </ul>
+        <h3>7. Height & mirror</h3>
+        <ul>
+          <li><b>Height slider</b> (140–200cm) scales all bones proportionally and recomputes the reachable canvas view</li>
+          <li><b>Mirror</b>: visual only; solving stays the same, but shape labels swap L↔anti-L and the top view flips horizontally</li>
         </ul>
       </div>
     </div>
@@ -413,6 +432,13 @@ const V3 = {
   norm: v=>{const l=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);return l>1e-12?[v[0]/l,v[1]/l,v[2]/l]:[0,0,0];}
 };
 function angleBetween(a,b){const c=Math.max(-1,Math.min(1,V3.dot(a,b)));return Math.acos(c);}
+// 绕单位轴旋转（Rodrigues）
+function rotateAroundAxis(v, axis, ang){
+  const c = Math.cos(ang), s = Math.sin(ang);
+  const kv = V3.dot(axis, v);
+  const kxv = V3.cross(axis, v);
+  return V3.add(V3.scale(v, c), V3.add(V3.scale(kxv, s), V3.scale(axis, kv * (1 - c))));
+}
 const clampv = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // ======================= 基础常量 =======================
@@ -439,13 +465,13 @@ const FWD  = [0, 0, 1];
 const HIT_RADIUS = 26;
 const SIDE_HIT_RADIUS = 22;
 
+// 色标
 const CBAR_W = 8, CBAR_H = 170;
 const CBAR_PAD_X = 9, CBAR_PAD_TOP = 44, CBAR_PAD_BOT = 16;
 const CBAR_MARGIN_X = 20;
 const CBAR_Y_RATIO  = 0.38;
 
-const TRUNK = { cx: -0.20, cz: 0, ax: 0.20, az: 0.14, yTop: 0.10, yBot: -0.95 };
-
+// 关节 ROM
 const ROM = {
   ELBOW_MAX  : 145,
   SH_ABD_MAX : 175,
@@ -454,6 +480,15 @@ const ROM = {
   IR_MAX     : 90,
   ER_MAX     : 90
 };
+
+// 腕容差（度）：绕前臂轴的旋前 / 旋后 与 屈伸
+let wristPronMax = 40;
+let wristFlexMax = 40;
+// 腕搜索网格（含两端）：3 → 3×3=9 个组合
+const WRIST_SEARCH_N = 3;
+
+// 躯干碰撞体
+const TRUNK = { cx: -0.20, cz: 0, ax: 0.20, az: 0.14, yTop: 0.10, yBot: -0.95 };
 
 // ======================= 躯干碰撞 =======================
 function inTrunk(p) {
@@ -499,7 +534,11 @@ const I18N = {
     shotUp: '向上 ≤',
     shotDown: '向下 ≤',
     shotAzim: '左右 ≤',
-    shotNote: '法线 = 肩肘 · 肘腕平面法向量；须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。',
+    shotNote: '法线 = 肩肘 · 肘腕平面法向量（可被手腕 ±旋前 / ±屈伸微调）。须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。',
+    grpWrist: '腕关节容差（拍面朝向微调）',
+    wristPron: '旋前 / 旋后 ±',
+    wristFlex: '屈 / 伸 ±',
+    wristNote: '腕部围绕「肘→腕」轴（旋前 / 旋后）以及「手掌平面横轴」（屈 / 伸）微调拍面。搜索范围为 3×3 网格，命中即视为可达。填 0 则关闭腕自由度。',
     footerCredit: '创作 · 保留所有权利',
     modalTitle: '羽毛球近身躯干落点 · 计算说明',
     drawerBtnTitle: '参数调节',
@@ -518,7 +557,7 @@ const I18N = {
     shapeAntiLText: '反L形→反手',
     shapeNeutralText: '中立',
     fast: '快',
-	mid: '中',
+    mid: '中',
     slow: '慢',
     sideTitle: '侧视图 (z–y)',
     sideDepth: 'z → 深度 (m)',
@@ -545,12 +584,12 @@ const I18N = {
     reasonNone: '无解',
     fhRom: (tags) => '正手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
     fhBody: '正手：有几何解，但手臂会穿入躯干（跨过身体）被剔除',
-    fhShot: '正手：拍面朝向超限(向前/仰角/左右)被剔除',
+    fhShot: '正手：拍面朝向超限(向前/仰角/左右)，腕也扭不回来被剔除',
     fhShape: '正手：够得到、关节也够，但该姿势是反 L 形（属反手）',
     fhNone: '正手：无可用解',
     bhRom: (tags) => '反手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
     bhBody: '反手：有几何解，但手臂会穿入躯干（跨过身体）被剔除',
-    bhShot: '反手：拍面朝向超限(向前/仰角/左右)被剔除',
+    bhShot: '反手：拍面朝向超限(向前/仰角/左右)，腕也扭不回来被剔除',
     bhShape: '反手：够得到、关节也够，但该姿势是 L 形（属正手）',
     bhNone: '反手：无可用解'
   },
@@ -583,7 +622,11 @@ const I18N = {
     shotUp: 'Up ≤',
     shotDown: 'Down ≤',
     shotAzim: 'Lateral ≤',
-    shotNote: 'Normal = normal of the shoulder-elbow · elbow-wrist plane; must point forward (+z), elevation ∈ [−down, +up], azimuth ∈ [−lateral, +lateral].',
+    shotNote: 'Normal = normal of the shoulder-elbow · elbow-wrist plane (wrist may adjust ±pronation / ±flexion). Must point forward (+z), elevation ∈ [−down, +up], azimuth ∈ [−lateral, +lateral].',
+    grpWrist: 'Wrist tolerance (face reorientation)',
+    wristPron: 'Pron / sup ±',
+    wristFlex: 'Flex / ext ±',
+    wristNote: 'The wrist reorients the racket face around the elbow→wrist axis (pronation / supination) and around the palm-plane lateral axis (flexion / extension). A 3×3 grid is searched; any feasible combination counts as reachable. Set to 0 to disable wrist.',
     footerCredit: 'Created · All Rights Reserved',
     modalTitle: 'Badminton Body Landing Spot · Methodology',
     drawerBtnTitle: 'Parameters',
@@ -602,7 +645,7 @@ const I18N = {
     shapeAntiLText: 'anti-L → backhand',
     shapeNeutralText: 'neutral',
     fast: 'Fast',
-	mid: 'Mid',
+    mid: 'Mid',
     slow: 'Slow',
     sideTitle: 'Side view (z–y)',
     sideDepth: 'z → depth (m)',
@@ -629,12 +672,12 @@ const I18N = {
     reasonNone: 'no sol.',
     fhRom: (tags) => 'FH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
     fhBody: 'FH: IK solved but arm would enter the trunk (cross-body)',
-    fhShot: 'FH: shot direction out of limits (forward / elevation / lateral)',
+    fhShot: 'FH: shot direction out of limits even with wrist reorientation',
     fhShape: 'FH: reachable and within ROM, but the pose is anti-L (belongs to backhand)',
     fhNone: 'FH: no solution',
     bhRom: (tags) => 'BH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
     bhBody: 'BH: IK solved but arm would enter the trunk (cross-body)',
-    bhShot: 'BH: shot direction out of limits (forward / elevation / lateral)',
+    bhShot: 'BH: shot direction out of limits even with wrist reorientation',
     bhShape: 'BH: reachable and within ROM, but the pose is L (belongs to forehand)',
     bhNone: 'BH: no solution'
   }
@@ -685,14 +728,10 @@ const bgCtx = bg.getContext('2d');
 
 const SWE = 380, THE = 280, TWE = 380;
 
-function w2p(x, y) {
-  const sx = flip ? -1 : 1;
-  return [OX + sx * x * SCALE, OY - y * SCALE];
-}
-function p2w(px, py) {
-  const sx = flip ? -1 : 1;
-  return [sx * (px - OX) / SCALE, (OY - py) / SCALE];
-}
+const flipSx = () => flip ? -1 : 1;
+
+function w2p(x, y) { return [OX + flipSx() * x * SCALE, OY - y * SCALE]; }
+function p2w(px, py) { return [flipSx() * (px - OX) / SCALE, (OY - py) / SCALE]; }
 
 // ======================= 身高 → 几何 =======================
 function applyHeight(){
@@ -719,7 +758,6 @@ function applyHeight(){
 
   Y_MAX = L1 + L23 + 0.12;
   Y_MIN = -SHOULDER_H - 0.06;
-
   X_MAX = L1 + L23 + 0.15;
   X_MIN = -(L1 + L23 * 0.80 + 0.10 + 0.30);
 
@@ -804,10 +842,7 @@ function layout(){
 let layoutRaf = 0;
 function requestLayout(){
   if (layoutRaf) return;
-  layoutRaf = requestAnimationFrame(() => {
-    layoutRaf = 0;
-    layout();
-  });
+  layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; layout(); });
 }
 
 // ======================= 3D IK =======================
@@ -817,10 +852,8 @@ function ik3D(P, alpha) {
   if (r < 1e-9) return null;
 
   const d = V3.scale(P, 1/r);
-
   const cosE = (L1*L1 + L23*L23 - r*r) / (2*L1*L23);
   const thetaElbow = Math.PI - Math.acos(Math.max(-1, Math.min(1, cosE)));
-
   const cosS = (L1*L1 + r*r - L23*L23) / (2*L1*r);
   const thetaS = Math.acos(Math.max(-1, Math.min(1, cosS)));
 
@@ -841,10 +874,7 @@ function ik3D(P, alpha) {
     V3.scale(v, R * Math.sin(alpha))
   ));
 
-  const upperDir = V3.norm(E);
-  const foreDir = V3.norm(V3.sub(P, E));
-
-  return { E, P, upperDir, foreDir, thetaElbow, thetaS };
+  return { E, P, upperDir: V3.norm(E), foreDir: V3.norm(V3.sub(P, E)), thetaElbow, thetaS };
 }
 
 // ======================= 关节角 =======================
@@ -912,8 +942,9 @@ function jointFullCheck(ik) {
   return { ok: tags.length === 0 && !body, tags, body, a };
 }
 
-// ======================= 出球限位 =======================
-function shotFaceNormal(ik) {
+// ======================= 出球限位（含腕搜索） =======================
+// 拍面法线的基准 = 上臂 × 前臂（取朝 +z 一侧）
+function baseFaceNormal(ik) {
   const n = V3.cross(ik.upperDir, ik.foreDir);
   const L = V3.len(n);
   if (L < 1e-6) return null;
@@ -921,15 +952,80 @@ function shotFaceNormal(ik) {
   if (p[2] < 0) p = V3.scale(p, -1);
   return p;
 }
-function shotCheck(ik) {
-  const n = shotFaceNormal(ik);
-  if (!n) return { ok:false, forward:false, elev:NaN, azim:NaN, elevOk:false, azimOk:false };
-  const forward = n[2] > 1e-6;
+
+// 单点评估：只做锥体判断
+function evalFaceNormal(n) {
+  if (n[2] <= 1e-6) {
+    return { ok: false, forward: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false };
+  }
   const elev = Math.asin(Math.max(-1, Math.min(1, n[1]))) / DEG;
   const azim = Math.atan2(n[0], n[2]) / DEG;
   const elevOk = (elev <= shotUpMax && elev >= -shotDownMax);
   const azimOk = (Math.abs(azim) <= shotAzimuthMax);
-  return { ok: forward && elevOk && azimOk, forward, elev, azim, elevOk, azimOk };
+  return { ok: elevOk && azimOk, forward: true, elev, azim, elevOk, azimOk };
+}
+
+function failDistance(r) {
+  if (!isFinite(r.elev) || !isFinite(r.azim)) return 999;
+  const dE = r.elevOk ? 0 : Math.min(Math.abs(r.elev - shotUpMax), Math.abs(r.elev + shotDownMax));
+  const dA = r.azimOk ? 0 : Math.abs(r.azim) - shotAzimuthMax;
+  return dE + dA;
+}
+
+// 返回：{ ok, forward, elev, azim, elevOk, azimOk, normal, wristUsed }
+// normal 是实际采用的拍面法线（供锥视图绘制使用）；null 表示退化情况
+function shotCheck(ik) {
+  const n0 = baseFaceNormal(ik);
+  if (!n0) return { ok: false, forward: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false, normal: null, wristUsed: false };
+
+  // 1) 腕不动的基准
+  const base = evalFaceNormal(n0);
+  if (base.ok || wristPronMax <= 0 && wristFlexMax <= 0) {
+    return { ...base, normal: n0, wristUsed: false };
+  }
+
+  // 2) 建立两个旋转轴
+  const foreAxis = V3.norm(ik.foreDir);
+  let flexAxis = V3.cross(foreAxis, n0);
+  const fl = V3.len(flexAxis);
+  if (fl < 1e-6) {
+    return { ...base, normal: n0, wristUsed: false };
+  }
+  flexAxis = V3.scale(flexAxis, 1 / fl);
+
+  const P_MAX = wristPronMax * DEG;
+  const F_MAX = wristFlexMax * DEG;
+  const N = WRIST_SEARCH_N;
+
+  let bestFail = { ...base };
+  let bestFailDist = failDistance(base);
+  let bestFailNormal = n0;
+
+  for (let i = 0; i < N; i++) {
+    const f = (N === 1) ? 0 : -F_MAX + (2 * F_MAX) * i / (N - 1);
+    const n1 = rotateAroundAxis(n0, flexAxis, f);
+    for (let j = 0; j < N; j++) {
+      const p = (N === 1) ? 0 : -P_MAX + (2 * P_MAX) * j / (N - 1);
+      let n = rotateAroundAxis(n1, foreAxis, p);
+      if (n[2] < 0) n = V3.scale(n, -1);           // 拍面正反面都可用
+      const nl = V3.len(n);
+      if (nl < 1e-6) continue;
+      n = V3.scale(n, 1 / nl);
+
+      const r = evalFaceNormal(n);
+      if (r.ok) {
+        return { ...r, normal: n, wristUsed: (Math.abs(f) > 1e-6 || Math.abs(p) > 1e-6) };
+      }
+      const d = failDistance(r);
+      if (d < bestFailDist) {
+        bestFailDist = d;
+        bestFail = r;
+        bestFailNormal = n;
+      }
+    }
+  }
+
+  return { ...bestFail, normal: bestFailNormal, wristUsed: false };
 }
 
 // ======================= 2D 投影与形状 =======================
@@ -999,7 +1095,7 @@ function solveAt(P3, side) {
     if (furthest < 3) { furthest = 3; rejectTags = []; }
 
     if (useShotLimit && !shotCheck(ik).ok) {
-      if (furthest <= 3) { furthest = 3; rejectTags = ['拍面朝向超限']; }
+      if (furthest <= 3) { furthest = 3; rejectTags = ['拍面朝向超限（含腕）']; }
       continue;
     }
     furthest = 4;
@@ -1026,9 +1122,7 @@ function solveAt(P3, side) {
   return { status: 'ok', ik: best, time: bestT, side, shape: bestShape, cls: bestCls };
 }
 
-function solveBoth(P) {
-  return { fh: solveAt(P, 'fh'), bh: solveAt(P, 'bh') };
-}
+function solveBoth(P) { return { fh: solveAt(P, 'fh'), bh: solveAt(P, 'bh') }; }
 
 function pickResult(both, mode) {
   if (mode === 'fh') return both.fh;
@@ -1089,7 +1183,7 @@ function shapeLabel(sh) {
 // ======================= 热力图 =======================
 function renderHeatmap() {
   const z = currentZ;
-  const sx = flip ? -1 : 1;
+  const sx = flipSx();
 
   gridCols = Math.ceil(W / STEP);
   gridRows = Math.ceil(H / STEP);
@@ -1166,12 +1260,13 @@ function drawBody() {
   ctx.strokeStyle = '#4b5563';
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 
+  const hs = heightScale;
   const [srX, srY] = w2p(0, 0);
   const [slX, slY] = w2p(-SW, 0);
-  const [wrX, wrY] = w2p(-0.05 * heightScale, -0.28 * heightScale);
-  const [wlX, wlY] = w2p(-0.35 * heightScale, -0.28 * heightScale);
-  const [hrX, hrY] = w2p(-0.06 * heightScale, -HIP_DROP);
-  const [hlX, hlY] = w2p(-0.34 * heightScale, -HIP_DROP);
+  const [wrX, wrY] = w2p(-0.05 * hs, -0.28 * hs);
+  const [wlX, wlY] = w2p(-0.35 * hs, -0.28 * hs);
+  const [hrX, hrY] = w2p(-0.06 * hs, -HIP_DROP);
+  const [hlX, hlY] = w2p(-0.34 * hs, -HIP_DROP);
 
   ctx.lineWidth = 2.5;
   ctx.beginPath();
@@ -1183,41 +1278,41 @@ function drawBody() {
   ctx.quadraticCurveTo(wrX+6, (srY+wrY)/2, srX, srY);
   ctx.stroke();
 
-  const [n1x,n1y]=w2p(-0.25*heightScale,0), [n2x,n2y]=w2p(-0.25*heightScale,NECK_LEN);
-  const [n3x,n3y]=w2p(-0.15*heightScale,0), [n4x,n4y]=w2p(-0.15*heightScale,NECK_LEN);
+  const [n1x,n1y]=w2p(-0.25*hs,0), [n2x,n2y]=w2p(-0.25*hs,NECK_LEN);
+  const [n3x,n3y]=w2p(-0.15*hs,0), [n4x,n4y]=w2p(-0.15*hs,NECK_LEN);
   ctx.beginPath();
   ctx.moveTo(n1x,n1y); ctx.lineTo(n2x,n2y);
   ctx.moveTo(n3x,n3y); ctx.lineTo(n4x,n4y);
   ctx.stroke();
 
-  const [hx,hy]=w2p(-0.20*heightScale,HEAD_CY);
+  const [hx,hy]=w2p(-0.20*hs, HEAD_CY);
   ctx.beginPath(); ctx.arc(hx,hy,HEAD_R*SCALE,0,Math.PI*2); ctx.stroke();
 
   ctx.lineWidth = 1.8;
-  let [ex1,ey1]=w2p(-0.245*heightScale,0.225*heightScale), [ex2,ey2]=w2p(-0.225*heightScale,0.225*heightScale);
+  let [ex1,ey1]=w2p(-0.245*hs,0.225*hs), [ex2,ey2]=w2p(-0.225*hs,0.225*hs);
   ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
-  [ex1,ey1]=w2p(-0.175*heightScale,0.225*heightScale); [ex2,ey2]=w2p(-0.155*heightScale,0.225*heightScale);
+  [ex1,ey1]=w2p(-0.175*hs,0.225*hs); [ex2,ey2]=w2p(-0.155*hs,0.225*hs);
   ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
-  [ex1,ey1]=w2p(-0.22*heightScale,0.15*heightScale); [ex2,ey2]=w2p(-0.18*heightScale,0.15*heightScale);
+  [ex1,ey1]=w2p(-0.22*hs,0.15*hs); [ex2,ey2]=w2p(-0.18*hs,0.15*hs);
   ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
 
   ctx.lineWidth = 8;
-  let [rHx,rHy]=w2p(-0.06*heightScale,-HIP_DROP), [rKx,rKy]=w2p(-0.06*heightScale,-KNEE_DROP);
-  let [rAx,rAy]=w2p(-0.06*heightScale,-ANKLE_DROP), [rFx,rFy]=w2p(0.06*heightScale,-ANKLE_DROP);
+  let [rHx,rHy]=w2p(-0.06*hs,-HIP_DROP), [rKx,rKy]=w2p(-0.06*hs,-KNEE_DROP);
+  let [rAx,rAy]=w2p(-0.06*hs,-ANKLE_DROP), [rFx,rFy]=w2p(0.06*hs,-ANKLE_DROP);
   ctx.beginPath(); ctx.moveTo(rHx,rHy); ctx.lineTo(rKx,rKy); ctx.lineTo(rAx,rAy); ctx.stroke();
   ctx.lineWidth = 5;
   ctx.beginPath(); ctx.moveTo(rAx,rAy); ctx.lineTo(rFx,rFy); ctx.stroke();
 
   ctx.lineWidth = 8;
-  let [lHx,lHy]=w2p(-0.34*heightScale,-HIP_DROP), [lKx,lKy]=w2p(-0.34*heightScale,-KNEE_DROP);
-  let [lAx,lAy]=w2p(-0.34*heightScale,-ANKLE_DROP), [lFx,lFy]=w2p(-0.22*heightScale,-ANKLE_DROP);
+  let [lHx,lHy]=w2p(-0.34*hs,-HIP_DROP), [lKx,lKy]=w2p(-0.34*hs,-KNEE_DROP);
+  let [lAx,lAy]=w2p(-0.34*hs,-ANKLE_DROP), [lFx,lFy]=w2p(-0.22*hs,-ANKLE_DROP);
   ctx.beginPath(); ctx.moveTo(lHx,lHy); ctx.lineTo(lKx,lKy); ctx.lineTo(lAx,lAy); ctx.stroke();
   ctx.lineWidth = 5;
   ctx.beginPath(); ctx.moveTo(lAx,lAy); ctx.lineTo(lFx,lFy); ctx.stroke();
 
   ctx.lineWidth = 7;
-  let [asX,asY]=w2p(-SW,0), [aeX,aeY]=w2p(-SW-0.04*heightScale,-0.30*heightScale);
-  let [awX,awY]=w2p(-SW-0.06*heightScale,-0.55*heightScale), [ahX,ahY]=w2p(-SW-0.06*heightScale,-0.72*heightScale);
+  let [asX,asY]=w2p(-SW,0), [aeX,aeY]=w2p(-SW-0.04*hs,-0.30*hs);
+  let [awX,awY]=w2p(-SW-0.06*hs,-0.55*hs), [ahX,ahY]=w2p(-SW-0.06*hs,-0.72*hs);
   ctx.beginPath();
   ctx.moveTo(asX,asY); ctx.lineTo(aeX,aeY);
   ctx.lineTo(awX,awY); ctx.lineTo(ahX,ahY);
@@ -1265,7 +1360,6 @@ function layoutLabels(items) {
     }
 
     let best = null, bestScore = -Infinity;
-
     for (let k = 0; k < 8; k++) {
       const [dx, dy] = LABEL_DIRS[(startIdx + k) % 8];
       let bx, by;
@@ -1394,37 +1488,22 @@ function drawArm3D(ik, side, cls) {
   const elbowMidX = (sX + wX) / 2, elbowMidY = (sY + wY) / 2;
   const shDisp = displayShape(cls.shape);
   const labels = [
-    {
-      ax: sX, ay: sY, r: 5,
-      text: t('shoulder'),
-      color: '#334155',
-      avoidAngle: Math.atan2(sY - eY, sX - eX)
-    },
-    {
-      ax: eX, ay: eY, r: 5,
-      text: `${t('elbow')}(${shapeLabel(shDisp)})`,
+    { ax: sX, ay: sY, r: 5, text: t('shoulder'), color: '#334155',
+      avoidAngle: Math.atan2(sY - eY, sX - eX) },
+    { ax: eX, ay: eY, r: 5, text: `${t('elbow')}(${shapeLabel(shDisp)})`,
       color: isBH ? '#1d4ed8' : '#b91c1c',
-      avoidAngle: Math.atan2(eY - elbowMidY, eX - elbowMidX)
-    },
-    {
-      ax: wX, ay: wY, r: 5,
-      text: t('wrist'),
-      color: '#334155',
-      avoidAngle: Math.atan2(wY - eY, wX - eX)
-    },
-    {
-      ax: pX, ay: pY, r: 4,
+      avoidAngle: Math.atan2(eY - elbowMidY, eX - elbowMidX) },
+    { ax: wX, ay: wY, r: 5, text: t('wrist'), color: '#334155',
+      avoidAngle: Math.atan2(wY - eY, wX - eX) },
+    { ax: pX, ay: pY, r: 4,
       text: `${t('racket')} z=${P[2] >= 0 ? '+' : ''}${P[2].toFixed(2)}m`,
       color: isBH ? '#1e40af' : '#991b1b',
-      avoidAngle: Math.atan2(pY - wY, pX - wX)
-    }
+      avoidAngle: Math.atan2(pY - wY, pX - wX) }
   ];
 
-  const placedLabels = layoutLabels(labels);
-  for (const lb of placedLabels) {
-    drawLabelBox(lb.box, lb.text, lb.color);
-  }
+  for (const lb of layoutLabels(labels)) drawLabelBox(lb.box, lb.text, lb.color);
 
+  // perpY 小标签
   ctx.save();
   ctx.font = '11px ui-monospace,monospace';
   const perpTxt = `perpY=${cls.perpY.toFixed(3)}`;
@@ -1677,7 +1756,7 @@ function refresh() {
   drawScene();
 }
 
-// ======================= 侧视图 =======================
+// ======================= 侧视图（z-y，不随 flip 变化） =======================
 const SXC = 130;
 function s2p(z, y) { return [SXC + z * SCALE, OY - y * SCALE]; }
 function sp2(px, py) { return [(px - SXC) / SCALE, (OY - py) / SCALE]; }
@@ -1691,20 +1770,21 @@ function drawSideBody() {
   ctx2.fillText(t('ground'), SWE-50, GROUND_PY-6);
 
   ctx2.strokeStyle = '#4b5563'; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+  const hs = heightScale;
   const [sx,sy] = s2p(0,0);
-  const [hx,hy] = s2p(0.03*heightScale, HEAD_CY + 0.06*heightScale);
+  const [hx,hy] = s2p(0.03*hs, HEAD_CY + 0.06*hs);
   ctx2.lineWidth = 2.5;
   ctx2.beginPath(); ctx2.arc(hx, hy, HEAD_R*SCALE, 0, Math.PI*2); ctx2.stroke();
-  const [n2x,n2y] = s2p(0.03*heightScale, NECK_LEN + 0.04*heightScale);
+  const [n2x,n2y] = s2p(0.03*hs, NECK_LEN + 0.04*hs);
   ctx2.beginPath(); ctx2.moveTo(sx,sy); ctx2.lineTo(n2x,n2y); ctx2.stroke();
-  const [hipx,hipy] = s2p(-0.02*heightScale, -HIP_DROP);
+  const [hipx,hipy] = s2p(-0.02*hs, -HIP_DROP);
   ctx2.lineWidth = 6;
   ctx2.beginPath(); ctx2.moveTo(sx,sy); ctx2.lineTo(hipx,hipy); ctx2.stroke();
   ctx2.lineWidth = 8;
-  for (const off of [0.0, 0.07*heightScale]) {
-    const [kx,ky] = s2p(off+0.05*heightScale, -KNEE_DROP);
-    const [ax,ay] = s2p(off,                 -ANKLE_DROP);
-    const [fx,fy] = s2p(off+0.15*heightScale, -ANKLE_DROP);
+  for (const off of [0.0, 0.07*hs]) {
+    const [kx,ky] = s2p(off+0.05*hs, -KNEE_DROP);
+    const [ax,ay] = s2p(off,         -ANKLE_DROP);
+    const [fx,fy] = s2p(off+0.15*hs, -ANKLE_DROP);
     ctx2.beginPath(); ctx2.moveTo(hipx,hipy); ctx2.lineTo(kx,ky); ctx2.lineTo(ax,ay); ctx2.stroke();
     ctx2.lineWidth = 5;
     ctx2.beginPath(); ctx2.moveTo(ax,ay); ctx2.lineTo(fx,fy); ctx2.stroke();
@@ -1758,9 +1838,9 @@ function drawShotCone(ik) {
     ctx2.fillStyle = '#15803d'; ctx2.font = '10px system-ui';
     ctx2.fillText(t('allowCone'), px + R*0.5, py - R*0.18);
   }
-  const n = shotFaceNormal(ik);
+  const sc = shotCheck(ik);
+  const n = sc.normal;
   if (n) {
-    const sc = shotCheck(ik);
     const col2 = (!useShotLimit) ? '#2563eb' : (sc.elevOk ? '#16a34a' : '#dc2626');
     const ex = px + n[2]*R, ey = py - n[1]*R;
     ctx2.strokeStyle = col2; ctx2.lineWidth = 2.5;
@@ -1811,15 +1891,12 @@ function drawSide(r) {
   drawViewBadge(ctx2, 12, 10, t('sideTitle'), t('unitNote'));
 }
 
-// ======================= 俯视图 =======================
+// ======================= 俯视图（x-z，随 flip 镜像） =======================
 const TS  = 140;
 const TXC = TWE / 2;
 const TZ0 = THE / 2 + ((Z_MIN + Z_MAX) / 2) * TS;
 
-function t2p(x, z) { 
-  const sx = flip ? -1 : 1;
-  return [TXC + sx * x * TS, TZ0 - z * TS]; 
-}
+function t2p(x, z) { return [TXC + flipSx() * x * TS, TZ0 - z * TS]; }
 
 function drawTopBody() {
   ctx3.save();
@@ -1853,7 +1930,9 @@ function drawTopArm(ik, color, dashed) {
 }
 
 function drawAzimuthCone(ik) {
-  const P = ik.P; const [px,py] = t2p(P[0], P[2]); const R = 70;
+  const P = ik.P;
+  const [px,py] = t2p(P[0], P[2]);
+  const R = 70;
   ctx3.save();
   if (useShotLimit) {
     const aC = -Math.PI / 2, half = shotAzimuthMax * DEG;
@@ -1868,13 +1947,13 @@ function drawAzimuthCone(ik) {
     ctx3.fillStyle = '#15803d'; ctx3.font = '10px system-ui';
     ctx3.fillText(t('allowAzim') + shotAzimuthMax + '°', px-28, py-R-6);
   }
-  const n = shotFaceNormal(ik);
+  const sc = shotCheck(ik);
+  const n = sc.normal;
   if (n) {
-    const sc = shotCheck(ik);
     const col = (!useShotLimit) ? '#2563eb' : (sc.azimOk ? '#16a34a' : '#dc2626');
     const hl = Math.hypot(n[0], n[2]) || 1e-6;
-    const dirX = (flip ? -1 : 1) * n[0]/hl*R;
-    const ex = px + dirX, ey = py - n[2]/hl*R;
+    // flip 时 x 分量反向，与 t2p 保持同步
+    const ex = px + flipSx() * n[0] / hl * R, ey = py - n[2] / hl * R;
     ctx3.strokeStyle = col; ctx3.lineWidth = 2.5;
     ctx3.beginPath(); ctx3.moveTo(px,py); ctx3.lineTo(ex,ey); ctx3.stroke();
     ctx3.beginPath(); ctx3.arc(ex,ey,3.2,0,7); ctx3.fillStyle=col; ctx3.fill();
@@ -2049,27 +2128,27 @@ window.addEventListener('pointermove', e => {
   }
 });
 
-window.addEventListener('pointerup', e => {
-  const pd = pointerDown;
-  pointerDown = null;
-
+function cleanupDrag(){
   if (colorBarDrag) {
     colorBarDrag = null;
     canvas.style.cursor = '';
     return;
   }
-
-  let wasDragging = false;
   if (dragMode) {
-    wasDragging = true;
     if (dragMode === 'ready') refresh();
     dragMode = null;
   }
   if (sideDragMode) {
-    wasDragging = true;
     refresh();
     sideDragMode = null;
   }
+}
+
+window.addEventListener('pointerup', e => {
+  const pd = pointerDown;
+  pointerDown = null;
+  const wasDragging = !!(dragMode || sideDragMode || colorBarDrag);
+  cleanupDrag();
 
   if (!wasDragging && pd && pd.src === 'main' && !pd.moved) {
     const now = performance.now();
@@ -2085,19 +2164,7 @@ window.addEventListener('pointerup', e => {
 
 window.addEventListener('pointercancel', () => {
   pointerDown = null;
-  if (colorBarDrag) {
-    colorBarDrag = null;
-    canvas.style.cursor = '';
-    return;
-  }
-  if (dragMode) {
-    if (dragMode === 'ready') refresh();
-    dragMode = null;
-  }
-  if (sideDragMode) {
-    refresh();
-    sideDragMode = null;
-  }
+  cleanupDrag();
 });
 
 function toggleSide(){
@@ -2106,7 +2173,7 @@ function toggleSide(){
   requestLayout();
 }
 
-// ======================= 顶部控件 =======================
+// ======================= 顶部控件 / 滑块 =======================
 document.getElementById('modelSel').onchange = function () {
   modelMode = this.value;
   refresh();
@@ -2128,45 +2195,31 @@ document.getElementById('shotChk').onchange = function () {
   refresh();
 };
 
-const addSlider = document.getElementById('addSlider'), addVal = document.getElementById('addVal');
-const irSlider  = document.getElementById('irSlider'),  irVal  = document.getElementById('irVal');
-const erSlider  = document.getElementById('erSlider'),  erVal  = document.getElementById('erVal');
-function bindRom(slider, valEl, key) {
-  slider.addEventListener('input', () => {
-    ROM[key] = parseFloat(slider.value);
-    valEl.textContent = slider.value + '°';
-    refresh();
+// 统一滑块绑定
+function bindSlider(id, valId, onChange, suffix){
+  const s = document.getElementById(id);
+  const v = document.getElementById(valId);
+  s.addEventListener('input', () => {
+    v.textContent = s.value + (suffix || '');
+    onChange(parseFloat(s.value));
   });
 }
-bindRom(addSlider, addVal, 'SH_ADD_MAX');
-bindRom(irSlider,  irVal,  'IR_MAX');
-bindRom(erSlider,  erVal,  'ER_MAX');
 
-const shotUpSlider = document.getElementById('shotUpSlider');
-const shotDownSlider = document.getElementById('shotDownSlider');
-const shotUpVal = document.getElementById('shotUpVal');
-const shotDownVal = document.getElementById('shotDownVal');
-shotUpSlider.addEventListener('input', () => {
-  shotUpMax = parseFloat(shotUpSlider.value); shotUpVal.textContent = shotUpMax + '°'; refresh();
-});
-shotDownSlider.addEventListener('input', () => {
-  shotDownMax = parseFloat(shotDownSlider.value); shotDownVal.textContent = shotDownMax + '°'; refresh();
-});
-const shotAzimSlider = document.getElementById('shotAzimSlider');
-const shotAzimVal = document.getElementById('shotAzimVal');
-shotAzimSlider.addEventListener('input', () => {
-  shotAzimuthMax = parseFloat(shotAzimSlider.value); shotAzimVal.textContent = shotAzimuthMax + '°'; refresh();
-});
+bindSlider('addSlider', 'addVal', v => { ROM.SH_ADD_MAX = v; refresh(); }, '°');
+bindSlider('irSlider',  'irVal',  v => { ROM.IR_MAX = v;     refresh(); }, '°');
+bindSlider('erSlider',  'erVal',  v => { ROM.ER_MAX = v;     refresh(); }, '°');
+bindSlider('shotUpSlider',   'shotUpVal',   v => { shotUpMax = v;        refresh(); }, '°');
+bindSlider('shotDownSlider', 'shotDownVal', v => { shotDownMax = v;      refresh(); }, '°');
+bindSlider('shotAzimSlider', 'shotAzimVal', v => { shotAzimuthMax = v;   refresh(); }, '°');
+bindSlider('wristPronSlider','wristPronVal',v => { wristPronMax = v;     refresh(); }, '°');
+bindSlider('wristFlexSlider','wristFlexVal',v => { wristFlexMax = v;     refresh(); }, '°');
 
-const heightSlider = document.getElementById('heightSlider');
-const heightVal = document.getElementById('heightVal');
-heightSlider.addEventListener('input', () => {
-  userHeight = parseFloat(heightSlider.value) / 100;
-  heightVal.textContent = heightSlider.value + 'cm';
+bindSlider('heightSlider', 'heightVal', v => {
+  userHeight = v / 100;
   applyHeight();
   updateReadyPose();
   layout();
-});
+}, 'cm');
 
 document.getElementById('flipBtn').onclick = function () {
   flip = !flip;
