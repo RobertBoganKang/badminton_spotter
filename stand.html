@@ -12,7 +12,7 @@
     --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
     --def:#1f6f8b; --atk:#c0392b; --post:#8e44ad;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent}
   body{
     margin:0; padding:16px 12px;
     background:
@@ -74,7 +74,6 @@
     background:#f0f5f2; border:1px solid var(--border); color:var(--text-2);
     cursor:pointer; padding:0; font-family:inherit;
     transition:background .15s, color .15s, transform .12s;
-    -webkit-tap-highlight-color:transparent;
   }
   .sidebar-btn:hover{background:#e6efe9; color:var(--primary)}
   .sidebar-btn:active{transform:scale(.92)}
@@ -113,13 +112,13 @@
     appearance:none; cursor:pointer; font-family:inherit;
     padding:2px 11px; border-radius:999px;
     font-size:11.5px; font-weight:700; letter-spacing:.4px;
-    background:rgba(192,57,43,.12); color:#c0392b;
-    border:1px solid rgba(192,57,43,.30);
-    transition:all .15s; -webkit-tap-highlight-color:transparent; min-width:30px;
+    background:rgba(22,107,70,.12); color:var(--primary);
+    border:1px solid rgba(22,107,70,.30);
+    transition:all .15s; min-width:30px;
   }
-  .hitter-btn:active{transform:scale(.92); background:rgba(192,57,43,.22)}
+  .hitter-btn:active{transform:scale(.92); background:rgba(22,107,70,.22)}
 
-  .scenario-btn{cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:4px; padding:1px 4px; margin:-1px -2px; transition:background .12s}
+  .scenario-btn{cursor:pointer; border-radius:4px; padding:1px 4px; margin:-1px -2px; transition:background .12s}
   .scenario-btn:active{background:#eef4f0}
   .scenario-btn b{border-bottom:1px dashed currentColor; padding-bottom:1px}
   .def-b{color:var(--def)} .atk-b{color:var(--atk)} .post-b{color:var(--post)}
@@ -130,7 +129,6 @@
     font-size:10px; font-weight:700; font-family:inherit;
     border:1px solid transparent; cursor:pointer; padding:0;
     transition:all .15s; background:transparent; color:var(--text-3);
-    -webkit-tap-highlight-color:transparent;
   }
   .mode-dot.auto{background:#e3f2eb; color:var(--primary); border-color:#cfe5d9}
   .mode-dot.manual{background:#f6f0e0; color:#a0741a; border-color:#e8dfc2}
@@ -141,20 +139,24 @@
     margin-left:auto; flex-shrink:0;
   }
   .pill-group{display:inline-flex; gap:3px; align-items:center}
+
+  /* pill：可上下拖动调整概率 */
   .pill{
     display:inline-flex; align-items:center; justify-content:center;
     padding:2px 8px; border-radius:999px;
     font-size:10.5px; font-weight:700; letter-spacing:.2px;
     border:1px solid transparent; white-space:nowrap; line-height:1.5;
-    transition:background .2s, color .2s, border-color .2s;
     font-variant-numeric:tabular-nums;
+    cursor: ns-resize;
+    touch-action: none;
+    user-select: none; -webkit-user-select: none;
   }
+  .pill:active{ transform: scale(.96); }
 
   .canvas-wrap{padding:9px 10px 8px; display:flex; justify-content:center}
   canvas{
     display:block; border-radius:10px; touch-action:none; background:#f7fbf9;
     max-width:100%; box-shadow:0 1px 3px rgba(20,50,35,.06), 0 4px 14px rgba(20,50,35,.05);
-	-webkit-tap-highlight-color: transparent;
   }
   .info-line{
     padding:0 12px 10px; font-size:11px; color:var(--text-3);
@@ -337,7 +339,7 @@
 
       <span class="tb-item" id="tbHitter">
         <span class="sep">·</span>
-        <span id="lblHitter">击球</span>
+        <span id="lblHitter">击球：</span>
         <button class="hitter-btn" id="hitterBtn" title="单击切换击球者">A</button>
       </span>
 
@@ -402,6 +404,8 @@
 (function(){
 'use strict';
 
+const $ = id => document.getElementById(id);
+
 /* =========================================================
    1. 国际化
    ========================================================= */
@@ -410,7 +414,7 @@ const I18N = {
     title: '羽毛球场站位点',
     sub: '单击击球按钮 / 长按对手点切换击球者 · 长按我方球员切换攻/守 · 双击场地开关热力图 · 单击「站位」手动切换 · 小圆 A 自动 / M 手动',
     doubles: '双打', singles: '单打',
-    hitter: '击球', stance: '站位', posture: '姿态',
+    hitter: '击球：', stance: '站位', posture: '姿态',
     defense: '防守', attack: '进攻',
     frontBack: '前后', parallel: '平行', mixed: '混合',
     hitting: '击球',
@@ -421,9 +425,9 @@ const I18N = {
     footer: '创作 · 保留所有权利',
     principleTitle: '羽毛球场站位点 · 计算方法',
     net: '网',
-    lblNearDrop: '近吊 1.5 m',
-    lblFrontPen: '前压 4.0 m',
-    lblFarDrop:  '远吊 4.5 m',
+    lblNearDrop: '近吊',  lblNearDropV: '1.5 m',
+    lblFrontPen: '前压',  lblFrontPenV: '4.0 m',
+    lblFarDrop:  '远吊',  lblFarDropV:  '4.5 m',
     infoDoubleAuto:   '间距 {d} m · 杀 {s}% / 平高 {c}% / 吊 {dp}% · 方案系数 守 {cd} / 攻 {ca} · 期望价值 守 {fb} / 攻 {sb} → 选{choice}',
     infoDoubleManual: '间距 {d} m · 杀 {s}% / 平高 {c}% / 吊 {dp}% · 方案系数 守 {cd} / 攻 {ca} · 手动{choice}（守 {fb} / 攻 {sb}）',
     infoSingle: '单人站位 · 期望净得分最大化',
@@ -439,6 +443,7 @@ const I18N = {
     sl_v_run: '跑动速度', sl_k2: '上网/后退',
     collapseHide: '隐藏标题', collapseShow: '展开标题',
     langBtn: 'EN',
+    pillHint: '拖动调整概率（上增下减）',
     principleHTML: `
       <p class="lead"><b>一句话：</b>把「防守」和「进攻」当成<b>两个候选方案</b>，各自求出最优站位，再用同一个<b>期望净得分</b>公式打分，取分数更高的那个。攻/守判定不再是 if-else 规则，而是两套方案在数学上的直接比较。</p>
 
@@ -519,6 +524,7 @@ const I18N = {
         <li><b>双击场地空白</b> → 开关热力图</li>
         <li><b>单击「站位」文字</b> → 手动切换攻 / 守</li>
         <li><b>小圆 A / M</b> → 自动 / 手动</li>
+        <li><b>高 / 吊 / 杀 药丸上下拖动</b> → 调整概率（上增下减，其他两项自动按比例重分）</li>
         <li><b>最左 ☰</b> → 打开参数侧边栏；<b>最右箭头</b> → 收起标题栏</li>
       </ul>
 
@@ -536,7 +542,7 @@ const I18N = {
     title: 'Badminton Player Ground Position',
     sub: 'Tap hitter button / long-press an opponent to switch hitter · Long-press our player to toggle attack/defence · Double-tap court to toggle heatmap · Tap “Stance” to toggle · Dot A = auto, M = manual',
     doubles: 'Doubles', singles: 'Singles',
-    hitter: 'Hitter', stance: 'Stance', posture: 'Shape',
+    hitter: 'Hitter:', stance: 'Stance', posture: 'Shape',
     defense: 'Defence', attack: 'Attack',
     frontBack: 'Front/Back', parallel: 'Parallel', mixed: 'Mixed',
     hitting: 'hitting',
@@ -547,9 +553,9 @@ const I18N = {
     footer: 'Created · All Rights Reserved',
     principleTitle: 'Badminton Player Ground Position · Methodology',
     net: 'Net',
-    lblNearDrop: 'Near drop 1.5 m',
-    lblFrontPen: 'Front 4.0 m',
-    lblFarDrop:  'Far drop 4.5 m',
+    lblNearDrop: 'Near drop', lblNearDropV: '1.5 m',
+    lblFrontPen: 'Front',     lblFrontPenV: '4.0 m',
+    lblFarDrop:  'Far drop',  lblFarDropV:  '4.5 m',
     infoDoubleAuto:   'Gap {d} m · Smash {s}% / Clear {c}% / Drop {dp}% · c 守 {cd} / 攻 {ca} · EV def {fb} / atk {sb} → {choice}',
     infoDoubleManual: 'Gap {d} m · Smash {s}% / Clear {c}% / Drop {dp}% · c 守 {cd} / 攻 {ca} · manual {choice} (def {fb} / atk {sb})',
     infoSingle: 'Single position · maximises expected net score',
@@ -565,6 +571,7 @@ const I18N = {
     sl_v_run: 'Run speed', sl_k2: 'Net / back',
     collapseHide: 'Hide header', collapseShow: 'Show header',
     langBtn: '中',
+    pillHint: 'Drag to adjust (up = +, down = −)',
     principleHTML: `
       <p class="lead"><b>In short:</b> Treat "defence" and "attack" as <b>two candidate plans</b>, solve the optimal position for each, score both with the same <b>expected net score</b> formula, and take the higher one. Attack/defence detection is no longer an if-else rule — it is a direct mathematical comparison of two plans.</p>
 
@@ -645,6 +652,7 @@ const I18N = {
         <li><b>Double-tap empty court</b> → toggle heatmap</li>
         <li><b>Tap “Stance” text</b> → manually toggle attack / defence</li>
         <li><b>Dot A / M</b> → auto / manual</li>
+        <li><b>Drag the Sm / Dr / Cl pills up/down</b> → adjust probabilities (up = +, down = −; the other two rebalance proportionally)</li>
         <li><b>☰ at far left</b> → open parameter sidebar; <b>chevron at far right</b> → collapse header</li>
       </ul>
 
@@ -688,7 +696,13 @@ const PRM = {};
 SLIDER_DEFS.forEach(d => { PRM[d.key] = d.def; });
 
 const PROB_KEYS = ['p_smash','p_clear','p_drop'];
-const PILL_RGB  = { kill:'192,57,43', drop:'31,111,139', clear:'230,126,34' };
+
+/* 药丸配色：三种深浅的系统绿（从深到浅对应杀 → 吊 → 高） */
+const PILL_COLOR = {
+  kill:  '22,107,70',
+  drop:  '31,138,91',
+  clear: '34,160,107'
+};
 
 /* =========================================================
    3. 场地与参考线常量
@@ -706,29 +720,36 @@ const C_REF_BLUE    = 'rgba(31,111,139,0.22)';
 const C_REF_RED     = 'rgba(192,57,43,0.16)';
 const C_NET         = '#1e4d38';
 
-/* ---- 球路 → 「接到后占优」系数 ----
-   杀球：接到只能挡/挑，被动
-   平高：接到可以下压，主动
-   吊球：接到可以放网/挑，中等偏主动 */
-const C_BY_SHOT = {
-  smash: 0.20,
-  clear: 0.65,
-  drop:  0.55
-};
-const ATTACK_BONUS = 0.15;   // 进攻方案额外的抢攻优势
-const C_CAP        = 0.95;   // 上限保护
+/* 对手点：击球者黑、非击球者灰（点与文字同色） */
+const C_OPP_HIT  = '#111';
+const C_OPP_IDLE = '#888';
 
-/* 按对手球路概率加权得到方案系数 c
-   planType: 'defense' | 'attack' | 'solo'
-   防守 / 单打用 c_base；进攻在 c_base 上 +0.15（前压抢攻优势） */
+/* 文字样式常量（测量与绘制共用，避免两处不一致） */
+const FONT_TAG_MAIN = 'bold 9px system-ui';
+const FONT_TAG_SUB  = 'bold 8px system-ui';
+const FONT_PLAYER   = 'bold 11px system-ui';
+const FONT_OUR      = 'bold 12px system-ui';
+const TAG_PADX      = 5;
+const HALO_W        = 3.5;
+
+/* 我方点颜色 → 半透明底色 rgb */
+const OUR_PALETTE = {
+  '#1f6f8b': '31,111,139',
+  '#2a9d8f': '42,157,143',
+  '#c0392b': '192,57,43',
+  '#e67e22': '230,126,34'
+};
+
+/* ---- 球路 → 「接到后占优」系数 ---- */
+const C_BY_SHOT = { smash: 0.20, clear: 0.65, drop: 0.55 };
+const ATTACK_BONUS = 0.15;
+const C_CAP        = 0.95;
+
 function getPlanC(probs, planType){
   const cBase = probs.ps * C_BY_SHOT.smash
               + probs.pc * C_BY_SHOT.clear
               + probs.pd * C_BY_SHOT.drop;
-  if(planType === 'attack'){
-    return Math.min(C_CAP, cBase + ATTACK_BONUS);
-  }
-  return cBase;
+  return planType === 'attack' ? Math.min(C_CAP, cBase + ATTACK_BONUS) : cBase;
 }
 
 /* =========================================================
@@ -777,19 +798,22 @@ function getProbs(){
   return { ps: ps/total, pc: pc/total, pd: pd/total };
 }
 
-function reachAt(P1, P2, Lp, t){
-  const a = pDef(P1, Lp, t);
-  if(!P2) return a;
-  const b = pDef(P2, Lp, t);
-  return 1 - (1 - a) * (1 - b);
+/* 一个位置对某落点、三种球路各自的可达概率 */
+function reachSet(pos, Lp, times){
+  return {
+    s: pDef(pos, Lp, times.t_smash),
+    c: pDef(pos, Lp, times.t_clear),
+    d: pDef(pos, Lp, times.t_drop)
+  };
 }
 
-/* 单个落点期望净得分：V = reach·c − (1 − reach) = reach·(c+1) − 1 */
 function pointValue(P1, P2, Lp, times, probs, c){
+  const a = reachSet(P1, Lp, times);
+  const b = P2 ? reachSet(P2, Lp, times) : null;
   const cp1 = c + 1;
-  const rS = reachAt(P1, P2, Lp, times.t_smash);
-  const rC = reachAt(P1, P2, Lp, times.t_clear);
-  const rD = reachAt(P1, P2, Lp, times.t_drop);
+  const rS = b ? 1 - (1 - a.s) * (1 - b.s) : a.s;
+  const rC = b ? 1 - (1 - a.c) * (1 - b.c) : a.c;
+  const rD = b ? 1 - (1 - a.d) * (1 - b.d) : a.d;
   return probs.ps * (rS * cp1 - 1)
        + probs.pc * (rC * cp1 - 1)
        + probs.pd * (rD * cp1 - 1);
@@ -804,7 +828,6 @@ function landingWeight(Lp, probs){
   return 0.12 + 0.88 * raw;
 }
 
-/* 方案总分（用于攻/守两个方案之间比较） */
 function evaluatePlan(P1, P2, items, probs, planType){
   const c = getPlanC(probs, planType);
   let sumW = 0, sumWV = 0;
@@ -859,15 +882,45 @@ const DR_HIT = ('ontouchstart' in window) ? 1.0 : 0.55;
    7. 画布坐标与工具
    ========================================================= */
 const SCALE = 40;
-const PAD_L = 85, PAD_R = 20, PAD_T = 20, PAD_B = 20;
-const LW = W*SCALE + PAD_L + PAD_R;
-const LH = L*SCALE + PAD_T + PAD_B;
-const canvas = document.getElementById('canvas');
+const PAD_R = 20, PAD_T = 20, PAD_B = 20;
+let PAD_L = 85;
+let LW = W*SCALE + PAD_L + PAD_R;
+let LH = L*SCALE + PAD_T + PAD_B;
+
+const canvas = $('canvas');
 const ctx = canvas.getContext('2d');
+
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+const fmtSigned = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+function fmtVal(v, d, asPct){
+  if(asPct) return Math.round(v) + '%';
+  return d.step < 1 ? v.toFixed(2) : String(Math.round(v));
+}
 
 function w2c(p){ return { x: PAD_L + (p.x + HW)*SCALE, y: PAD_T + (HL - p.y)*SCALE }; }
 function c2w(cx, cy){ return { x: (cx - PAD_L)/SCALE - HW, y: HL - (cy - PAD_T)/SCALE }; }
-const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+
+/* 实测单个标签宽度（与 drawCourtTag 的字体保持一致） */
+function measureTagWidth(line1, line2){
+  ctx.save();
+  ctx.font = FONT_TAG_MAIN;
+  const w1 = ctx.measureText(line1).width;
+  ctx.font = FONT_TAG_SUB;
+  const w2 = line2 ? ctx.measureText(line2).width : 0;
+  ctx.restore();
+  return Math.max(w1, w2) + TAG_PADX * 2;
+}
+
+/* 左侧留白 = 最宽标签 + 左右各 6px 余量 */
+function computePadL(){
+  const w = Math.max(
+    measureTagWidth(t('net'), null),
+    measureTagWidth(t('lblNearDrop'), t('lblNearDropV')),
+    measureTagWidth(t('lblFrontPen'), t('lblFrontPenV')),
+    measureTagWidth(t('lblFarDrop'),  t('lblFarDropV'))
+  );
+  return Math.ceil(w) + 12;
+}
 
 function lineStroke(a, b){
   ctx.beginPath();
@@ -887,12 +940,33 @@ function roundRectPath(c, x, y, w, h, r){
   c.closePath();
 }
 
-function drawCourtTag(text, anchorX, anchorY, color, align){
+/* 白描边文字（对手标签 / 我方标签共用） */
+function drawLabelWithHalo(text, x, y, color, font, align, baseline){
   ctx.save();
-  ctx.font = 'bold 9px system-ui';
-  const tw = ctx.measureText(text).width;
-  const padX = 4, padY = 2;
-  const w = tw + padX*2, h = 11 + padY*2;
+  ctx.font = font;
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  ctx.lineWidth = HALO_W;
+  ctx.strokeStyle = '#fff';
+  ctx.fillStyle = color;
+  ctx.strokeText(text, x, y);
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function drawCourtTag(line1, line2, anchorX, anchorY, color, align){
+  ctx.save();
+  ctx.font = FONT_TAG_MAIN;
+  const w1 = ctx.measureText(line1).width;
+  ctx.font = FONT_TAG_SUB;
+  const w2 = line2 ? ctx.measureText(line2).width : 0;
+  const tw = Math.max(w1, w2);
+
+  const padX = TAG_PADX, padY = 3, lineH = 10;
+  const rows = line2 ? 2 : 1;
+  const w = tw + padX*2;
+  const h = lineH*rows + padY*2;
+
   let bx;
   if(align === 'right')       bx = anchorX - w;
   else if(align === 'center') bx = anchorX - w/2;
@@ -906,10 +980,22 @@ function drawCourtTag(text, anchorX, anchorY, color, align){
   ctx.lineWidth = 0.8;
   ctx.stroke();
 
-  ctx.fillStyle = color;
-  ctx.textAlign = 'left';
+  const cx = bx + w/2;
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, bx + padX, by + h/2 + 0.3);
+  ctx.fillStyle = color;
+
+  if(line2){
+    ctx.font = FONT_TAG_MAIN;
+    ctx.fillText(line1, cx, by + padY + lineH*0.5 + 0.3);
+    ctx.font = FONT_TAG_SUB;
+    ctx.globalAlpha = 0.85;
+    ctx.fillText(line2, cx, by + padY + lineH*1.5 + 0.3);
+    ctx.globalAlpha = 1;
+  } else {
+    ctx.font = FONT_TAG_MAIN;
+    ctx.fillText(line1, cx, by + h/2 + 0.3);
+  }
   ctx.restore();
 }
 
@@ -917,6 +1003,10 @@ function drawCourtTag(text, anchorX, anchorY, color, align){
    8. 画布自适应
    ========================================================= */
 function setup(){
+  PAD_L = computePadL();
+  LW = W*SCALE + PAD_L + PAD_R;
+  LH = L*SCALE + PAD_T + PAD_B;
+
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const wrap = canvas.parentElement, cs = getComputedStyle(wrap);
   const avail = wrap.clientWidth - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
@@ -956,18 +1046,12 @@ function buildItems(hitter, step){
   return items;
 }
 
-/* 单点优化：给定 planType 下最大化期望价值
-   目标：0.7 × 最坏点期望价值 + 0.3 × 平均期望价值 − 惩罚项 */
 function optimizeSingle(items, otherPos, x0, x1, y0, y1, step, probs, planType){
   const c   = getPlanC(probs, planType);
   const cp1 = c + 1;
   const isDefense = planType === 'defense';
 
-  const od = items.map(it => ({
-    s: pDef(otherPos, it.L, it.t_smash),
-    c: pDef(otherPos, it.L, it.t_clear),
-    d: pDef(otherPos, it.L, it.t_drop)
-  }));
+  const od = items.map(it => reachSet(otherPos, it.L, it));
   const wts = items.map(it => landingWeight(it.L, probs));
 
   const frontPenFactor = isDefense ? Math.max(0, probs.ps - probs.pd) * 1.5 : 0;
@@ -982,13 +1066,11 @@ function optimizeSingle(items, otherPos, x0, x1, y0, y1, step, probs, planType){
 
       for(let i = 0; i < n; i++){
         const it = items[i], o = od[i];
-        const myS = pDef(pos, it.L, it.t_smash);
-        const myC = pDef(pos, it.L, it.t_clear);
-        const myD = pDef(pos, it.L, it.t_drop);
+        const my = reachSet(pos, it.L, it);
 
-        const rS = 1 - (1 - myS) * (1 - o.s);
-        const rC = 1 - (1 - myC) * (1 - o.c);
-        const rD = 1 - (1 - myD) * (1 - o.d);
+        const rS = 1 - (1 - my.s) * (1 - o.s);
+        const rC = 1 - (1 - my.c) * (1 - o.c);
+        const rD = 1 - (1 - my.d) * (1 - o.d);
 
         const V = probs.ps * (rS * cp1 - 1)
                 + probs.pc * (rC * cp1 - 1)
@@ -1012,7 +1094,7 @@ function optimizeSingle(items, otherPos, x0, x1, y0, y1, step, probs, planType){
 }
 
 function optimizeSolo(items, probs, step){
-  const c   = getPlanC(probs, 'solo');
+  const c   = getPlanC(probs, 'solo');   /* 单打 = 基础 c，等价于防守方案 */
   const cp1 = c + 1;
   const wts = items.map(it => landingWeight(it.L, probs));
   const n = items.length;
@@ -1027,12 +1109,10 @@ function optimizeSolo(items, probs, step){
       let sumWV = 0, sumW = 0;
       for(let i = 0; i < n; i++){
         const it = items[i];
-        const myS = pDef(pos, it.L, it.t_smash);
-        const myC = pDef(pos, it.L, it.t_clear);
-        const myD = pDef(pos, it.L, it.t_drop);
-        const V = probs.ps * (myS * cp1 - 1)
-                + probs.pc * (myC * cp1 - 1)
-                + probs.pd * (myD * cp1 - 1);
+        const my = reachSet(pos, it.L, it);
+        const V = probs.ps * (my.s * cp1 - 1)
+                + probs.pc * (my.c * cp1 - 1)
+                + probs.pd * (my.d * cp1 - 1);
         const w = wts[i];
         sumWV += w * V; sumW += w;
       }
@@ -1094,11 +1174,9 @@ function solve(fast){
     return { P1, P2: null, probs, scenario:'defense', fb:0, sb:0, cd:0, ca:0, valid:true };
   }
 
-  /* 双打：分别求防守、进攻两套最优站位 */
   const defRes = solveForScenario(items, probs, 'defense', stepPos, iters, hitter);
   const atkRes = solveForScenario(items, probs, 'attack',  stepPos, iters, hitter);
 
-  /* 用统一的期望净得分比较两套方案 */
   const Edef = evaluatePlan(defRes.P1, defRes.P2, items, probs, 'defense');
   const Eatk = evaluatePlan(atkRes.P1, atkRes.P2, items, probs, 'attack');
 
@@ -1162,10 +1240,10 @@ function drawCourt(){
 function drawCourtTags(){
   const tagRightX = w2c({x:-HW, y:0}).x - 6;
 
-  drawCourtTag(t('lblNearDrop'), tagRightX, w2c({x:0, y:-DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
-  drawCourtTag(t('lblFrontPen'), tagRightX, w2c({x:0, y:-FRONT_PEN_Y}).y - 4, '#c0392b', 'right');
-  drawCourtTag(t('lblFarDrop'),  tagRightX, w2c({x:0, y:-DROP_FAR_EDGE}).y + 4, '#1f6f8b', 'right');
-  drawCourtTag(t('net'), tagRightX, w2c({x:0, y:0}).y, C_NET, 'right');
+  drawCourtTag(t('lblNearDrop'), t('lblNearDropV'), tagRightX, w2c({x:0, y:-DROP_NEAR_EDGE}).y,   '#1f6f8b', 'right');
+  drawCourtTag(t('lblFrontPen'), t('lblFrontPenV'), tagRightX, w2c({x:0, y:-FRONT_PEN_Y}).y - 8,   '#c0392b', 'right');
+  drawCourtTag(t('lblFarDrop'),  t('lblFarDropV'),  tagRightX, w2c({x:0, y:-DROP_FAR_EDGE}).y + 8, '#1f6f8b', 'right');
+  drawCourtTag(t('net'), null, tagRightX, w2c({x:0, y:0}).y, C_NET, 'right');
 }
 
 /* ---- 热力图 ---- */
@@ -1189,20 +1267,14 @@ function rampColor(t){
   ];
 }
 
-function riskTeam(P1, P2, Lp, times, probs){
-  const d1s = pDef(P1, Lp, times.t_smash), d2s = pDef(P2, Lp, times.t_smash);
-  const d1c = pDef(P1, Lp, times.t_clear), d2c = pDef(P2, Lp, times.t_clear);
-  const d1d = pDef(P1, Lp, times.t_drop),  d2d = pDef(P2, Lp, times.t_drop);
-  return probs.ps * (1-d1s)*(1-d2s)
-       + probs.pc * (1-d1c)*(1-d2c)
-       + probs.pd * (1-d1d)*(1-d2d);
-}
-
-function riskSolo(P1, Lp, times, probs){
-  const d1s = pDef(P1, Lp, times.t_smash);
-  const d1c = pDef(P1, Lp, times.t_clear);
-  const d1d = pDef(P1, Lp, times.t_drop);
-  return probs.ps * (1-d1s) + probs.pc * (1-d1c) + probs.pd * (1-d1d);
+/* 该落点的「无人够到」概率（P2 为 null 表示单打） */
+function riskAt(P1, P2, Lp, times, probs){
+  const a = reachSet(P1, Lp, times);
+  const b = P2 ? reachSet(P2, Lp, times) : null;
+  const mS = (1 - a.s) * (b ? 1 - b.s : 1);
+  const mC = (1 - a.c) * (b ? 1 - b.c : 1);
+  const mD = (1 - a.d) * (b ? 1 - b.d : 1);
+  return probs.ps * mS + probs.pc * mC + probs.pd * mD;
 }
 
 function computeHeatCanvas(){
@@ -1239,9 +1311,7 @@ function computeHeatCanvas(){
         t_clear: flightTime(PRM.v0_clear, PRM.lam_clear, d),
         t_drop:  flightTime(dp.v0, dp.lam, d)
       };
-      const r = single
-        ? riskSolo(P1, {x,y}, times, probs)
-        : riskTeam(P1, P2, {x,y}, times, probs);
+      const r = riskAt(P1, single ? null : P2, {x,y}, times, probs);
       vals[iy*cw+ix] = r;
       if(r < mn) mn = r;
       if(r > mx) mx = r;
@@ -1282,11 +1352,12 @@ function drawOpponents(){
     const p = opponents[i], c = w2c(p);
     const isH = (mode === 'single') ? true : (i === hitterIdx);
     const act = dragIdx === i;
+    const col = isH ? C_OPP_HIT : C_OPP_IDLE;
 
     if(isH){
-      ctx.beginPath(); ctx.fillStyle = 'rgba(192,57,43,.14)';
+      ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,.10)';
       ctx.arc(c.x, c.y, 21, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.strokeStyle = 'rgba(192,57,43,.45)'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.strokeStyle = 'rgba(0,0,0,.30)'; ctx.lineWidth = 1.3;
       ctx.setLineDash([3,3]); ctx.arc(c.x, c.y, 15, 0, Math.PI*2); ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -1295,18 +1366,13 @@ function drawOpponents(){
       ctx.arc(c.x, c.y, 16, 0, Math.PI*2); ctx.fill();
     }
 
-    ctx.beginPath(); ctx.fillStyle = isH ? '#c0392b' : '#111';
+    ctx.beginPath(); ctx.fillStyle = col;
     ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
-    ctx.save();
-    ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.lineWidth = 3.5; ctx.strokeStyle = '#fff'; ctx.fillStyle = isH ? '#c0392b' : '#111';
     const tag = (i === 0) ? t('oppA') : t('oppB');
     const txt = tag + (isH ? ' · ' + t('hitting') : '');
-    ctx.strokeText(txt, c.x, c.y-11);
-    ctx.fillText(txt, c.x, c.y-11);
-    ctx.restore();
+    drawLabelWithHalo(txt, c.x, c.y-11, col, FONT_PLAYER, 'center', 'bottom');
   }
 
   if(mode === 'double'){
@@ -1322,10 +1388,7 @@ function drawOpponents(){
 
 function drawOurPoint(p, label, color){
   const c = w2c(p);
-  const rgb = color === '#1f6f8b' ? '31,111,139'
-            : color === '#2a9d8f' ? '42,157,143'
-            : color === '#c0392b' ? '192,57,43'
-            : '230,126,34';
+  const rgb = OUR_PALETTE[color] || '230,126,34';
 
   ctx.beginPath(); ctx.fillStyle = `rgba(${rgb},.15)`;
   ctx.arc(c.x, c.y, 16, 0, Math.PI*2); ctx.fill();
@@ -1342,12 +1405,7 @@ function drawOurPoint(p, label, color){
   ctx.arc(c.x, c.y, 7, 0, Math.PI*2); ctx.fill();
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
-  ctx.save();
-  ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.lineWidth = 3.5; ctx.strokeStyle = '#fff'; ctx.fillStyle = color;
-  ctx.strokeText(label, c.x, c.y+11);
-  ctx.fillText(label, c.x, c.y+11);
-  ctx.restore();
+  drawLabelWithHalo(label, c.x, c.y+11, color, FONT_OUR, 'center', 'top');
 }
 
 function drawOurs(){
@@ -1358,15 +1416,17 @@ function drawOurs(){
     return;
   }
 
-  const list = result.scenario === 'defense'
-    ? [{p: result.P1, l: t('ourStraight'), col:'#1f6f8b'},
-       {p: result.P2, l: t('ourDiag'),     col:'#2a9d8f'}]
-    : [{p: result.P1, l: t('ourBack'),     col:'#c0392b'},
-       {p: result.P2, l: t('ourFront'),    col:'#e67e22'}];
-
-  for(const it of list){
-    if(it.p) drawOurPoint(it.p, it.l, it.col);
-  }
+  const isDef = result.scenario === 'defense';
+  if(result.P1) drawOurPoint(
+    result.P1,
+    isDef ? t('ourStraight') : t('ourBack'),
+    isDef ? '#1f6f8b' : '#c0392b'
+  );
+  if(result.P2) drawOurPoint(
+    result.P2,
+    isDef ? t('ourDiag') : t('ourFront'),
+    isDef ? '#2a9d8f' : '#e67e22'
+  );
 }
 
 function draw(){
@@ -1381,29 +1441,29 @@ function draw(){
 /* =========================================================
    11. DOM 引用
    ========================================================= */
-const infoLine       = document.getElementById('infoLine');
-const pageSub        = document.getElementById('pageSub');
-const pageTitle      = document.getElementById('pageTitle');
-const statusScenario = document.getElementById('statusScenario');
-const statusPosture  = document.getElementById('statusPosture');
-const modeDot        = document.getElementById('modeDot');
-const hitterBtn      = document.getElementById('hitterBtn');
-const modeToggle     = document.getElementById('modeToggle');
-const pillKill       = document.getElementById('pillKill');
-const pillDrop       = document.getElementById('pillDrop');
-const pillClear      = document.getElementById('pillClear');
-const lblHitter      = document.getElementById('lblHitter');
-const lblStance      = document.getElementById('lblStance');
-const lblPosture     = document.getElementById('lblPosture');
-const tbHitter       = document.getElementById('tbHitter');
-const tbScenario     = document.getElementById('tbScenario');
-const tbPosture      = document.getElementById('tbPosture');
-const footerText     = document.getElementById('footerText');
-const sidebarTitle   = document.getElementById('sidebarTitle');
-const resetBtn       = document.getElementById('resetBtn');
-const appEl          = document.getElementById('app');
-const collapseBtn    = document.getElementById('collapseBtn');
-const langBtnEl      = document.getElementById('langBtn');
+const infoLine       = $('infoLine');
+const pageSub        = $('pageSub');
+const pageTitle      = $('pageTitle');
+const statusScenario = $('statusScenario');
+const statusPosture  = $('statusPosture');
+const modeDot        = $('modeDot');
+const hitterBtn      = $('hitterBtn');
+const modeToggle     = $('modeToggle');
+const pillKill       = $('pillKill');
+const pillDrop       = $('pillDrop');
+const pillClear      = $('pillClear');
+const lblHitter      = $('lblHitter');
+const lblStance      = $('lblStance');
+const lblPosture     = $('lblPosture');
+const tbHitter       = $('tbHitter');
+const tbScenario     = $('tbScenario');
+const tbPosture      = $('tbPosture');
+const footerText     = $('footerText');
+const sidebarTitle   = $('sidebarTitle');
+const resetBtn       = $('resetBtn');
+const appEl          = $('app');
+const collapseBtn    = $('collapseBtn');
+const langBtnEl      = $('langBtn');
 
 /* =========================================================
    12. 面板更新
@@ -1442,9 +1502,9 @@ function updateStats(){
   statusPosture.textContent = getPostureLabel();
 
   const probs = result.probs;
-  updatePill(pillKill,  probs.ps, PILL_RGB.kill);
-  updatePill(pillDrop,  probs.pd, PILL_RGB.drop);
-  updatePill(pillClear, probs.pc, PILL_RGB.clear);
+  updatePill(pillKill,  probs.ps, PILL_COLOR.kill);
+  updatePill(pillDrop,  probs.pd, PILL_COLOR.drop);
+  updatePill(pillClear, probs.pc, PILL_COLOR.clear);
 
   if(single){
     infoLine.textContent = t('infoSingle');
@@ -1452,15 +1512,13 @@ function updateStats(){
   }
 
   const dist = Math.hypot(result.P2.x - result.P1.x, result.P2.y - result.P1.y);
-  const fb = (result.fb >= 0 ? '+' : '') + result.fb.toFixed(2);
-  const sb = (result.sb >= 0 ? '+' : '') + result.sb.toFixed(2);
   const vars = {
     d:  dist.toFixed(2),
     s:  Math.round(probs.ps*100),
     c:  Math.round(probs.pc*100),
     dp: Math.round(probs.pd*100),
-    fb,
-    sb,
+    fb: fmtSigned(result.fb),
+    sb: fmtSigned(result.sb),
     cd: result.cd.toFixed(2),
     ca: result.ca.toFixed(2),
     choice: result.scenario === 'defense' ? t('defense') : t('attack')
@@ -1477,6 +1535,19 @@ function updateStats(){
 /* =========================================================
    13. 概率联动 & 滑块
    ========================================================= */
+const sliderInputs = {};
+const sliderVals = {};
+
+/* 概率变化后同步三个滑块 UI（供 buildSliders 与 setupPillDrag 共用） */
+function refreshProbSliders(){
+  for(const k of PROB_KEYS){
+    if(sliderInputs[k]){
+      sliderInputs[k].value = Math.round(PRM[k]);
+      sliderVals[k].textContent = Math.round(PRM[k]) + '%';
+    }
+  }
+}
+
 function syncProbs(changedKey){
   const others = PROB_KEYS.filter(k => k !== changedKey);
   const remain = Math.max(0, 100 - PRM[changedKey]);
@@ -1486,11 +1557,8 @@ function syncProbs(changedKey){
   PRM[others[1]] = remain - r0;
 }
 
-const sliderInputs = {};
-const sliderVals = {};
-
 function buildSliders(){
-  const root = document.getElementById('sliders');
+  const root = $('sliders');
   root.innerHTML = '';
   Object.keys(sliderInputs).forEach(k => delete sliderInputs[k]);
   Object.keys(sliderVals).forEach(k => delete sliderVals[k]);
@@ -1541,10 +1609,7 @@ function buildSliders(){
           syncing = true;
           PRM[d.key] = Math.max(0, Math.min(100, parseFloat(input.value)));
           syncProbs(d.key);
-          for(const k of PROB_KEYS){
-            sliderInputs[k].value = Math.round(PRM[k]);
-            sliderVals[k].textContent = Math.round(PRM[k]) + '%';
-          }
+          refreshProbSliders();
           syncing = false;
         } else {
           PRM[d.key] = parseFloat(input.value);
@@ -1564,18 +1629,48 @@ function buildSliders(){
     gEl.appendChild(grid);
     root.appendChild(gEl);
   }
+}
 
-  function fmtVal(v, d, asPct){
-    if(asPct) return Math.round(v) + '%';
-    return d.step < 1 ? v.toFixed(2) : String(Math.round(v));
-  }
+/* ---- pill 拖动：上下调整概率（4px = 1%） ---- */
+function setupPillDrag(el, key){
+  let drag = null;
+  el.title = t('pillHint');
+
+  el.addEventListener('pointerdown', ev => {
+    if(ev.button !== undefined && ev.button !== 0) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    try { el.setPointerCapture(ev.pointerId); } catch(e){}
+    drag = { startY: ev.clientY, startVal: PRM[key] };
+  });
+
+  el.addEventListener('pointermove', ev => {
+    if(!drag) return;
+    ev.preventDefault();
+    const delta = Math.round((drag.startY - ev.clientY) / 4);
+    const newVal = Math.max(0, Math.min(100, drag.startVal + delta));
+    if(newVal === PRM[key]) return;
+    PRM[key] = newVal;
+    syncProbs(key);
+    refreshProbSliders();
+    quality = 'fast'; needsSolve = true; heatDirty = true;
+    updateStats();
+  });
+
+  const finish = () => {
+    if(!drag) return;
+    drag = null;
+    quality = 'full'; needsSolve = true; heatDirty = true;
+  };
+  el.addEventListener('pointerup', finish);
+  el.addEventListener('pointercancel', finish);
 }
 
 /* =========================================================
    14. 侧边栏
    ========================================================= */
-const sidebar     = document.getElementById('sidebar');
-const sidebarMask = document.getElementById('sidebarMask');
+const sidebar     = $('sidebar');
+const sidebarMask = $('sidebarMask');
 
 function openSidebar(){
   sidebar.classList.add('open');
@@ -1588,8 +1683,8 @@ function closeSidebar(){
   document.body.style.overflow = '';
 }
 
-document.getElementById('sidebarBtn').addEventListener('click', openSidebar);
-document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+$('sidebarBtn').addEventListener('click', openSidebar);
+$('sidebarClose').addEventListener('click', closeSidebar);
 sidebarMask.addEventListener('click', closeSidebar);
 
 resetBtn.addEventListener('click', () => {
@@ -1616,12 +1711,13 @@ function refreshStaticText(){
   resetBtn.textContent     = t('reset');
   langBtnEl.textContent    = t('langBtn');
 
-  document.getElementById('pTitle').textContent = t('principleTitle');
-  document.getElementById('principleBody').innerHTML = t('principleHTML');
+  $('pTitle').textContent = t('principleTitle');
+  $('principleBody').innerHTML = t('principleHTML');
 
   pillKill.dataset.label  = lang === 'zh' ? '杀' : 'Sm';
   pillDrop.dataset.label  = lang === 'zh' ? '吊' : 'Dr';
   pillClear.dataset.label = lang === 'zh' ? '高' : 'Cl';
+  [pillKill, pillDrop, pillClear].forEach(p => { p.title = t('pillHint'); });
 
   const collapsed = appEl.classList.contains('collapsed');
   collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
@@ -1641,6 +1737,7 @@ langBtnEl.addEventListener('click', () => {
   lang = (lang === 'zh') ? 'en' : 'zh';
   buildSliders();
   refreshStaticText();
+  setup();   /* 语言变化后标签宽度变化，重算 PAD_L / LW / LH */
 });
 
 collapseBtn.addEventListener('click', () => {
@@ -1697,7 +1794,7 @@ modeToggle.addEventListener('click', () => {
   refreshStaticText();
 });
 
-document.getElementById('scenarioBtn').addEventListener('click', () => {
+$('scenarioBtn').addEventListener('click', () => {
   if(mode === 'single') return;
   toggleScenarioManual();
 });
@@ -1823,8 +1920,8 @@ canvas.addEventListener('pointerleave', () => { if(dragIdx < 0) canvas.style.cur
    17. 原理弹窗（双击版权）
    ========================================================= */
 (function(){
-  const mask = document.getElementById('principleModal');
-  const credit = document.getElementById('credit');
+  const mask = $('principleModal');
+  const credit = $('credit');
 
   const openM  = () => { mask.classList.add('open'); document.body.style.overflow = 'hidden'; };
   const closeM = () => { mask.classList.remove('open'); document.body.style.overflow = ''; };
@@ -1837,7 +1934,7 @@ canvas.addEventListener('pointerleave', () => { if(dragIdx < 0) canvas.style.cur
     else { lastTapTime = now; }
   }, {passive:false});
 
-  document.getElementById('principleClose').addEventListener('click', closeM);
+  $('principleClose').addEventListener('click', closeM);
   mask.addEventListener('click', function(e){ if(e.target === mask) closeM(); });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeM(); });
 })();
@@ -1871,6 +1968,9 @@ try{
 
 buildSliders();
 refreshStaticText();
+setupPillDrag(pillClear, 'p_clear');
+setupPillDrag(pillDrop,  'p_drop');
+setupPillDrag(pillKill,  'p_smash');
 requestAnimationFrame(loop);
 
 })();
