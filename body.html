@@ -2,20 +2,21 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>羽毛球远身场地落点</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>羽毛球近身躯干落点</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧍</text></svg>">
 <style>
   :root{
     --bg:#eef2f6; --card:#ffffff; --text:#1a2b22; --text-2:#5b6b62; --text-3:#8a9a91;
-    --border:#e4ebe6; --border-hover:#cfd9d2;
+    --border:#e4ebe6;
     --shadow:0 1px 2px rgba(20,50,35,.04), 0 8px 24px rgba(20,50,35,.05);
     --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; padding:24px 16px;
+    margin:0; padding:20px 16px 24px;
     background:
       radial-gradient(1000px 500px at 15% -5%, #d9ece1 0%, transparent 55%),
       radial-gradient(800px 400px at 90% 0%, #e3e9f7 0%, transparent 50%),
@@ -24,273 +25,140 @@
     color:var(--text); -webkit-font-smoothing:antialiased;
     min-height:100vh; -webkit-text-size-adjust:100%;
   }
-  .app{max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
+  .app{max-width:1300px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
   .card{background:var(--card); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow)}
-
-  /* Header */
-  .header{
-    padding:16px 20px;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    flex-wrap:wrap;
-    position:relative;
-    overflow:hidden;
-  }
-  .header::before{
-    content:''; position:absolute; top:-80px; right:-80px;
-    width:240px; height:240px;
-    background:radial-gradient(circle, rgba(31,138,91,.1) 0%, transparent 65%);
-    pointer-events:none;
-  }
+  .header{padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:relative; overflow:hidden}
+  .header::before{content:''; position:absolute; top:-80px; right:-80px; width:240px; height:240px; background:radial-gradient(circle, rgba(31,138,91,.10) 0%, transparent 65%); pointer-events:none}
   .header-left{display:flex; gap:14px; align-items:flex-start; flex:1; min-width:0; position:relative}
   .header-left > div:not(.logo){min-width:0; flex:1}
-  .logo{
-    width:44px; height:44px; flex-shrink:0; border-radius:12px;
-    background:linear-gradient(135deg, var(--primary-bright), var(--primary));
-    display:flex; align-items:center; justify-content:center; font-size:22px;
-    box-shadow:0 4px 12px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.2);
-  }
+  .logo{width:44px; height:44px; flex-shrink:0; border-radius:12px; background:linear-gradient(135deg, var(--primary-bright), var(--primary)); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.2)}
   h1{margin:0 0 3px; font-size:17px; font-weight:700; letter-spacing:.2px; line-height:1.4}
   .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5; white-space:normal; word-break:break-word}
   .header-actions{display:flex; gap:8px; align-items:center; flex-shrink:0; position:relative}
-
-  /* 语言按钮（独立样式，不依赖 tool-btn） */
-  .lang-btn{
-    appearance:none;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:3px 7px;
-    background:transparent;
-    border:none;
-    border-radius:5px;
-    box-shadow:none;
-    color:var(--text-3);
-    font-size:11.5px;
-    font-weight:700;
-    font-family:inherit;
-    line-height:1;
-    letter-spacing:.3px;
-    opacity:.85;
-    transition:color .15s, opacity .15s, transform .12s;
-  }
-  .lang-btn:hover{color:var(--primary); opacity:1}
+  .lang-btn{appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:4px 9px; min-width:34px; background:transparent; border:none; border-radius:6px; color:var(--text-3); font-size:12px; font-weight:800; font-family:inherit; line-height:1; letter-spacing:.4px; opacity:.85; transition:color .15s, opacity .15s, transform .12s, background .15s}
+  .lang-btn:hover{color:var(--primary); opacity:1; background:#eef5f1}
   .lang-btn:active{transform:scale(.92)}
-
-  .app.collapsed .header{ display:none }
-
-  /* 画布卡片 */
+  .app.header-collapsed .header{display:none}
   .canvas-card{padding:0; overflow:hidden}
-
-  .canvas-topbar{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 14px 8px;
-    flex-wrap:wrap;
-    border-bottom:1px solid #f0f4f1;
-  }
-
-  /* 单/双 切换按钮 */
-  .mode-toggle{
-    appearance:none;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:5px 14px;
-    background:#e8eee9;
-    border:1px solid transparent;
-    border-radius:7px;
-    color:var(--primary);
-    font-weight:700;
-    font-size:12px;
-    font-family:inherit;
-    line-height:1;
-    letter-spacing:.3px;
-    min-width:46px;
-    transition:background .15s, color .15s, box-shadow .15s, transform .12s;
-  }
-  .mode-toggle:hover{background:#dde6e0}
-  .mode-toggle:active{transform:scale(.96)}
-  .mode-toggle[data-mode="single"]{
-    background:#e8f0f7;
-    color:#1e6bb8;
-  }
-  .mode-toggle[data-mode="single"]:hover{background:#dbe7f3}
-
-  .legend{
-    display:flex; align-items:center; gap:10px;
-    flex-wrap:wrap; font-size:11.5px; color:var(--text-3);
-  }
-  .legend span{display:inline-flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500}
-  .dot{width:8px; height:8px; border-radius:50%; display:inline-block}
-  .ring{
-    width:10px; height:10px; border-radius:50%;
-    border:1.6px dashed #757575; display:inline-block;
-  }
-  .num{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:15px; height:15px; border-radius:50%;
-    background:#f3e8fa; color:#8e44ad;
-    font-size:10px; font-weight:700; font-style:normal;
-  }
-  .arrow-legend{
-    display:inline-block; width:0; height:0;
-    border-left:11px solid #1e88e5;
-    border-top:4px solid transparent;
-    border-bottom:4px solid transparent;
-    vertical-align:middle; margin:0 1px;
-  }
-  .heat-legend{
-    display:inline-block; width:26px; height:8px; border-radius:4px;
-    background:linear-gradient(to right, #4575b4, #91bfdb, #ffffbf, #fc8d59, #d73027);
-    vertical-align:middle;
-  }
-
-  .collapse-btn{
-    margin-left:auto;
-    width:18px; height:18px;
-    display:inline-flex; align-items:center; justify-content:center;
-    background:transparent;
-    border:none;
-    border-radius:0;
-    color:var(--text-3);
-    cursor:pointer;
-    padding:0;
-    flex-shrink:0;
-    box-shadow:none;
-    transition:color .15s, transform .12s;
-    font-family:inherit;
-    opacity:.75;
-  }
+  .canvas-topbar{display:flex; align-items:center; gap:8px; padding:10px 14px; flex-wrap:wrap; border-bottom:1px solid #f0f4f1}
+  .icon-btn{appearance:none; cursor:pointer; width:32px; height:32px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; background:#eef5f1; border:1px solid transparent; border-radius:8px; color:var(--primary); padding:0; transition:background .15s, transform .12s}
+  .icon-btn:hover{background:#e2efe8}
+  .icon-btn:active{transform:scale(.94)}
+  .icon-btn svg{width:16px; height:16px; stroke-width:2.2; fill:none; stroke:currentColor; stroke-linecap:round}
+  .select{appearance:none; -webkit-appearance:none; padding:6px 28px 6px 12px; font-size:12.5px; font-family:inherit; font-weight:700; color:var(--primary); background:#eef5f1 url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23166b46' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center; border:1px solid transparent; border-radius:8px; cursor:pointer; transition:background-color .15s}
+  .select:hover{background-color:#e2efe8}
+  .select option{color:#1a2b22; background:#fff; font-weight:500}
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:8px; background:#f4f7f5; border:1px solid var(--border); font-size:12.5px; color:var(--text-2); font-weight:600; cursor:pointer; user-select:none; -webkit-user-select:none; transition:background .15s, border-color .15s, color .15s}
+  .chip:hover{background:#eef5f1; border-color:#d5e3db}
+  .chip input{appearance:none; -webkit-appearance:none; width:13px; height:13px; margin:0; flex-shrink:0; border:1.5px solid #b9c9c0; border-radius:4px; background:#fff; cursor:pointer; position:relative; transition:background .15s, border-color .15s}
+  .chip input:checked{background:var(--primary-2); border-color:var(--primary-2)}
+  .chip input:checked::after{content:''; position:absolute; left:3.5px; top:0.5px; width:4px; height:8px; border:solid #fff; border-width:0 1.8px 1.8px 0; transform:rotate(45deg)}
+  .chip:has(input:checked){color:var(--primary); background:#e8f3ec; border-color:#cfe5d8}
+  .chip:has(input:checked):hover{background:#e0eee6}
+  .btn{appearance:none; cursor:pointer; padding:6px 14px; border-radius:8px; background:#fff; border:1px solid #d5e0d9; color:var(--text-2); font-size:12.5px; font-weight:700; font-family:inherit; transition:background .15s, border-color .15s, color .15s, transform .12s}
+  .btn:hover{background:#f5f9f7; border-color:#c2d3ca; color:var(--primary)}
+  .btn:active{transform:scale(.96)}
+  .btn.active{background:var(--primary); color:#fff; border-color:var(--primary)}
+  .btn.active:hover{background:#125a3b}
+  .collapse-btn{margin-left:auto; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:none; border-radius:0; color:var(--text-3); cursor:pointer; padding:0; flex-shrink:0; box-shadow:none; opacity:.75; transition:color .15s, transform .12s, opacity .15s}
   .collapse-btn:hover{color:var(--primary); opacity:1}
   .collapse-btn:active{transform:scale(.9)}
-  .collapse-btn svg{
-    width:12px; height:12px;
-    stroke-width:2.2; fill:none; stroke:currentColor;
-    stroke-linecap:round; stroke-linejoin:round;
-  }
+  .collapse-btn svg{width:14px; height:14px; stroke-width:2.2; fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round}
   .collapse-btn .chev-down{display:none}
-  .app.collapsed .collapse-btn .chev-up{display:none}
-  .app.collapsed .collapse-btn .chev-down{display:inline}
-
-  .canvas-wrap{padding:10px 12px 12px; display:flex; justify-content:center}
-  canvas{
-    display:block; border-radius:10px; touch-action:none; cursor:default;
-    background:#f7fbf9; max-width:100%;
-    box-shadow:0 1px 3px rgba(20,50,35,.06), 0 4px 14px rgba(20,50,35,.05);
-  }
-
-  /* Footer */
-  .footer{
-    padding:4px 8px 6px; text-align:center; font-size:12px;
-    color:var(--text-3); letter-spacing:.3px; line-height:1.7;
-  }
+  .app.header-collapsed .collapse-btn .chev-up{display:none}
+  .app.header-collapsed .collapse-btn .chev-down{display:inline}
+  .canvas-wrap{padding:12px; display:flex; gap:12px; justify-content:center; align-items:flex-start; flex-wrap:wrap}
+  .main-col{display:flex; flex-direction:column; gap:8px; width:min(860px, 100%); min-width:0}
+  .canvas-side{display:flex; flex-direction:column; gap:12px; flex-shrink:0}
+  .canvas-side.hidden{display:none}
+  canvas{display:block; border-radius:12px; background:#f7fbf9; max-width:100%; height:auto; touch-action:none; border:1.5px solid #b9cfc4; box-shadow:0 0 0 3px rgba(255,255,255,.85), inset 0 0 0 1px rgba(255,255,255,.6), 0 1px 3px rgba(20,50,35,.07), 0 6px 18px rgba(20,50,35,.07); -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent}
+  .main-col > canvas{align-self:center}
+  /* 信息栏：zoom 兜底，绕开浏览器「最小字号」强制放大 */
+  .info-bar{display:flex; flex-wrap:wrap; gap:5px; row-gap:5px; padding:6px 8px; align-items:center; align-content:flex-start; background:#f7faf8; border:1px solid #e8efeb; border-radius:10px; zoom:0.9}
+  .ib-item{display:flex; align-items:center; gap:5px; padding:3px 7px; border-radius:7px; background:#fff; border:1px solid #e8efeb; font-size:12px; line-height:1.15; min-width:0}
+  .ib-k{color:#8a9a91; font-weight:800; font-size:11px; letter-spacing:.2px; flex-shrink:0}
+  .ib-v{color:#1a2b22; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ib-fh{border-color:#f0d4d4; background:#fdf6f6}
+  .ib-fh .ib-k{color:#b91c1c}
+  .ib-bh{border-color:#d3e0f0; background:#f6f9fd}
+  .ib-bh .ib-k{color:#1e40af}
+  .ib-adopted{box-shadow:0 0 0 2px rgba(22,107,70,.35); font-weight:700}
+  .ib-adopted .ib-k{font-weight:700}
+  .ib-fail .ib-v{color:#9ca3af}
+  .ib-ready{background:#f9fafb}
+  .drawer-mask{position:fixed; inset:0; z-index:55; background:rgba(10,30,20,.36); backdrop-filter:blur(1px); opacity:0; pointer-events:none; transition:opacity .25s}
+  .drawer-mask.open{opacity:1; pointer-events:auto}
+  .drawer{position:fixed; top:0; left:0; bottom:0; width:min(340px, 88vw); z-index:60; background:#fff; box-shadow:0 0 44px rgba(0,0,0,.2); transform:translateX(-105%); transition:transform .28s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; flex-shrink:0; background:linear-gradient(135deg, var(--primary-2), var(--primary)); color:#fff}
+  .drawer-head h3{margin:0; font-size:15px; font-weight:650}
+  .drawer-close,.modal-close{background:transparent; border:none; box-shadow:none; color:#fff; font-size:24px; line-height:1; padding:0 6px; cursor:pointer}
+  .drawer-body{padding:16px 18px 24px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch}
+  .group + .group{margin-top:16px; padding-top:14px; border-top:1px dashed #e8efeb}
+  .group-title{font-size:11px; font-weight:800; letter-spacing:.7px; color:var(--text-3); text-transform:uppercase; margin:0 0 10px}
+  .field{display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--text-2); font-weight:600; cursor:pointer; margin-bottom:10px}
+  .field:last-child{margin-bottom:0}
+  .field > span:first-child{white-space:nowrap; min-width:78px}
+  .field input[type=range]{flex:1; min-width:0; margin:0; accent-color:var(--primary-2); cursor:pointer}
+  .val{display:inline-block; min-width:44px; text-align:right; font-family:var(--mono); font-size:12px; font-weight:700; color:var(--primary-2); letter-spacing:-.2px}
+  .note{font-size:11.5px; color:var(--text-3); line-height:1.65; margin:10px 0 0; padding:8px 11px; background:#f7faf8; border-radius:8px; border-left:2px solid #d9e6df}
+  .footer{padding:4px 10px 8px; text-align:center; font-size:12px; color:var(--text-3); letter-spacing:.3px; line-height:1.7}
   .footer b{color:var(--text-2); font-weight:600}
-  #credit{cursor:pointer; user-select:none}
-
-  /* Modal */
-  .modal-mask{
-    position:fixed; inset:0; z-index:50; background:rgba(10,30,20,.46);
-    display:none; align-items:flex-start; justify-content:center;
-    padding:26px 14px; overflow:auto; backdrop-filter:blur(2px);
-    -webkit-overflow-scrolling:touch;
-  }
+  #credit{cursor:pointer; user-select:none; -webkit-user-select:none}
+  .modal-mask{position:fixed; inset:0; z-index:50; background:rgba(10,30,20,.46); display:none; align-items:flex-start; justify-content:center; padding:26px 14px; overflow:auto; backdrop-filter:blur(2px); -webkit-overflow-scrolling:touch}
   .modal-mask.open{display:flex}
-  .modal{
-    background:#fff; border-radius:16px; width:100%; max-width:680px;
-    box-shadow:0 24px 70px rgba(0,0,0,.28); overflow:hidden;
-    animation:pop .22s ease;
-  }
+  .modal{background:#fff; border-radius:16px; width:100%; max-width:700px; box-shadow:0 24px 70px rgba(0,0,0,.28); overflow:hidden; animation:pop .22s ease}
   @keyframes pop{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
-  .modal-head{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 20px; color:#fff;
-    background:linear-gradient(135deg, var(--primary-2), var(--primary));
-    position:sticky; top:0; z-index:1;
-  }
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; color:#fff; position:sticky; top:0; z-index:1; background:linear-gradient(135deg, var(--primary-2), var(--primary))}
   .modal-head h2{margin:0; font-size:16px; font-weight:650}
-  .modal-close{
-    background:transparent!important; box-shadow:none!important; color:#fff;
-    font-size:24px; line-height:1; padding:0 6px; border:none; cursor:pointer;
-  }
-  .modal-body{
-    padding:18px 22px 24px; font-size:14px; line-height:1.78; color:var(--text);
-    max-height:76vh; overflow:auto; -webkit-overflow-scrolling:touch;
-  }
-  .modal-body h3{
-    font-size:15px; margin:22px 0 8px; color:var(--primary); font-weight:650;
-    padding-bottom:4px; border-bottom:1px solid #e8f0ec;
-  }
-  .modal-body h3:first-child{margin-top:0; border-top:none}
+  .modal-body{padding:18px 22px 24px; font-size:14px; line-height:1.78; color:var(--text); max-height:76vh; overflow:auto; -webkit-overflow-scrolling:touch}
+  [data-lang-block]{display:none}
+  [data-lang-block].active{display:block}
+  .modal-body h3{font-size:15px; margin:22px 0 8px; color:var(--primary); font-weight:650; padding-bottom:4px; border-bottom:1px solid #e8f0ec}
+  .modal-body h3:first-of-type{margin-top:14px}
   .modal-body p{margin:6px 0}
-  .modal-body .lead{
-    color:var(--text); font-size:13.5px; background:#f2f7f4;
-    padding:10px 13px; border-radius:8px; margin-bottom:12px;
-    border-left:3px solid var(--primary);
-  }
-  .formula{
-    background:#f2f7f4; border-left:3px solid var(--primary);
-    padding:8px 13px; border-radius:6px; margin:8px 0;
-    font-family:"Cambria Math","Times New Roman",Georgia,serif;
-    font-size:14px; overflow-x:auto; white-space:nowrap;
-  }
-  .modal-body code{background:#eef2f6; padding:1px 6px; border-radius:5px; font-size:12.5px}
-  .modal-body .muted{
-    color:var(--text-2); font-size:12.5px; background:#fafbfa;
-    padding:6px 10px; border-radius:6px; border-left:2px solid #cfd8d3;
-  }
+  .modal-body .lead{color:var(--text); font-size:13.5px; background:#f2f7f4; padding:10px 13px; border-radius:8px; margin:0 0 12px; border-left:3px solid var(--primary)}
+  .modal-body code{background:#eef2f6; padding:1px 6px; border-radius:5px; font-size:12.5px; font-family:var(--mono)}
+  .modal-body .muted{color:var(--text-2); font-size:12.5px; background:#fafbfa; padding:8px 12px; border-radius:6px; border-left:2px solid #cfd8d3}
   .modal-body ul, .modal-body ol{margin:6px 0; padding-left:22px}
-  .modal-body li{margin:4px 0}
-  .modal-body table{width:100%; border-collapse:collapse; font-size:12.5px; margin:8px 0}
-  .modal-body th, .modal-body td{padding:6px 8px; text-align:left; border-bottom:1px solid #edf2ef}
-  .modal-body th{color:var(--text-2); font-weight:600; background:#f7fbf9}
-
+  .modal-body li{margin:5px 0}
+  .modal-body b{font-weight:650}
+  @media (max-width: 1180px){
+    .canvas-wrap{flex-direction:column; align-items:center}
+    .canvas-side{flex-direction:row; flex-wrap:wrap; justify-content:center; gap:12px}
+  }
   @media (max-width: 520px){
-    body{padding:12px 10px}
+    body{padding:12px 10px 16px}
     .app{gap:10px}
-
-    /* Header：logo+标题 左，EN 右，强制一行 */
     .header{padding:12px 14px; gap:10px; flex-wrap:nowrap}
     .header-left{gap:10px; flex:1; min-width:0}
     .logo{width:36px; height:36px; font-size:18px; border-radius:10px; flex-shrink:0}
     h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .header p{font-size:12px; line-height:1.35; white-space:normal; word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-    .header-actions{width:auto; gap:6px; flex-shrink:0}
-    .lang-btn{flex:0 0 auto; padding:2px 5px; font-size:11px}
-
-    /* Topbar：mode 左，collapse 右；legend 单独换到第二行 */
-    .canvas-topbar{padding:8px 12px 6px; gap:6px 8px}
-    .mode-toggle{
-      padding:4px 12px;
-      font-size:11.5px;
-      min-width:42px;
-      flex-shrink:0;
-      order:1;
-    }
-    .collapse-btn{
-      width:16px;
-      height:16px;
-      flex-shrink:0;
-      margin-left:auto;
-      order:2;
-    }
-    .collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
-    .legend{
-      font-size:11px;
-      gap:8px;
-      order:3;
-      flex-basis:100%;
-      padding-top:6px;
-      border-top:1px solid #f0f4f1;
-    }
-    .legend span{gap:3px}
-
-    .canvas-wrap{padding:8px}
-
+    .header-actions{width:auto; flex-shrink:0}
+    .lang-btn{padding:3px 7px; font-size:11.5px; min-width:30px}
+    .canvas-topbar{padding:8px 12px; gap:6px}
+    .icon-btn{width:28px; height:28px}
+    .icon-btn svg{width:14px; height:14px}
+    .select{padding:5px 24px 5px 10px; font-size:11.5px}
+    .chip{padding:5px 9px; font-size:11.5px; gap:5px}
+    .chip input{width:12px; height:12px}
+    .chip input:checked::after{left:3px; top:0.5px; width:3.5px; height:7px}
+    .btn{padding:5px 11px; font-size:11.5px}
+    .collapse-btn{width:20px; height:20px}
+    .canvas-wrap{padding:8px; gap:8px}
+    .canvas-side{gap:8px}
+    .info-bar{padding:5px 6px; gap:4px; row-gap:4px; zoom:0.86}
+    .ib-item{padding:2px 6px; font-size:11px; gap:4px; line-height:1.1}
+    .ib-k{font-size:9px}
+    .ib-v{font-size:9px}
+    .drawer{width:min(320px, 92vw)}
+    .drawer-head{padding:14px 16px}
+    .drawer-body{padding:14px 16px 20px}
+    .field{font-size:12px; gap:8px; margin-bottom:9px}
+    .field > span:first-child{min-width:72px}
+    .val{min-width:40px; font-size:11.5px}
+    .note{font-size:11px}
     .footer{font-size:11px}
     .modal-mask{padding:8px 6px}
     .modal{border-radius:13px}
@@ -300,1468 +168,2092 @@
     .modal-body{padding:14px 16px 20px; font-size:13.5px; line-height:1.72; max-height:84vh}
     .modal-body h3{font-size:14px; margin:18px 0 6px}
     .modal-body .lead{font-size:13px; padding:8px 11px}
-    .modal-body .formula{font-size:12.5px; padding:6px 10px}
     .modal-body ul, .modal-body ol{padding-left:18px}
   }
 </style>
 </head>
 <body>
-<div class="app" id="app">
 
-  <header class="card header">
+<div class="app" id="app">
+  <header class="card header" id="header">
     <div class="header-left">
       <div class="logo">🏸</div>
       <div>
-        <h1 data-i18n="title">羽毛球远身场地落点</h1>
-        <p id="pageSub">双打模式 · 拖动 A / B 调整位置</p>
+        <h1 data-i18n="title">羽毛球近身躯干落点</h1>
+        <p data-i18n="subtitle">双击主视图可显示 / 隐藏侧视图与俯视图</p>
       </div>
     </div>
     <div class="header-actions">
-      <button id="langBtn" class="lang-btn" aria-label="Switch language">EN</button>
+      <button class="lang-btn" id="langBtn" aria-label="Switch language">EN</button>
     </div>
   </header>
 
   <div class="card canvas-card">
     <div class="canvas-topbar">
-      <button class="mode-toggle" id="modeToggle" data-mode="double" data-i18n="doubles">双打</button>
-      <div class="legend" id="legendBar"></div>
-      <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
-        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 10l4-4 4 4"/>
+      <button class="icon-btn" id="drawerBtn" data-i18n-title="drawerBtnTitle" aria-label="Parameters">
+        <svg viewBox="0 0 24 24">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <circle cx="9" cy="7" r="2.4" fill="#eef5f1"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+          <circle cx="15" cy="17" r="2.4" fill="#eef5f1"/>
         </svg>
-        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 6l4 4 4-4"/>
-        </svg>
+      </button>
+      <select id="modelSel" class="select">
+        <option value="auto" data-i18n="optAuto">自动（L / 反 L 取快）</option>
+        <option value="fh" data-i18n="optFh">只看正手（L 形）</option>
+        <option value="bh" data-i18n="optBh">只看反手（反 L 形）</option>
+      </select>
+      <label class="chip"><input type="checkbox" id="boundaryChk" checked><span data-i18n="chkBoundary">边界</span></label>
+      <label class="chip" data-i18n-title="chkRomTitle"><input type="checkbox" id="romChk" checked><span data-i18n="chkRom">关节限位</span></label>
+      <label class="chip" data-i18n-title="chkBodyTitle"><input type="checkbox" id="bodyChk" checked><span data-i18n="chkBody">躯干碰撞</span></label>
+      <label class="chip" data-i18n-title="chkShotTitle"><input type="checkbox" id="shotChk" checked><span data-i18n="chkShot">出球限位</span></label>
+      <button id="flipBtn" class="btn" data-i18n="btnMirror">左右镜像</button>
+      <button class="collapse-btn" id="headerCollapse" data-i18n-title="headerCollapseTitle" aria-label="Toggle header">
+        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>
+        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
       </button>
     </div>
 
     <div class="canvas-wrap">
-      <canvas id="canvas"></canvas>
+      <div class="main-col">
+        <canvas id="cv" width="860" height="740"></canvas>
+        <div class="info-bar" id="infoBar"></div>
+      </div>
+      <div class="canvas-side hidden" id="canvasSide">
+        <canvas id="cvSide" width="380" height="740"></canvas>
+        <canvas id="cvTop" width="380" height="280"></canvas>
+      </div>
     </div>
   </div>
 
   <footer class="footer" id="credit">
-    © <b>Robert Bogan Kang</b> <span data-i18n="footer">创作 · 保留所有权利</span>
+    © <b>Robert Bogan Kang</b> <span data-i18n="footerCredit">创作 · 保留所有权利</span>
   </footer>
-
 </div>
-<script>
-(() => {
-  'use strict';
 
-  // ================= 国际化 =================
-  const I18N = {
-    zh: {
-      title: '羽毛球远身场地落点',
-      subDouble: '双打模式 · 拖动 A / B 调整位置',
-      subSingle: '单打模式 · 拖动对手调整位置',
-      subHint: ' · 长按球员调速度，双击空白调热力图',
-      subVelActive: ' · 拖动蓝色手柄调速度，双击空白调热力图',
-      doubles: '双打',
-      singles: '单打',
-      player: '球员',
-      opponent: '对手',
-      initialVel: '初速度',
-      best: '最优',
-      gap: '结合',
-      corner: '四角次优',
-      arrival: '到达时间',
-      net: '球网',
-      speed: '速度',
-      footer: '创作 · 保留所有权利',
-      langBtn: 'EN',
-      collapseHide: '隐藏顶部',
-      collapseShow: '展开顶部',
-      principleTitle: '羽毛球远身场地落点 · 计算原理',
-      principleHTML: `
-      <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉"我方打完能不能回中场"的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
-
-      <h3>一、场地与坐标系</h3>
-      <ul>
-        <li>单打场地：长 <code>L = 13.40 m</code>、宽 <code>W = 5.18 m</code>，球网位于 <code>y = 6.7 m</code></li>
-        <li>合法落点区域：<code>|x| ≤ 2.39，0.2 ≤ y ≤ 13.2</code></li>
-      </ul>
-
-      <h3>二、长按与双击交互</h3>
-      <ul>
-        <li><b>长按球员 A 点（500ms）</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
-        <li><b>长按球员 B 点（500ms）</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
-        <li><b>双击球员点附近</b> → 忽略（手柄由长按控制）</li>
-        <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
-        <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
-      </ul>
-      <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
-
-      <h3>三、三方向速度权重</h3>
-      <table>
-        <thead><tr><th>方向</th><th>权重</th></tr></thead>
-        <tbody>
-          <tr><td>横向（x）</td><td><code>W_X = 1.0</code></td></tr>
-          <tr><td>向前上网（dy&lt;0）</td><td><code>W_FWD = 1.15</code></td></tr>
-          <tr><td>向后后退（dy&gt;0）</td><td><code>W_BACK = 1.7</code></td></tr>
-        </tbody>
-      </table>
-
-      <h3>四、启动修正（平滑版）</h3>
-      <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
-      <p>sigmoid 让 k 在投影距离 0 处取中值，往两侧平滑过渡到 0.7 / 1.8。v=0 时 k=1。</p>
-
-      <h3>五、对手难度</h3>
-      <ol>
-        <li>加权跑动距离 × 启动修正</li>
-        <li>× 追身加成（距对手 &lt; 0.45 m 时 ×1.6）</li>
-        <li>× 贴边加成（<code>1 + 1.2·exp(-b/0.3)</code>）</li>
-      </ol>
-
-      <h3>六、热力图</h3>
-      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。双击场地空白处开关。</p>
-
-      <h3>七、总评分 J</h3>
-      <ul>
-        <li><b>单打</b>：<code>J = 对手难度 − 0.3 × 到 (0, 3.35) 的距离</code></li>
-        <li><b>双打</b>：<code>J = min(难度A, 难度B)</code></li>
-      </ul>
-      <p class="muted">红点标签旁用方括号显示 J 值，如「最优[12.3]」，四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上保证不超过红点分数。</p>
-
-      <h3>八、等难度线与结合部</h3>
-      <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。两人距离 &lt; 1.0m 时该线不绘制（无意义）。</p>
-
-      <h3>九、红点与四角次优</h3>
-      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
-
-      <h3>十、可调参数</h3>
-      <ul>
-        <li><code>W_BACK / W_FWD</code>：1.7 / 1.15</li>
-        <li><code>K_REV / K_ADV</code>：1.8 / 0.7</li>
-        <li><code>S0_DIST</code>：1.5m（平滑过渡宽度）</li>
-        <li><code>K_BODY</code>：1.6，<code>K_EDGE</code>：1.2</li>
-        <li><code>W_ME_SINGLE</code>：0.3</li>
-        <li><code>V_GAMMA</code>：3.0（手柄曲线，越大低速越精细）</li>
-        <li><code>LONG_PRESS_MS</code>：500ms（长按球员点触发速度手柄）</li>
-      </ul>
-
-      <h3>十一、局限</h3>
-      <ul>
-        <li>双打不评估我方回位</li>
-        <li>热力图"时间"是等效时间（加权距离），不是真实秒数</li>
-        <li>只算落点，不管球路</li>
-      </ul>
-      `
-    },
-    en: {
-      title: 'Badminton Court Landing Spot',
-      subDouble: 'Doubles · Drag A / B to adjust',
-      subSingle: 'Singles · Drag opponent to adjust',
-      subHint: ' · Long-press player: velocity, double-click blank: heatmap',
-      subVelActive: ' · Drag handle: velocity, blank: heatmap',
-      doubles: 'Doubles',
-      singles: 'Singles',
-      player: 'Players',
-      opponent: 'Opponent',
-      initialVel: 'Velocity',
-      best: 'Best',
-      gap: 'Middle',
-      corner: 'Suboptimal',
-      arrival: 'Arrival',
-      net: 'Net',
-      speed: 'Speed',
-      footer: 'Created · All Rights Reserved',
-      langBtn: '中',
-      collapseHide: 'Hide header',
-      collapseShow: 'Show header',
-      principleTitle: 'Badminton Court Landing Spot · Methodology',
-      principleHTML: `
-      <p class="lead"><b>In short:</b> Among all legal landing spots in the opponent's half, find the one that is <b>hardest for the opponent to reach</b>. <b>Singles</b> additionally deducts the cost of "can I recover to the centre after my shot"; <b>doubles</b> only considers opponent difficulty. Opponents may be stationary or have an initial velocity.</p>
-
-      <h3>1. Court and coordinate system</h3>
-      <ul>
-        <li>Singles court: length <code>L = 13.40 m</code>, width <code>W = 5.18 m</code>; net at <code>y = 6.7 m</code></li>
-        <li>Legal landing area: <code>|x| ≤ 2.39, 0.2 ≤ y ≤ 13.2</code></li>
-      </ul>
-
-      <h3>2. Long-press and double-tap interactions</h3>
-      <ul>
-        <li><b>Long-press player A (500 ms)</b> → toggle A's velocity handle; velocity resets to 0 when hidden</li>
-        <li><b>Long-press player B (500 ms)</b> → toggle B's velocity handle; velocity resets to 0 when hidden</li>
-        <li><b>Double-tap near a player dot</b> → ignored (handle is controlled by long-press)</li>
-        <li><b>Double-tap near a handle</b> → ignored (prevents accidental taps while dragging)</li>
-        <li><b>Double-tap anywhere else on the court</b> → toggle the heatmap</li>
-      </ul>
-      <p>A and B handles are independent. Drag the blue handle: inside the deadzone the velocity is 0; outside it a blue arrow appears. The speed curve is slow-first / fast-later (finer control at low speed), capped at 6 m/s.</p>
-
-      <h3>3. Three-direction velocity weights</h3>
-      <table>
-        <thead><tr><th>Direction</th><th>Weight</th></tr></thead>
-        <tbody>
-          <tr><td>Lateral (x)</td><td><code>W_X = 1.0</code></td></tr>
-          <tr><td>Forward to net (dy&lt;0)</td><td><code>W_FWD = 1.15</code></td></tr>
-          <tr><td>Backward (dy&gt;0)</td><td><code>W_BACK = 1.7</code></td></tr>
-        </tbody>
-      </table>
-
-      <h3>4. Startup correction (smooth)</h3>
-      <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
-      <p>The sigmoid makes k take its mid value at projection distance 0, blending smoothly to 0.7 / 1.8 on either side. k = 1 when v = 0.</p>
-
-      <h3>5. Opponent difficulty</h3>
-      <ol>
-        <li>Weighted running distance × startup correction</li>
-        <li>× body-shot bonus (×1.6 when distance to opponent &lt; 0.45 m)</li>
-        <li>× edge bonus (<code>1 + 1.2·exp(-b/0.3)</code>)</li>
-      </ol>
-
-      <h3>6. Heatmap</h3>
-      <p>Each cell colour = equivalent time of <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> (including startup correction). Bluer = faster, redder = slower. Double-tap blank court area to toggle.</p>
-
-      <h3>7. Total score J</h3>
-      <ul>
-        <li><b>Singles</b>: <code>J = opponent difficulty − 0.3 × distance to (0, 3.35)</code></li>
-        <li><b>Doubles</b>: <code>J = min(difficulty A, difficulty B)</code></li>
-      </ul>
-      <p class="muted">The J value is shown in brackets next to the red dot label, e.g. "Best [12.3]"; corner suboptimals likewise "2 [11.8]". Corner scores are filtered from the global grid, so they are mathematically guaranteed not to exceed the red-dot score.</p>
-
-      <h3>8. Equal-difficulty line and the gap</h3>
-      <p>The boundary where "difficulty to A equals difficulty to B" is traced numerically with marching squares. Gap points = on each side of the perpendicular to the line joining the two players, take the point that maximises <code>min(difficulty A, difficulty B)</code>. The line is not drawn when the two players are &lt; 1.0 m apart (meaningless).</p>
-
-      <h3>9. Red dot and corner suboptimals</h3>
-      <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid, same source as the red dot), sorted by J and labeled ②③④⑤ (① is taken by the red dot).</p>
-
-      <h3>10. Tunable parameters</h3>
-      <ul>
-        <li><code>W_BACK / W_FWD</code>: 1.7 / 1.15</li>
-        <li><code>K_REV / K_ADV</code>: 1.8 / 0.7</li>
-        <li><code>S0_DIST</code>: 1.5 m (smooth transition width)</li>
-        <li><code>K_BODY</code>: 1.6, <code>K_EDGE</code>: 1.2</li>
-        <li><code>W_ME_SINGLE</code>: 0.3</li>
-        <li><code>V_GAMMA</code>: 3.0 (handle curve; larger = finer control at low speed)</li>
-        <li><code>LONG_PRESS_MS</code>: 500 ms (long-press a player dot to toggle velocity)</li>
-      </ul>
-
-      <h3>11. Limitations</h3>
-      <ul>
-        <li>Doubles does not evaluate our own recovery</li>
-        <li>Heatmap "time" is equivalent time (weighted distance), not real seconds</li>
-        <li>Only landing spots are considered, not shot paths</li>
-      </ul>
-      `
-    }
-  };
-
-  let lang = 'zh';
-  function t(key){
-    return (I18N[lang] && I18N[lang][key]) || (I18N.zh[key] || key);
-  }
-
-  // ================= 参数 =================
-  const L = 13.40, W = 5.18;
-  const HALF_W = W / 2, NET_Y = L / 2;
-  const SAFE_DELTA = 0.20;
-  const OPP_SIDE_Y_MIN = NET_Y, OPP_SIDE_Y_MAX = L;
-
-  const W_X = 1.0;
-  const W_BACK = 1.7, W_FWD = 1.15;
-  const K_REV = 1.8, K_ADV = 0.7;
-  const B0 = 0.30, K_EDGE = 1.2;
-  const BODY_R = 0.45, K_BODY = 1.6;
-  const MIN_GAP_DIST = 1.0;
-
-  const SINGLE_RETURN = {x: 0, y: 3.35};
-  const W_ME_SINGLE = 0.3;
-
-  const GRID_STEP_FAST = 0.25, GRID_STEP_FINE = 0.10;
-  const MOVE_THRESHOLD = 0.01, THROTTLE_MS = 60;
-
-  const CORNER_R = 2.0, CORNER_SHOW_R = 1.0;
-
-  const SCALE = 90, PAD = 50;
-  const EXPOSE_M = 0.8, VIEW_Y_MIN = NET_Y - EXPOSE_M;
-
-  const LOGICAL_W = W * SCALE + PAD * 2;
-  const LOGICAL_H = (L - VIEW_Y_MIN) * SCALE + PAD * 2;
-
-  const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  const DRAG_R        = isTouch ? 0.85 : 0.60;
-  const V_DEADZONE    = isTouch ? 0.55 : 0.45;
-  const V_SCALE       = isTouch ? 0.18 : 0.20;
-  const V_GAMMA       = 3.0;
-  const V_MAX         = 6.0;
-  const V_HANDLE_HIT  = isTouch ? 0.75 : 0.45;
-  const V_HANDLE_DOT  = isTouch ? 9 : 7;
-  const V_HANDLE_TIP  = isTouch ? 7 : 5;
-
-  const S0_DIST = 1.5;
-  const VMAG_BLEND = 1.0;
-
-  const DBLCLICK_MS = 420;
-  const DBLCLICK_DIST = 60;
-  const DRAG_START_THRESHOLD = 5;
-  const LONG_PRESS_MS = 500;
-
-  const COLOR_PLAYER = '#111111';
-  const COLOR_VEL    = '#1e88e5';
-  const COLOR_VEL_DZ = 'rgba(30,136,229,0.10)';
-  const COLOR_VEL_DZ_EDGE = 'rgba(30,136,229,0.22)';
-  const COLOR_VEL_GLOW = 'rgba(30,136,229,0.20)';
-  const COLOR_VEL_TRI = 'rgba(30,136,229,0.65)';
-  const COLOR_VEL_TXT = 'rgba(30,136,229,0.95)';
-
-  const COLOR_BEST   = '#d32f2f';
-  const COLOR_GAP    = '#757575';
-  const COLOR_RANK   = '#8e44ad';
-
-  const C_GROUND = '#f7fbf9';
-  const C_LINE   = '#3a7d5c';
-  const C_FRAME  = '#1e4d38';
-  const C_NET    = '#1e4d38';
-
-  const ZERO_V = {x: 0, y: 0};
-
-  // ================= 状态 =================
-  let mode = 'double';
-  let opp1_velVisible = false;
-  let opp2_velVisible = false;
-
-  const opp1 = {x: -1.2, y: 9.2};
-  const opp2 = {x:  1.2, y: 9.2};
-  const opp1_v = {x: 0, y: 0};
-  const opp2_v = {x: 0, y: 0};
-
-  let dragTarget = null;
-  let hoverTarget = null;
-  let dragHandlePos = null;
-  let showHeat = false;
-  let lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-  let working = false, pendingFine = false;
-  let lastCalcTime = 0;
-  let cacheBest = {pt: null, J: 0};
-  let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
-
-  let lastTouchTap = {t: 0, x: 0, y: 0};
-  let dragStartPos = null;
-  let dragActive = false;
-  let longPressTimer = null;
-
-  const appEl = document.getElementById('app');
-  const collapseBtn = document.getElementById('collapseBtn');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const langBtnEl = document.getElementById('langBtn');
-  const pageSub = document.getElementById('pageSub');
-  const legendBar = document.getElementById('legendBar');
-  const modeToggleEl = document.getElementById('modeToggle');
-
-  // ================= 工具函数 =================
-  function forceRecalc(){
-    pendingFine = true;
-    lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-  }
-
-  function clearLongPress(){
-    if (longPressTimer){
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-  }
-
-  function isAnyVelocityVisible(){
-    return opp1_velVisible || (mode === 'double' && opp2_velVisible);
-  }
-
-  function getClientXY(e){
-    if (e.touches && e.touches.length) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
-    if (e.changedTouches && e.changedTouches.length) return {x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY};
-    return {x: e.clientX, y: e.clientY};
-  }
-
-  // ================= 语言切换 =================
-  function applyLanguage(){
-    document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
-    document.title = t('title');
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      el.textContent = t(el.dataset.i18n);
-    });
-
-    langBtnEl.textContent = t('langBtn');
-    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
-
-    updateUIForMode();
-
-    const pBody = document.getElementById('principleBody');
-    if (pBody) pBody.innerHTML = t('principleHTML');
-
-    const collapsed = appEl.classList.contains('collapsed');
-    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
-  }
-
-  // 供页面底部脚本在 Modal 解析后再次调用
-  window.__applyLang = applyLanguage;
-
-  langBtnEl.addEventListener('click', () => {
-    lang = (lang === 'zh') ? 'en' : 'zh';
-    applyLanguage();
-  });
-
-  // ================= 折叠 =================
-  collapseBtn.addEventListener('click', () => {
-    const collapsed = appEl.classList.toggle('collapsed');
-    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
-    requestAnimationFrame(setupCanvas);
-  });
-
-  // ================= Canvas 自适应 =================
-  function setupCanvas(){
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const wrap = canvas.parentElement;
-    const cs = getComputedStyle(wrap);
-    const padL = parseFloat(cs.paddingLeft) || 0;
-    const padR = parseFloat(cs.paddingRight) || 0;
-    const availW = wrap.clientWidth - padL - padR;
-
-    let cssW = Math.min(availW, LOGICAL_W);
-    let cssH = cssW * LOGICAL_H / LOGICAL_W;
-
-    const maxH = Math.min(window.innerHeight * 0.72, 640);
-    if (cssH > maxH){
-      cssH = maxH;
-      cssW = cssH * LOGICAL_W / LOGICAL_H;
-    }
-    cssW = Math.max(180, cssW);
-
-    canvas.style.width = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    const s = canvas.width / LOGICAL_W;
-    ctx.setTransform(s, 0, 0, s, 0, 0);
-  }
-  setupCanvas();
-  if (window.ResizeObserver){
-    const ro = new ResizeObserver(() => setupCanvas());
-    ro.observe(canvas.parentElement);
-  }
-  window.addEventListener('resize', setupCanvas);
-  window.addEventListener('orientationchange', () => setTimeout(setupCanvas, 250));
-
-  // ================= 坐标 =================
-  function w2c(pt){
-    return {x: (HALF_W + pt.x) * SCALE + PAD, y: (L - pt.y) * SCALE + PAD};
-  }
-  function c2w(cx, cy){
-    return {x: (cx - PAD) / SCALE - HALF_W, y: L - (cy - PAD) / SCALE};
-  }
-  function clientToWorld(clientX, clientY){
-    const rect = canvas.getBoundingClientRect();
-    return c2w(
-      (clientX - rect.left) / rect.width * LOGICAL_W,
-      (clientY - rect.top) / rect.height * LOGICAL_H
-    );
-  }
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-  // ================= 单/双 切换 =================
-  modeToggleEl.addEventListener('click', () => {
-    mode = (mode === 'double') ? 'single' : 'double';
-
-    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
-    modeToggleEl.dataset.mode = mode;
-
-    if (mode === 'single' && dragTarget === 2){
-      dragTarget = null;
-      dragActive = false;
-      canvas.style.cursor = 'default';
-    }
-
-    updateUIForMode();
-    forceRecalc();
-  });
-
-  function updateSubtitle(){
-    const single = mode === 'single';
-    const hint = isAnyVelocityVisible() ? t('subVelActive') : t('subHint');
-    pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + hint;
-  }
-
-  function updateLegend(){
-    const single = mode === 'single';
-    let html = '';
-    html += single
-      ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
-      : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
-    if (isAnyVelocityVisible()){
-      html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
-    }
-    html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
-    if (!single){
-      html += `<span><i class="ring"></i>${t('gap')}</span>`;
-    }
-    html += `<span><i class="num">2</i>${t('corner')}</span>`;
-    if (showHeat){
-      html += `<span><i class="heat-legend"></i>${t('arrival')}</span>`;
-    }
-    legendBar.innerHTML = html;
-  }
-
-  function updateUIForMode(){
-    updateSubtitle();
-    updateLegend();
-  }
-  updateUIForMode();
-
-  // ================= 双击：切换热力图 =================
-  function handleDoubleTap(clientX, clientY){
-    const w = clientToWorld(clientX, clientY);
-    // 命中球员点或手柄 → 忽略
-    if (hitTest(w) !== null) return;
-    // 其余场地空白 → 切换热力图
-    showHeat = !showHeat;
-    updateLegend();
-  }
-
-  canvas.addEventListener('dblclick', (e) => {
-    if (dragTarget !== null) return;
-    handleDoubleTap(e.clientX, e.clientY);
-    e.preventDefault();
-  });
-
-  // ================= 难度 / 到达时间 =================
-  function startFactor(s, vmag){
-    if (vmag < 0.01) return 1.0;
-    const projDist = s / vmag;
-    const sig = 1 / (1 + Math.exp(-projDist / S0_DIST));
-    const kFull = K_ADV + (K_REV - K_ADV) * (1 - sig);
-    const blend = Math.min(vmag / VMAG_BLEND, 1.0);
-    return 1 + (kFull - 1) * blend;
-  }
-
-  // 加权跑动距离 × 启动修正（不含追身/贴边加成）
-  function evalAt(x, y, opp, v){
-    const dx = x - opp.x, dy = y - opp.y;
-    const wy = dy >= 0 ? W_BACK : W_FWD;
-    let base = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    base *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
-    return base;
-  }
-
-  // 追身 + 贴边加成系数
-  function bodyEdgeFactor(x, y, opp){
-    const dx = x - opp.x, dy = y - opp.y;
-    let f = 1;
-    const dBody = Math.sqrt(dx*dx + dy*dy);
-    if (dBody < BODY_R) f *= K_BODY;
-    const dEdge = Math.min(
-      HALF_W - SAFE_DELTA - Math.abs(x),
-      y - OPP_SIDE_Y_MIN,
-      OPP_SIDE_Y_MAX - y
-    );
-    const g = Math.exp(-Math.max(0, dEdge) / B0);
-    return f * (1 + K_EDGE * g);
-  }
-
-  function difficulty(pt, opp, v){
-    return evalAt(pt.x, pt.y, opp, v) * bodyEdgeFactor(pt.x, pt.y, opp);
-  }
-
-  // ================= 栅格搜索 =================
-  function computeGrid(o1, o2, v1, v2, step, m){
-    const xMin = -HALF_W + SAFE_DELTA;
-    const xMax =  HALF_W - SAFE_DELTA;
-    const yMin =  OPP_SIDE_Y_MIN + SAFE_DELTA;
-    const yMax =  OPP_SIDE_Y_MAX - SAFE_DELTA;
-    const nX = Math.max(1, Math.round((xMax - xMin) / step));
-    const nY = Math.max(1, Math.round((yMax - yMin) / step));
-
-    const heat = [];
-    let bestPt = null, bestJ = -Infinity;
-    let minTime = Infinity, maxTime = -Infinity;
-
-    for (let i = 0; i <= nX; i++){
-      const x = xMin + (xMax - xMin) * i / nX;
-      for (let j = 0; j <= nY; j++){
-        const y = yMin + (yMax - yMin) * j / nY;
-
-        // 每个格点对每个对手只算一次 evalAt（双打 ≤2 次，单打 1 次）
-        const base1 = evalAt(x, y, o1, v1);
-
-        let jv, t;
-        if (m === 'single'){
-          const oppScore = base1 * bodyEdgeFactor(x, y, o1);
-          const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
-          jv = oppScore - W_ME_SINGLE * Math.sqrt(dx*dx + dy*dy);
-          t = base1;
-        } else {
-          const base2 = evalAt(x, y, o2, v2);
-          jv = Math.min(
-            base1 * bodyEdgeFactor(x, y, o1),
-            base2 * bodyEdgeFactor(x, y, o2)
-          );
-          t = Math.min(base1, base2);
-        }
-
-        heat.push({x, y, val: jv, time: t});
-        if (jv > bestJ){ bestJ = jv; bestPt = {x, y}; }
-        if (t < minTime) minTime = t;
-        if (t > maxTime) maxTime = t;
-      }
-    }
-
-    const seeds = [
-      {x: -HALF_W + SAFE_DELTA, y: L - SAFE_DELTA},
-      {x:  HALF_W - SAFE_DELTA, y: L - SAFE_DELTA},
-      {x: -HALF_W + SAFE_DELTA, y: NET_Y + SAFE_DELTA},
-      {x:  HALF_W - SAFE_DELTA, y: NET_Y + SAFE_DELTA}
-    ];
-
-    const raw = seeds.map(s => {
-      let bx = s.x, by = s.y, bj = -Infinity;
-      for (let k = 0; k < heat.length; k++){
-        const h = heat[k];
-        if (Math.abs(h.x - s.x) <= CORNER_R + 1e-9 &&
-            Math.abs(h.y - s.y) <= CORNER_R + 1e-9){
-          if (h.val > bj){ bj = h.val; bx = h.x; by = h.y; }
-        }
-      }
-      return {
-        x: bx, y: by, val: bj, rank: null,
-        distToSeed: Math.hypot(bx - s.x, by - s.y)
-      };
-    });
-
-    const visible = raw.filter(c => c.distToSeed <= CORNER_SHOW_R);
-    visible.sort((a, b) => b.val - a.val);
-
-    const ALREADY_BEST = 0.15;
-    let cursor = 2;
-    for (const cb of visible){
-      const d = Math.hypot(cb.x - bestPt.x, cb.y - bestPt.y);
-      if (d < ALREADY_BEST){ cb.rank = null; }
-      else { cb.rank = cursor++; }
-    }
-
-    const span = (maxTime - minTime) || 1;
-    for (let i = 0; i < heat.length; i++){
-      heat[i].norm = (heat[i].time - minTime) / span;
-    }
-    return {best: {pt: bestPt, J: bestJ}, heat, step, cornerBests: visible};
-  }
-
-  // ================= 等难度线 =================
-  function equiLocus(o1, o2, v1, v2){
-    if (Math.hypot(o2.x - o1.x, o2.y - o1.y) < MIN_GAP_DIST) return [];
-    const F = (x, y) => difficulty({x, y}, o1, v1) - difficulty({x, y}, o2, v2);
-    const xMin = -HALF_W - 0.5, xMax = HALF_W + 0.5;
-    const yMin = OPP_SIDE_Y_MIN - 0.5, yMax = OPP_SIDE_Y_MAX + 0.5;
-    const step = 0.15;
-    const nx = Math.ceil((xMax - xMin)/step), ny = Math.ceil((yMax - yMin)/step);
-    const gx = (i) => xMin + i*step, gy = (j) => yMin + j*step;
-    const Fg = [];
-    for (let j = 0; j <= ny; j++){
-      const row = new Array(nx + 1);
-      for (let i = 0; i <= nx; i++) row[i] = F(gx(i), gy(j));
-      Fg.push(row);
-    }
-    const lerp = (ax, ay, bx, by, fa, fb) => {
-      const denom = fa - fb;
-      if (Math.abs(denom) < 1e-9) return [ax, ay];
-      const u = fa / denom;
-      return [ax + (bx - ax)*u, ay + (by - ay)*u];
-    };
-    const segs = [];
-    for (let j = 0; j < ny; j++){
-      for (let i = 0; i < nx; i++){
-        const tl = Fg[j][i], tr = Fg[j][i+1], br = Fg[j+1][i+1], bl = Fg[j+1][i];
-        const c = (tl>0?8:0)|(tr>0?4:0)|(br>0?2:0)|(bl>0?1:0);
-        if (c === 0 || c === 15) continue;
-        const xL = gx(i), xR = gx(i+1), yT = gy(j), yB = gy(j+1);
-        const top = () => lerp(xL,yT,xR,yT,tl,tr), right = () => lerp(xR,yT,xR,yB,tr,br);
-        const bot = () => lerp(xL,yB,xR,yB,bl,br), left = () => lerp(xL,yT,xL,yB,tl,bl);
-        let P = [];
-        switch(c){
-          case 1: case 14: P = [left(), bot()]; break;
-          case 2: case 13: P = [bot(), right()]; break;
-          case 3: case 12: P = [left(), right()]; break;
-          case 4: case 11: P = [top(), right()]; break;
-          case 6: case 9:  P = [top(), bot()]; break;
-          case 7: case 8:  P = [top(), left()]; break;
-          case 5:  P = [top(), right(), bot(), left()]; break;
-          case 10: P = [top(), left(), bot(), right()]; break;
-        }
-        for (let k = 0; k + 1 < P.length; k += 2) segs.push([P[k], P[k+1]]);
-      }
-    }
-    return segs;
-  }
-
-  function computeGapPointsFromLocus(segs, o1, o2, v1, v2){
-    if (!segs.length) return [null, null];
-
-    const cands = [];
-    const push = (x, y) => {
-      if (Math.abs(x) > HALF_W - SAFE_DELTA) return;
-      if (y < OPP_SIDE_Y_MIN + SAFE_DELTA || y > OPP_SIDE_Y_MAX - SAFE_DELTA) return;
-      const s = Math.min(
-        difficulty({x, y}, o1, v1),
-        difficulty({x, y}, o2, v2)
-      );
-      cands.push({x, y, s});
-    };
-    for (const [a, b] of segs){
-      for (let k = 0; k <= 4; k++){
-        const u = k / 4;
-        push(a[0] + (b[0]-a[0])*u, a[1] + (b[1]-a[1])*u);
-      }
-    }
-    if (!cands.length) return [null, null];
-
-    const midX = (o1.x + o2.x) / 2;
-    const midY = (o1.y + o2.y) / 2;
-    const dx = o2.x - o1.x, dy = o2.y - o1.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const perpX = -dy / len, perpY = dx / len;
-
-    let bestPos = null, bestNeg = null;
-    for (const c of cands){
-      const s = (c.x - midX) * perpX + (c.y - midY) * perpY;
-      if (s >= 0){
-        if (!bestPos || c.s > bestPos.s) bestPos = c;
-      } else {
-        if (!bestNeg || c.s > bestNeg.s) bestNeg = c;
-      }
-    }
-    return [
-      bestPos ? {x: bestPos.x, y: bestPos.y} : null,
-      bestNeg ? {x: bestNeg.x, y: bestNeg.y} : null
-    ];
-  }
-
-  // ================= Worker =================
-  const workerCode = `
-    const L=${L}, W=${W}, HALF_W=${HALF_W}, NET_Y=${NET_Y};
-    const SAFE_DELTA=${SAFE_DELTA}, OPP_SIDE_Y_MIN=${OPP_SIDE_Y_MIN}, OPP_SIDE_Y_MAX=${OPP_SIDE_Y_MAX};
-    const W_X=${W_X}, W_BACK=${W_BACK}, W_FWD=${W_FWD}, K_REV=${K_REV}, K_ADV=${K_ADV}, B0=${B0}, K_EDGE=${K_EDGE}, BODY_R=${BODY_R}, K_BODY=${K_BODY};
-    const S0_DIST=${S0_DIST}, VMAG_BLEND=${VMAG_BLEND};
-    const SINGLE_RETURN=${JSON.stringify(SINGLE_RETURN)};
-    const W_ME_SINGLE=${W_ME_SINGLE};
-    const CORNER_R=${CORNER_R}, CORNER_SHOW_R=${CORNER_SHOW_R};
-    ${startFactor.toString()}
-    ${evalAt.toString()}
-    ${bodyEdgeFactor.toString()}
-    ${computeGrid.toString()}
-    self.onmessage = function(e){
-      const d = e.data;
-      self.postMessage(computeGrid(d.o1, d.o2, d.v1, d.v2, d.step, d.mode));
-    };
-  `;
-
-  let worker = null;
-  try {
-    const blob = new Blob([workerCode], {type: 'application/javascript'});
-    worker = new Worker(URL.createObjectURL(blob));
-    worker.onmessage = (e) => handleResult(e.data);
-    worker.onerror = (err) => {
-      console.warn('[Worker] 异常，改用主线程：', (err && err.message) || err);
-      if (worker){ worker.terminate(); worker = null; }
-      working = false;
-      pendingFine = true;
-    };
-  } catch (err) {
-    console.warn('[Worker] 无法创建，改用主线程：', err);
-    worker = null;
-  }
-
-  function handleResult(data){
-    working = false;
-    if (data && data.best)        cacheBest = data.best;
-    if (data && data.heat)        cacheHeat = data.heat;
-    if (data && data.step)        cacheStep = data.step;
-    if (data && data.cornerBests) cacheCorners = data.cornerBests;
-  }
-
-  function runCalc(payload){
-    if (worker){ worker.postMessage(payload); }
-    else {
-      setTimeout(() => {
-        handleResult(computeGrid(payload.o1, payload.o2, payload.v1, payload.v2, payload.step, payload.mode));
-      }, 0);
-    }
-  }
-
-  function submitCalc(){
-    if (working) return;
-    const now = performance.now();
-    if (dragActive && now - lastCalcTime < THROTTLE_MS) return;
-
-    const moved =
-      Math.hypot(opp1.x - lastSent.o1.x, opp1.y - lastSent.o1.y)
-    + (mode === 'double' ? Math.hypot(opp2.x - lastSent.o2.x, opp2.y - lastSent.o2.y) : 0)
-    + Math.hypot(opp1_v.x - lastSent.v1.x, opp1_v.y - lastSent.v1.y) * 0.1
-    + (mode === 'double' ? Math.hypot(opp2_v.x - lastSent.v2.x, opp2_v.y - lastSent.v2.y) * 0.1 : 0);
-
-    if (moved < MOVE_THRESHOLD && !pendingFine) return;
-
-    const step = (dragActive && !pendingFine) ? GRID_STEP_FAST : GRID_STEP_FINE;
-    lastSent = {o1: {...opp1}, o2: {...opp2}, v1: {...opp1_v}, v2: {...opp2_v}};
-    pendingFine = false;
-    lastCalcTime = now;
-    working = true;
-
-    const eV1 = opp1_velVisible ? opp1_v : ZERO_V;
-    const eV2 = (mode === 'double' && opp2_velVisible) ? opp2_v : ZERO_V;
-
-    runCalc({
-      o1: {...opp1}, o2: {...opp2},
-      v1: eV1, v2: eV2,
-      step, mode
-    });
-  }
-
-  // ================= 色阶 =================
-  function rampColor(t){
-    if (t < 0) t = 0; else if (t > 1) t = 1;
-    const stops = [
-      [0.00,  69, 117, 180],
-      [0.25, 145, 191, 219],
-      [0.50, 255, 255, 191],
-      [0.75, 252, 141,  89],
-      [1.00, 215,  48,  39]
-    ];
-    let a = stops[0], b = stops[stops.length - 1];
-    for (let i = 0; i < stops.length - 1; i++){
-      if (t >= stops[i][0] && t <= stops[i+1][0]){
-        a = stops[i]; b = stops[i+1]; break;
-      }
-    }
-    const span = b[0] - a[0];
-    const f = span > 0 ? (t - a[0]) / span : 0;
-    return [
-      Math.round(a[1] + (b[1] - a[1]) * f),
-      Math.round(a[2] + (b[2] - a[2]) * f),
-      Math.round(a[3] + (b[3] - a[3]) * f)
-    ];
-  }
-
-  let heatCanvas = null, heatCtx = null;
-
-  function drawHeat(heat, step){
-    if (!heat.length) return;
-    const xMin = -HALF_W + SAFE_DELTA;
-    const xMax =  HALF_W - SAFE_DELTA;
-    const yMin = OPP_SIDE_Y_MIN + SAFE_DELTA;
-    const yMax = OPP_SIDE_Y_MAX - SAFE_DELTA;
-
-    const cols = Math.round((xMax - xMin) / step) + 1;
-    const rows = Math.round((yMax - yMin) / step) + 1;
-
-    if (!heatCanvas){
-      heatCanvas = document.createElement('canvas');
-      heatCtx = heatCanvas.getContext('2d');
-    }
-    if (heatCanvas.width !== cols || heatCanvas.height !== rows){
-      heatCanvas.width = cols;
-      heatCanvas.height = rows;
-    }
-
-    const img = heatCtx.createImageData(cols, rows);
-    const data = img.data;
-
-    for (let i = 0; i < heat.length; i++){
-      const h = heat[i];
-      const ix = Math.round((h.x - xMin) / (xMax - xMin) * (cols - 1));
-      const iy = Math.round((h.y - yMin) / (yMax - yMin) * (rows - 1));
-      if (ix < 0 || ix >= cols || iy < 0 || iy >= rows) continue;
-      const [r, g, b] = rampColor(h.norm);
-      const row = rows - 1 - iy;
-      const idx = (row * cols + ix) * 4;
-      data[idx]     = r;
-      data[idx + 1] = g;
-      data[idx + 2] = b;
-      data[idx + 3] = 255;
-    }
-    heatCtx.putImageData(img, 0, 0);
-
-    const xMinCell = xMin - step / 2;
-    const xMaxCell = xMin + (cols - 1) * step + step / 2;
-    const yMinCell = yMin - step / 2;
-    const yMaxCell = yMin + (rows - 1) * step + step / 2;
-
-    const tl = w2c({x: xMinCell, y: yMaxCell});
-    const br = w2c({x: xMaxCell, y: yMinCell});
-
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(heatCanvas, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-    ctx.restore();
-  }
-
-  // ================= 速度手柄 =================
-  function getHandlePos(pt, vel){
-    const mag = Math.hypot(vel.x, vel.y);
-    if (mag < 0.01){
-      return {x: pt.x, y: pt.y + V_DEADZONE};
-    }
-    const norm = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
-    const extra = norm * V_MAX * V_SCALE;
-    const dist = V_DEADZONE + extra;
-    const ux = vel.x / mag, uy = vel.y / mag;
-    return {x: pt.x + ux * dist, y: pt.y + uy * dist};
-  }
-
-  function drawDeadzone(pt){
-    const p = w2c(pt);
-    const r = V_DEADZONE * SCALE;
-    ctx.save();
-    ctx.beginPath();
-    ctx.fillStyle = COLOR_VEL_DZ;
-    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.strokeStyle = COLOR_VEL_DZ_EDGE;
-    ctx.lineWidth = 1;
-    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawVelocityHandle(pt, vel, handlePos, isActive){
-    const mag = Math.hypot(vel.x, vel.y);
-    const p = w2c(pt);
-    const h = w2c(handlePos);
-
-    ctx.save();
-
-    if (mag < 0.01){
-      if (isActive){
-        ctx.beginPath();
-        ctx.fillStyle = COLOR_VEL_GLOW;
-        ctx.arc(h.x, h.y, V_HANDLE_DOT + 8, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.fillStyle = '#fff';
-      ctx.arc(h.x, h.y, V_HANDLE_DOT, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = COLOR_VEL;
-      ctx.lineWidth = 2.4;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.fillStyle = COLOR_VEL_TRI;
-      const ts = V_HANDLE_DOT * 0.42;
-      ctx.moveTo(h.x, h.y - ts);
-      ctx.lineTo(h.x - ts, h.y + ts * 0.7);
-      ctx.lineTo(h.x + ts, h.y + ts * 0.7);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.font = `bold ${isTouch ? 12 : 10}px system-ui`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = COLOR_VEL_TXT;
-      ctx.fillText(t('speed'), h.x, h.y + V_HANDLE_DOT + 4);
-
-      ctx.restore();
-      return;
-    }
-
-    ctx.strokeStyle = COLOR_VEL;
-    ctx.fillStyle = COLOR_VEL;
-    ctx.lineWidth = isTouch ? 3 : 2.2;
-
-    const ux = h.x - p.x, uy = h.y - p.y;
-    const ul = Math.hypot(ux, uy);
-    const sz = V_DEADZONE * SCALE;
-    const sx = p.x + ux / ul * sz;
-    const sy = p.y + uy / ul * sz;
-
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(h.x, h.y);
-    ctx.stroke();
-
-    const angle = Math.atan2(h.y - sy, h.x - sx);
-    const headLen = isTouch ? 11 : 9;
-    const headW = 0.42;
-    ctx.beginPath();
-    ctx.moveTo(h.x, h.y);
-    ctx.lineTo(h.x - headLen * Math.cos(angle - headW), h.y - headLen * Math.sin(angle - headW));
-    ctx.lineTo(h.x - headLen * Math.cos(angle + headW), h.y - headLen * Math.sin(angle + headW));
-    ctx.closePath();
-    ctx.fill();
-
-    if (isActive){
-      ctx.beginPath();
-      ctx.fillStyle = COLOR_VEL_GLOW;
-      ctx.arc(h.x, h.y, V_HANDLE_TIP + 9, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    ctx.fillStyle = '#fff';
-    ctx.arc(h.x, h.y, V_HANDLE_TIP, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = COLOR_VEL;
-    ctx.lineWidth = isTouch ? 2.4 : 2;
-    ctx.stroke();
-
-    if (mag >= 0.1){
-      ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#ffffff';
-      ctx.fillStyle = COLOR_VEL;
-      const txt = `${mag.toFixed(1)} m/s`;
-      ctx.strokeText(txt, h.x, h.y + V_HANDLE_TIP + 5);
-      ctx.fillText(txt, h.x, h.y + V_HANDLE_TIP + 5);
-    }
-
-    ctx.restore();
-  }
-
-  // ================= 点 / 线 / 标签 =================
-  function drawDot(pt, color, label, radius, labelDy, isShrunk){
-    const p = w2c(pt);
-    const r = (radius || 10) * (isShrunk ? 0.8 : 1);
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    if (label){
-      ctx.save();
-      ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
-      ctx.fillStyle = color;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
-      const m = ctx.measureText(label);
-      ctx.fillText(label, p.x - m.width / 2, p.y + (labelDy ?? -(r + 6)));
-      ctx.restore();
-    }
-  }
-
-  function drawEquiLocusFromSegs(segs){
-    if (!segs.length) return;
-    ctx.save();
-    ctx.strokeStyle = 'rgba(120,120,120,0.5)';
-    ctx.lineWidth = 1.4;
-    ctx.setLineDash([6, 6]);
-    for (const [a, b] of segs){
-      const ca = w2c({x: a[0], y: a[1]}), cb = w2c({x: b[0], y: b[1]});
-      ctx.beginPath(); ctx.moveTo(ca.x, ca.y); ctx.lineTo(cb.x, cb.y); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawGapRing(pt){
-    const p = w2c(pt);
-    ctx.save();
-    ctx.beginPath();
-    ctx.strokeStyle = COLOR_GAP;
-    ctx.lineWidth = 2.4;
-    ctx.setLineDash([4, 4]);
-    ctx.arc(p.x, p.y, 9, 0, Math.PI*2);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.font = 'bold 14px system-ui';
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = '#ffffff';
-    ctx.strokeText(t('gap'), p.x, p.y + 13);
-    ctx.fillStyle = COLOR_GAP;
-    ctx.fillText(t('gap'), p.x, p.y + 13);
-    ctx.restore();
-  }
-
-  function drawBestHalo(pt){
-    const p = w2c(pt);
-    ctx.beginPath();
-    ctx.fillStyle = 'rgba(211,47,47,0.16)';
-    ctx.arc(p.x, p.y, 16, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  function drawBestPoint(pt, J){
-    const p = w2c(pt);
-    ctx.beginPath();
-    ctx.fillStyle = COLOR_BEST;
-    ctx.arc(p.x, p.y, 6.5, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
-
-    const labelY = p.y - 10;
-    const hasJ = (typeof J === 'number' && isFinite(J));
-
-    ctx.save();
-    ctx.textBaseline = 'bottom';
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = '#ffffff';
-
-    ctx.font = `bold ${isTouch ? 14 : 15}px system-ui`;
-    ctx.textAlign = 'right';
-    ctx.fillStyle = COLOR_BEST;
-    ctx.strokeText(t('best'), p.x - 2, labelY);
-    ctx.fillText(t('best'), p.x - 2, labelY);
-
-    if (hasJ){
-      ctx.font = `bold ${isTouch ? 13 : 12}px system-ui`;
-      ctx.textAlign = 'left';
-      ctx.lineWidth = 3;
-      ctx.fillStyle = 'rgba(211,47,47,0.72)';
-      const jText = `[${J.toFixed(1)}]`;
-      ctx.strokeText(jText, p.x - 2, labelY);
-      ctx.fillText(jText, p.x - 2, labelY);
-    }
-    ctx.restore();
-  }
-
-  function drawCornerRanks(list){
-    ctx.save();
-    ctx.textBaseline = 'middle';
-
-    for (const cb of list){
-      if (cb.rank == null) continue;
-      const p = w2c(cb);
-      const hasV = (typeof cb.val === 'number' && isFinite(cb.val));
-      const text = String(cb.rank);
-
-      ctx.font = 'bold 22px system-ui';
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = '#ffffff';
-      ctx.fillStyle = COLOR_RANK;
-
-      if (!hasV){
-        ctx.textAlign = 'center';
-        ctx.strokeText(text, p.x, p.y);
-        ctx.fillText(text, p.x, p.y);
-      } else {
-        ctx.textAlign = 'right';
-        ctx.strokeText(text, p.x - 3, p.y);
-        ctx.fillText(text, p.x - 3, p.y);
-
-        ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
-        ctx.textAlign = 'left';
-        ctx.lineWidth = 3;
-        ctx.fillStyle = 'rgba(142,68,173,0.82)';
-        const vText = `[${cb.val.toFixed(1)}]`;
-        ctx.strokeText(vText, p.x + 3, p.y);
-        ctx.fillText(vText, p.x + 3, p.y);
-      }
-    }
-    ctx.restore();
-  }
-
-  // ================= 主绘制 =================
-  function draw(gaps, locusSegs){
-    ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
-
-    const tl = w2c({x: -HALF_W, y: L});
-    const br = w2c({x:  HALF_W, y: VIEW_Y_MIN});
-    const cw = br.x - tl.x;
-    const ch = br.y - tl.y;
-
-    ctx.fillStyle = C_GROUND;
-    ctx.fillRect(tl.x, tl.y, cw, ch);
-
-    if (showHeat && cacheHeat.length) drawHeat(cacheHeat, cacheStep);
-
-    ctx.strokeStyle = C_LINE;
-    ctx.lineWidth = 1.8;
-    ctx.setLineDash([]);
-
-    // 单打边线 + 中线 + 发球线
-    for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]){
-      const a = w2c({x: sx, y: VIEW_Y_MIN});
-      const b = w2c({x: sx, y: L});
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    }
-    for (const yy of [NET_Y + 1.98, L - 0.76]){
-      const a = w2c({x: -HALF_W, y: yy});
-      const b = w2c({x:  HALF_W, y: yy});
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    }
-    {
-      const a = w2c({x: 0, y: VIEW_Y_MIN});
-      const b = w2c({x: 0, y: L});
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    }
-
-    // 外框
-    ctx.strokeStyle = C_FRAME;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(tl.x, br.y);
-    ctx.lineTo(tl.x, tl.y);
-    ctx.lineTo(br.x, tl.y);
-    ctx.lineTo(br.x, br.y);
-    ctx.stroke();
-
-    // 球网
-    const n1 = w2c({x: -HALF_W, y: NET_Y});
-    const n2 = w2c({x:  HALF_W, y: NET_Y});
-    ctx.beginPath();
-    ctx.strokeStyle = C_NET;
-    ctx.lineWidth = 7;
-    ctx.lineCap = 'round';
-    ctx.moveTo(n1.x, n1.y);
-    ctx.lineTo(n2.x, n2.y);
-    ctx.stroke();
-    ctx.lineCap = 'butt';
-
-    ctx.save();
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.font = 'bold 14px system-ui';
-    ctx.fillStyle = C_NET;
-    ctx.fillText(t('net'), n1.x + 8, n1.y + 9);
-    ctx.restore();
-
-    if (mode === 'double' && (gaps[0] || gaps[1])) drawEquiLocusFromSegs(locusSegs);
-
-    if (cacheBest.pt) drawBestHalo(cacheBest.pt);
-    if (mode === 'double'){
-      if (gaps[0]) drawGapRing(gaps[0]);
-      if (gaps[1]) drawGapRing(gaps[1]);
-    }
-    if (cacheBest.pt) drawBestPoint(cacheBest.pt, cacheBest.J);
-
-    const isA3 = (dragTarget === 3 || hoverTarget === 3);
-    const isA4 = (dragTarget === 4 || hoverTarget === 4);
-
-    if (opp1_velVisible){
-      drawDeadzone(opp1);
-      const h1 = (dragTarget === 3 && dragHandlePos) ? dragHandlePos : getHandlePos(opp1, opp1_v);
-      drawVelocityHandle(opp1, opp1_v, h1, isA3);
-    }
-
-    if (mode === 'double' && opp2_velVisible){
-      drawDeadzone(opp2);
-      const h2 = (dragTarget === 4 && dragHandlePos) ? dragHandlePos : getHandlePos(opp2, opp2_v);
-      drawVelocityHandle(opp2, opp2_v, h2, isA4);
-    }
-
-    if (mode === 'single'){
-      drawDot(opp1, COLOR_PLAYER, t('opponent'), 10, -16, isA3);
-    } else {
-      drawDot(opp1, COLOR_PLAYER, 'A', 10, -16, isA3);
-      drawDot(opp2, COLOR_PLAYER, 'B', 10, -16, isA4);
-    }
-
-    if (cacheCorners.length) drawCornerRanks(cacheCorners);
-  }
-
-  // ================= 主循环 =================
-  function loop(){
-    const eV1 = opp1_velVisible ? opp1_v : ZERO_V;
-    const eV2 = (mode === 'double' && opp2_velVisible) ? opp2_v : ZERO_V;
-
-    let gaps = [null, null];
-    let locusSegs = [];
-    if (mode === 'double'){
-      locusSegs = equiLocus(opp1, opp2, eV1, eV2);
-      gaps = computeGapPointsFromLocus(locusSegs, opp1, opp2, eV1, eV2);
-    }
-
-    draw(gaps, locusSegs);
-    submitCalc();
-    requestAnimationFrame(loop);
-  }
-
-  // ================= 交互 =================
-  function getWorldPos(e){
-    const p = getClientXY(e);
-    return clientToWorld(p.x, p.y);
-  }
-
-  function hitTest(w){
-    if (opp1_velVisible){
-      const h1 = getHandlePos(opp1, opp1_v);
-      if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return 3;
-    }
-    if (mode === 'double' && opp2_velVisible){
-      const h2 = getHandlePos(opp2, opp2_v);
-      if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return 4;
-    }
-    if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R) return 1;
-    if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R) return 2;
-    return null;
-  }
-
-  function startDrag(e){
-    const w = getWorldPos(e);
-    const t = hitTest(w);
-    if (!t) return;
-    dragTarget = t;
-    dragActive = false;
-    dragStartPos = getClientXY(e);
-    canvas.style.cursor = 'grabbing';
-
-    // 命中球员点 → 启动长按计时器
-    if (t === 1 || t === 2){
-      clearLongPress();
-      longPressTimer = setTimeout(() => {
-        if (dragTarget === 1){
-          opp1_velVisible = !opp1_velVisible;
-          if (!opp1_velVisible){ opp1_v.x = 0; opp1_v.y = 0; }
-        } else if (dragTarget === 2){
-          opp2_velVisible = !opp2_velVisible;
-          if (!opp2_velVisible){ opp2_v.x = 0; opp2_v.y = 0; }
-        }
-        forceRecalc();
-        updateSubtitle();
-        updateLegend();
-
-        // 取消拖动状态
-        dragTarget = null;
-        dragActive = false;
-        dragStartPos = null;
-        lastTouchTap = {t: 0, x: 0, y: 0};
-      }, LONG_PRESS_MS);
-    }
-
-    e.preventDefault();
-  }
-
-  function moveDrag(e){
-    const w = getWorldPos(e);
-    if (!dragTarget){
-      const t = hitTest(w);
-      hoverTarget = t;
-      canvas.style.cursor = t ? 'grab' : 'default';
-      return;
-    }
-
-    // 未超过拖动阈值 → 不改坐标
-    if (!dragActive && dragStartPos){
-      const p = getClientXY(e);
-      if (Math.hypot(p.x - dragStartPos.x, p.y - dragStartPos.y) < DRAG_START_THRESHOLD) return;
-      dragActive = true;
-      clearLongPress();
-    }
-
-    if (dragTarget === 1 || dragTarget === 2){
-      const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
-      const ny = clamp(w.y, NET_Y + 0.1, L - 0.1);
-      const target = dragTarget === 1 ? opp1 : opp2;
-      target.x = nx;
-      target.y = ny;
-    } else {
-      const pt = dragTarget === 3 ? opp1 : opp2;
-      const vel = dragTarget === 3 ? opp1_v : opp2_v;
-
-      const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
-      const ny = clamp(w.y, VIEW_Y_MIN, L - 0.1);
-      dragHandlePos = {x: nx, y: ny};
-
-      const dx = nx - pt.x, dy = ny - pt.y;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist < V_DEADZONE){
-        vel.x = 0; vel.y = 0;
-      } else {
-        const extra = dist - V_DEADZONE;
-        const maxExtra = V_MAX * V_SCALE;
-        const norm = Math.min(extra / maxExtra, 1);
-        const speed = V_MAX * Math.pow(norm, V_GAMMA);
-        vel.x = dx / dist * speed;
-        vel.y = dy / dist * speed;
-      }
-    }
-
-    if (e.cancelable) e.preventDefault();
-  }
-
-  function endDrag(){
-    clearLongPress();
-    if (dragTarget === null) return;
-    dragTarget = null;
-    dragHandlePos = null;
-    dragActive = false;
-    dragStartPos = null;
-    pendingFine = true;
-    canvas.style.cursor = 'default';
-  }
-
-  canvas.addEventListener('mousedown', startDrag);
-  canvas.addEventListener('mousemove', moveDrag);
-  canvas.addEventListener('mouseup', endDrag);
-  canvas.addEventListener('mouseleave', endDrag);
-
-  // 触摸：在 touchstart 里做双击检测
-  canvas.addEventListener('touchstart', (e) => {
-    const p = getClientXY(e);
-    const now = Date.now();
-    const dt = now - lastTouchTap.t;
-    const distPx = Math.hypot(p.x - lastTouchTap.x, p.y - lastTouchTap.y);
-
-    if (lastTouchTap.t > 0 && dt < DBLCLICK_MS && distPx < DBLCLICK_DIST){
-      lastTouchTap = {t: 0, x: 0, y: 0};
-      handleDoubleTap(p.x, p.y);
-      e.preventDefault();
-      return;
-    }
-
-    lastTouchTap = {t: now, x: p.x, y: p.y};
-    startDrag(e);
-  }, {passive:false});
-
-  canvas.addEventListener('touchmove', moveDrag, {passive:false});
-  canvas.addEventListener('touchend', endDrag);
-  canvas.addEventListener('touchcancel', (e) => {
-    endDrag();
-    lastTouchTap = {t: 0, x: 0, y: 0};
-  });
-  window.addEventListener('blur', endDrag);
-
-  applyLanguage();
-  loop();
-})();
-</script>
-
-<!-- ==================== 原理说明 Modal ==================== -->
-<div class="modal-mask" id="principleModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pTitle">
-    <div class="modal-head">
-      <h2 id="pTitle" data-i18n="principleTitle">羽毛球远身场地落点 · 计算原理</h2>
-      <button class="modal-close" id="principleClose" aria-label="关闭">×</button>
+<!-- ============ Drawer ============ -->
+<div class="drawer-mask" id="drawerMask"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h3 data-i18n="panelTitle">参数调节</h3>
+    <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body">
+    <p class="note" style="margin:0 0 16px" data-i18n="dragHint">提示：目标点 / 准备点的深度（z）与高度（y），请直接在「侧视图」上下拖动圆点调整；左右（x）在「主视图」拖动。</p>
+
+    <div class="group">
+      <div class="group-title" data-i18n="grpBody">身体参数</div>
+      <label class="field">
+        <span data-i18n="heightLabel">身高</span>
+        <input type="range" id="heightSlider" min="140" max="200" step="1" value="173">
+        <b class="val" id="heightVal">173cm</b>
+      </label>
+      <p class="note" data-i18n="heightNote">身高会按比例缩放骨骼长度（臂长、肩高、腿长等），并重算画布视野。</p>
     </div>
-    <div class="modal-body" id="principleBody"></div>
+
+    <div class="group">
+      <div class="group-title" data-i18n="grpRom">关节限位阈值（成人 ROM，可调）</div>
+      <label class="field">
+        <span data-i18n="romAdd">肩内收 ≤</span>
+        <input type="range" id="addSlider" min="0" max="60" step="5" value="25">
+        <b class="val" id="addVal">25°</b>
+      </label>
+      <label class="field">
+        <span data-i18n="romIr">肩内旋 ≤</span>
+        <input type="range" id="irSlider" min="0" max="120" step="5" value="90">
+        <b class="val" id="irVal">90°</b>
+      </label>
+      <label class="field">
+        <span data-i18n="romEr">肩外旋 ≤</span>
+        <input type="range" id="erSlider" min="0" max="120" step="5" value="90">
+        <b class="val" id="erVal">90°</b>
+      </label>
+      <p class="note" data-i18n="romNote">固定项：肘 ≤ 145°、肩上举 ≤ 175°；上举上限随「上举平面」变化：侧 / 前 175° → 身后 50° → 躯干内侧 25°。</p>
+    </div>
+
+    <div class="group">
+      <div class="group-title" data-i18n="grpShot">出球限位（拍面法线朝向）</div>
+      <label class="field">
+        <span data-i18n="shotUp">向上 ≤</span>
+        <input type="range" id="shotUpSlider" min="0" max="90" step="5" value="60">
+        <b class="val" id="shotUpVal">60°</b>
+      </label>
+      <label class="field">
+        <span data-i18n="shotDown">向下 ≤</span>
+        <input type="range" id="shotDownSlider" min="0" max="90" step="5" value="30">
+        <b class="val" id="shotDownVal">30°</b>
+      </label>
+      <label class="field">
+        <span data-i18n="shotAzim">左右 ≤</span>
+        <input type="range" id="shotAzimSlider" min="0" max="90" step="5" value="30">
+        <b class="val" id="shotAzimVal">30°</b>
+      </label>
+      <p class="note" data-i18n="shotNote">法线 = 肩肘 · 肘腕平面法向量；须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ 说明 Modal ============ -->
+<div class="modal-mask" id="infoModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="modal-head">
+      <h2 id="infoTitle" data-i18n="modalTitle">羽毛球近身躯干落点 · 计算说明</h2>
+      <button class="modal-close" id="infoClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <div data-lang-block="zh">
+        <p class="lead"><b>一句话：</b>先算出 3D 解，把 z 丢掉投影到画面，再在 2D 上看肘落在「肩→拍端」连线的哪一侧——<b>下方是正手（L 形）</b>，<b>上方是反手（反 L 形）</b>。</p>
+        <h3>一、三步判形状</h3>
+        <ol>
+          <li><b>步骤 1</b>：3D IK 算出肘和拍端的 3D 坐标</li>
+          <li><b>步骤 2</b>：丢掉 z，把肩 / 肘 / 拍端投影到 2D 画面</li>
+          <li><b>步骤 3</b>：在 2D 画面上，看肘在「肩→拍端」连线的<b>下方</b>（L 形 = 正手）还是<b>上方</b>（反 L 形 = 反手）</li>
+        </ol>
+        <p class="muted">判据只看形状，不看左右；正手 / 反手都能覆盖左右两侧。画布上画出肩→拍端淡灰虚线，并用竖直虚线标出肘到连线的垂足，直观看到判据。深度 z 现在在侧视图中拖动调整。</p>
+        <h3>二、关节限位（默认开启）</h3>
+        <p>在 3D IK 之后再加一道人体活动范围（ROM）检查，剔除「连杆够得到、但关节做不到」的假可达姿势。</p>
+        <p><b>完整成人上肢 ROM</b>（主动活动度：AAOS 标准值 / 中文康复量角器标准表 / PMC 上肢 ROM 表；躯干固定的模型取偏保守一档）：</p>
+        <ul>
+          <li>肘 <b>屈曲 ≤ 145°</b>（140–150），过伸 0°（不能反折）；外翻 0–15 / 内翻 0–10（模型无此自由度）</li>
+          <li>肩 <b>外展 / 前屈 ≤ 175°</b>（0–180）、<b>后伸 ≤ 50°</b>（0–50/60）、<b>内收（过中线）≤ 25°</b>（0–20/30）
+            <br>——本模型合成一条「<b>上举上限随上举平面变化</b>」：在正侧（外展面）/ 正前（前屈面）可到 175°，转到正后（后伸面）只剩 50°，转到正对躯干内侧（内收面）只剩 25°，中间线性插值。这条就是「正手大臂不可能伸到左下角」的根因：往躯干一侧（−x）越偏，允许的上举角越小</li>
+          <li>肩 <b>内旋 ≤ 90° / 外旋 ≤ 90°</b>（绕上臂轴量「前臂方位」；中立位 = 上臂垂下、屈肘 90°、前臂指向前方，上臂上举时中立位跟着转）。手垂在身体下方而肘却甩到身前 / 身后，或低位正手要极度内旋才够得到，都会被这条剔掉</li>
+          <li>水平内收 0–135、水平外展 0–30；前臂旋前 / 旋后各 0–80（由「出球限位」的拍面朝向体现）；腕 背伸 70 / 掌屈 80 / 桡偏 20 / 尺偏 30（腕+手并为刚体，未建）</li>
+        </ul>
+        <h3>三、躯干碰撞（默认开启）</h3>
+        <p>躯干按 x ∈ [−0.40, 0]、深度 ±0.14 m 的椭圆柱建模，<b>肩→肘、肘→腕任一段穿入身体即剔除</b>；它与「肩内收 ≤ 25°」配合，把左下（跨过身体）那一整片假可达区域删掉。</p>
+        <p class="muted">取消勾选可与无限制版对照。热力图只显示有解（可达）的区域，其余位置保持透明。</p>
+        <h3>四、出球方向限位（默认开启）</h3>
+        <p>拍面法线 = 「肩→肘」与「肘→腕」两直线所构成<b>平面的法向量</b>（= 上臂方向 × 前臂方向，取朝前 +z 一侧）。击球点须同时满足三重朝向约束：</p>
+        <ol>
+          <li>有向前 (+z) 分量；</li>
+          <li>朝上 / 朝下（仰角）在 [−30°, +60°] 内；</li>
+          <li>朝左 / 朝右（水平偏角）在 ±30° 内。</li>
+        </ol>
+        <p>任一不满足即被剔除。仰角、左右阈值均可调。</p>
+        <ul>
+          <li><b>侧视图</b>（深度 z–高度）画绿色<b>仰角锥</b>与出球箭头 → 看朝上 / 朝下是否越界</li>
+          <li><b>俯视图</b>（左右 x–深度 z）画绿色<b>左右锥</b>与出球箭头 → 看拍面水平朝向是否朝前</li>
+        </ul>
+        <h3>五、视图与交互</h3>
+        <ul>
+          <li><b>主视图</b>（左右 x–高度 y）：热力图 + 人体 + 当前手臂姿势；左上角色标面板可任意拖动</li>
+          <li><b>侧视图</b>（深度 z–高度 y）：高度与主图严格对齐，标出准备手 / 目标手的前后（深度）位置；<b>上下拖动圆点即可改高度 y 与深度 z</b></li>
+          <li><b>俯视图</b>（左右 x–深度 z）：前 = 上，看拍面法线的水平朝向</li>
+          <li>初始点 z 独立：准备点的深度用侧视图单独拖动，不再和目标击球点的 z 绑定</li>
+          <li><b>双击主视图</b>可显示 / 隐藏侧视图与俯视图；左上角滑块图标打开「参数调节」抽屉；顶部右侧箭头收起 / 展开标题栏</li>
+        </ul>
+        <h3>六、身高与镜像</h3>
+        <ul>
+          <li><b>身高滑块</b>（140–200cm）：按比例缩放全部骨骼长度，并重算画布可达视野</li>
+          <li><b>左右镜像</b>：仅翻转显示。正手/反手的<b>求解</b>不变，但屏幕上的形状标签会 L↔反 L 互换（因为左右翻转过）</li>
+        </ul>
+      </div>
+      <div data-lang-block="en">
+        <p class="lead"><b>In one sentence:</b> solve the 3D IK first, drop z to project onto the picture, then look at which side of the shoulder→racket line the elbow falls on — <b>below = forehand (L-shape)</b>, <b>above = backhand (anti-L)</b>.</p>
+        <h3>1. Three steps to classify</h3>
+        <ol>
+          <li><b>Step 1</b>: 3D IK computes the 3D coordinates of the elbow and the racket end.</li>
+          <li><b>Step 2</b>: drop z, project shoulder / elbow / racket end onto the 2D picture.</li>
+          <li><b>Step 3</b>: on the 2D picture, look at whether the elbow is <b>below</b> the shoulder→racket line (L = forehand) or <b>above</b> (anti-L = backhand).</li>
+        </ol>
+        <p class="muted">The rule only depends on shape, not left/right; both forehand and backhand cover both sides. The canvas draws the shoulder→racket dashed line and a vertical dashed line from the elbow to its foot of perpendicular, so the rule is visible. Depth z is now adjusted by dragging in the side view.</p>
+        <h3>2. Joint limits (on by default)</h3>
+        <p>After the 3D IK, a human range-of-motion (ROM) check is applied to remove "the linkage reaches, but the joint cannot" false-positives.</p>
+        <p><b>Full adult upper-limb ROM</b> (active ROM: AAOS values / Chinese goniometry standard / PMC upper-limb ROM; the trunk-fixed model takes the conservative end):</p>
+        <ul>
+          <li>Elbow <b>flexion ≤ 145°</b> (140–150), no hyperextension; valgus 0–15 / varus 0–10 (not modeled)</li>
+          <li>Shoulder <b>abduction / flexion ≤ 175°</b> (0–180), <b>extension ≤ 50°</b> (0–50/60), <b>adduction (across midline) ≤ 25°</b> (0–20/30)
+            <br>— this model synthesizes one rule: "the elevation cap depends on the elevation plane": 175° in the pure lateral (abduction) / pure front (flexion) plane, only 50° in the pure back (extension) plane, only 25° toward the trunk (adduction) plane, linearly interpolated. This is the root cause of "the forehand upper arm cannot reach the lower-left corner": the more the arm goes toward the trunk side (−x), the smaller the allowed elevation.</li>
+          <li>Shoulder <b>internal rotation ≤ 90° / external rotation ≤ 90°</b> (the "forearm direction" is measured around the humeral axis; neutral = arm hanging, elbow flexed 90°, forearm pointing forward; the neutral reference rotates with the arm when raised). A forearm hanging below the body while the elbow swings forward / backward, or a low forehand that needs extreme internal rotation, is rejected by this rule</li>
+          <li>Horizontal adduction 0–135, horizontal abduction 0–30; forearm pronation / supination 0–80 each (reflected by the "shot-direction limits" on the racket face); wrist extension 70 / flexion 80 / radial deviation 20 / ulnar deviation 30 (wrist + hand treated as a rigid body, not modeled)</li>
+        </ul>
+        <h3>3. Trunk collision (on by default)</h3>
+        <p>The trunk is modeled as an elliptical cylinder with x ∈ [−0.40, 0] and depth ±0.14 m. <b>If either shoulder→elbow or elbow→wrist enters the body, the pose is rejected</b>; together with "shoulder adduction ≤ 25°", this deletes the whole lower-left (cross-body) false-reachable region.</p>
+        <p class="muted">Uncheck to compare against the unrestricted version. The heatmap only paints reachable (solvable) cells; everything else stays transparent.</p>
+        <h3>4. Shot-direction limits (on by default)</h3>
+        <p>The racket-face normal = the <b>normal of the plane</b> formed by the shoulder→elbow and elbow→wrist lines (= upper-arm direction × forearm direction, taken on the forward (+z) side). The contact point must satisfy three orientation constraints simultaneously:</p>
+        <ol>
+          <li>has a forward (+z) component;</li>
+          <li>up / down (elevation) within [−30°, +60°];</li>
+          <li>left / right (azimuth) within ±30°.</li>
+        </ol>
+        <p>Any violation rejects the point. The elevation and lateral thresholds are adjustable.</p>
+        <ul>
+          <li><b>Side view</b> (depth z–height) draws the green <b>elevation cone</b> and the shot arrow → check the up / down limits.</li>
+          <li><b>Top view</b> (left–right x–depth z) draws the green <b>azimuth cone</b> and the shot arrow → check the horizontal heading.</li>
+        </ul>
+        <h3>5. Views and interaction</h3>
+        <ul>
+          <li><b>Main view</b> (left–right x–height y): heatmap + body + current arm pose; the color-bar panel can be dragged anywhere</li>
+          <li><b>Side view</b> (depth z–height y): height pixel-aligned with the main view, showing the front/back (depth) position of the ready / target hands; <b>drag the dots up/down to change height y and depth z</b></li>
+          <li><b>Top view</b> (left–right x–depth z): forward = up, shows the horizontal heading of the racket-face normal</li>
+          <li>Ready-point z is independent: its depth is dragged separately in the side view, no longer bound to the target contact z</li>
+          <li><b>Double-click the main view</b> to show / hide the side view and top view; the slider icon at top-left opens the "Parameters" drawer; the arrow at top-right collapses / expands the header</li>
+        </ul>
+        <h3>6. Height & mirror</h3>
+        <ul>
+          <li><b>Height slider</b> (140–200cm): scales all bone lengths proportionally and recomputes the reachable canvas view</li>
+          <li><b>Mirror</b>: visual only. Forehand/backhand <b>solving</b> stays the same, but the on-screen shape labels swap L↔anti-L (since left/right is flipped)</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-(function(){
-  var mask = document.getElementById('principleModal');
-  var credit = document.getElementById('credit');
+// ======================= 3D 向量工具 =======================
+const V3 = {
+  add: (a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  sub: (a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  scale: (v,s)=>[v[0]*s,v[1]*s,v[2]*s],
+  dot: (a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross: (a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+  len: v=>Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]),
+  norm: v=>{const l=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);return l>1e-12?[v[0]/l,v[1]/l,v[2]/l]:[0,0,0];}
+};
+function angleBetween(a,b){const c=Math.max(-1,Math.min(1,V3.dot(a,b)));return Math.acos(c);}
+const clampv = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // Modal 已解析完成，重新应用一次语言以填充原理说明
-  if (typeof window.__applyLang === 'function') window.__applyLang();
+// ======================= 基础常量 =======================
+const BASE_H = 1.73;
+const SCALE = 250;
+let userHeight = 1.73;
+let heightScale = 1;
 
-  function openM(){ mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeM(){ mask.classList.remove('open'); document.body.style.overflow = ''; }
+let SHOULDER_H, GROUND_PY, OY, OX;
+let L1, L2, L3, L23;
+let SW, HIP_DROP, KNEE_DROP, ANKLE_DROP, HEAD_R, HEAD_CY, NECK_LEN;
+let X_MIN, X_MAX, Y_MIN, Y_MAX;
+let W, H;
 
-  if (credit){
-    credit.addEventListener('dblclick', openM);
-    var lastTap = 0;
-    credit.addEventListener('touchend', function(e){
-      var now = Date.now();
-      if (now - lastTap < 350){ e.preventDefault(); openM(); lastTap = 0; }
-      else { lastTap = now; }
-    }, {passive:false});
+const OMEGA_S = 5, OMEGA_E = 7;
+const T_MIN = 0.05, T_MAX = 0.70;
+const Z_MIN = -0.20, Z_MAX = 0.90;
+const STEP = 6;
+const ALPHA_N = 16;
+const PERP_TOL = 0.02;
+const DEG = Math.PI / 180;
+const DOWN = [0, -1, 0];
+const FWD  = [0, 0, 1];
+const HIT_RADIUS = 26;
+const SIDE_HIT_RADIUS = 22;
+
+const CBAR_W = 8, CBAR_H = 170;
+const CBAR_PAD_X = 9, CBAR_PAD_TOP = 44, CBAR_PAD_BOT = 16;
+const CBAR_MARGIN_X = 20;
+const CBAR_Y_RATIO  = 0.38;
+
+const TRUNK = { cx: -0.20, cz: 0, ax: 0.20, az: 0.14, yTop: 0.10, yBot: -0.95 };
+
+const ROM = {
+  ELBOW_MAX  : 145,
+  SH_ABD_MAX : 175,
+  SH_EXT_MAX : 50,
+  SH_ADD_MAX : 25,
+  IR_MAX     : 90,
+  ER_MAX     : 90
+};
+
+// ======================= 躯干碰撞 =======================
+function inTrunk(p) {
+  if (p[1] > TRUNK.yTop || p[1] < TRUNK.yBot) return false;
+  const dx = (p[0] - TRUNK.cx) / TRUNK.ax, dz = (p[2] - TRUNK.cz) / TRUNK.az;
+  return dx*dx + dz*dz < 0.98;
+}
+function segHitsTrunk(A, B) {
+  for (let tt = 0.25; tt <= 1.0 + 1e-9; tt += 0.25) {
+    if (inTrunk([A[0]+(B[0]-A[0])*tt, A[1]+(B[1]-A[1])*tt, A[2]+(B[2]-A[2])*tt])) return true;
+  }
+  return false;
+}
+
+// ======================= 国际化 =======================
+const I18N = {
+  zh: {
+    langBtn: 'EN',
+    title: '羽毛球近身躯干落点',
+    subtitle: '双击主视图可显示 / 隐藏侧视图与俯视图',
+    optAuto: '自动（L / 反 L 取快）',
+    optFh: '只看正手（L 形）',
+    optBh: '只看反手（反 L 形）',
+    chkBoundary: '边界',
+    chkRom: '关节限位',
+    chkBody: '躯干碰撞',
+    chkShot: '出球限位',
+    chkRomTitle: '人体关节活动范围限制',
+    chkBodyTitle: '躯干碰撞：手臂不得穿入身体',
+    chkShotTitle: '出球方向必须向前且在仰角带内',
+    btnMirror: '左右镜像',
+    panelTitle: '参数调节',
+    dragHint: '提示：目标点 / 准备点的深度（z）与高度（y），请直接在「侧视图」上下拖动圆点调整；左右（x）在「主视图」拖动。',
+    grpBody: '身体参数',
+    heightLabel: '身高',
+    heightNote: '身高会按比例缩放骨骼长度（臂长、肩高、腿长等），并重算画布视野。',
+    grpRom: '关节限位阈值（成人 ROM，可调）',
+    romAdd: '肩内收 ≤',
+    romIr: '肩内旋 ≤',
+    romEr: '肩外旋 ≤',
+    romNote: '固定项：肘 ≤ 145°、肩上举 ≤ 175°；上举上限随「上举平面」变化：侧 / 前 175° → 身后 50° → 躯干内侧 25°。',
+    grpShot: '出球限位（拍面法线朝向）',
+    shotUp: '向上 ≤',
+    shotDown: '向下 ≤',
+    shotAzim: '左右 ≤',
+    shotNote: '法线 = 肩肘 · 肘腕平面法向量；须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。',
+    footerCredit: '创作 · 保留所有权利',
+    modalTitle: '羽毛球近身躯干落点 · 计算说明',
+    drawerBtnTitle: '参数调节',
+    headerCollapseTitle: '收起 / 展开标题栏',
+    ground: '地面',
+    shoulder: '肩',
+    elbow: '肘',
+    wrist: '腕',
+    racket: '拍端',
+    ready: '准备',
+    target: '目标',
+    shapeL: 'L形',
+    shapeAntiL: '反L形',
+    shapeNeutral: '中立',
+    shapeLText: 'L形→正手',
+    shapeAntiLText: '反L形→反手',
+    shapeNeutralText: '中立',
+    fast: '快',
+	mid: '中',
+    slow: '慢',
+    sideTitle: '侧视图 (z–y)',
+    sideDepth: 'z → 深度 (m)',
+    topTitle: '俯视图 (x–z)',
+    cbTitle: '移动耗时-秒',
+    cbHint: '越短越快',
+    unitNote: '单位: m',
+    axisUnitMain: 'x / y 单位: m（相对肩关节）',
+    allowCone: '出球锥',
+    allowAzim: '±',
+    noForward: '无前向',
+    shotDeg: '出球',
+    lateralDeg: '左右',
+    ibTarget: '目标',
+    ibReady: '准备',
+    ibFh: '正手',
+    ibBh: '反手',
+    ibAdopted: '采用',
+    ibOkT: (t, s) => `${t}s · ${s}`,
+    reasonRom: '超ROM',
+    reasonBody: '穿躯干',
+    reasonShot: '出球限位',
+    reasonShape: '属对侧',
+    reasonNone: '无解',
+    fhRom: (tags) => '正手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
+    fhBody: '正手：有几何解，但手臂会穿入躯干（跨过身体）被剔除',
+    fhShot: '正手：拍面朝向超限(向前/仰角/左右)被剔除',
+    fhShape: '正手：够得到、关节也够，但该姿势是反 L 形（属反手）',
+    fhNone: '正手：无可用解',
+    bhRom: (tags) => '反手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
+    bhBody: '反手：有几何解，但手臂会穿入躯干（跨过身体）被剔除',
+    bhShot: '反手：拍面朝向超限(向前/仰角/左右)被剔除',
+    bhShape: '反手：够得到、关节也够，但该姿势是 L 形（属正手）',
+    bhNone: '反手：无可用解'
+  },
+  en: {
+    langBtn: '中',
+    title: 'Badminton Body Landing Spot',
+    subtitle: 'Double-click the main view to show / hide the side and top views',
+    optAuto: 'Auto (faster of L / anti-L)',
+    optFh: 'Forehand only (L)',
+    optBh: 'Backhand only (anti-L)',
+    chkBoundary: 'Boundary',
+    chkRom: 'ROM',
+    chkBody: 'Trunk collision',
+    chkShot: 'Shot limits',
+    chkRomTitle: 'Joint range-of-motion limits',
+    chkBodyTitle: 'Trunk collision: arm cannot enter the body',
+    chkShotTitle: 'Shot must go forward and stay within the elevation band',
+    btnMirror: 'Mirror',
+    panelTitle: 'Parameters',
+    dragHint: 'Hint: drag the Ready / Target dots in the Side View up/down to change depth (z) and height (y); drag in the Main View to change left/right (x).',
+    grpBody: 'Body',
+    heightLabel: 'Height',
+    heightNote: 'Height scales all bone lengths proportionally (arm, shoulder height, legs) and recomputes the canvas view.',
+    grpRom: 'Joint ROM limits (adult, adjustable)',
+    romAdd: 'Shoulder adduction ≤',
+    romIr: 'Shoulder IR ≤',
+    romEr: 'Shoulder ER ≤',
+    romNote: 'Fixed: elbow ≤ 145°, shoulder elevation ≤ 175°; the elevation cap depends on the elevation plane: lateral / front 175° → behind 50° → trunk side 25°.',
+    grpShot: 'Shot-direction limits (racket-face normal)',
+    shotUp: 'Up ≤',
+    shotDown: 'Down ≤',
+    shotAzim: 'Lateral ≤',
+    shotNote: 'Normal = normal of the shoulder-elbow · elbow-wrist plane; must point forward (+z), elevation ∈ [−down, +up], azimuth ∈ [−lateral, +lateral].',
+    footerCredit: 'Created · All Rights Reserved',
+    modalTitle: 'Badminton Body Landing Spot · Methodology',
+    drawerBtnTitle: 'Parameters',
+    headerCollapseTitle: 'Collapse / expand header',
+    ground: 'Ground',
+    shoulder: 'Shoulder',
+    elbow: 'Elbow',
+    wrist: 'Wrist',
+    racket: 'Racket',
+    ready: 'Ready',
+    target: 'Target',
+    shapeL: 'L',
+    shapeAntiL: 'anti-L',
+    shapeNeutral: 'neutral',
+    shapeLText: 'L → forehand',
+    shapeAntiLText: 'anti-L → backhand',
+    shapeNeutralText: 'neutral',
+    fast: 'Fast',
+	mid: 'Mid',
+    slow: 'Slow',
+    sideTitle: 'Side view (z–y)',
+    sideDepth: 'z → depth (m)',
+    topTitle: 'Top view (x–z)',
+    cbTitle: 'Move time (s)',
+    cbHint: 'shorter = faster',
+    unitNote: 'unit: m',
+    axisUnitMain: 'x / y in m (from shoulder)',
+    allowCone: 'Cone',
+    allowAzim: '±',
+    noForward: 'no fwd',
+    shotDeg: 'Shot',
+    lateralDeg: 'Lat',
+    ibTarget: 'Target',
+    ibReady: 'Ready',
+    ibFh: 'FH',
+    ibBh: 'BH',
+    ibAdopted: 'adopted',
+    ibOkT: (t, s) => `${t}s · ${s}`,
+    reasonRom: 'ROM exceeded',
+    reasonBody: 'hits trunk',
+    reasonShot: 'shot limit',
+    reasonShape: 'other side',
+    reasonNone: 'no sol.',
+    fhRom: (tags) => 'FH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
+    fhBody: 'FH: IK solved but arm would enter the trunk (cross-body)',
+    fhShot: 'FH: shot direction out of limits (forward / elevation / lateral)',
+    fhShape: 'FH: reachable and within ROM, but the pose is anti-L (belongs to backhand)',
+    fhNone: 'FH: no solution',
+    bhRom: (tags) => 'BH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
+    bhBody: 'BH: IK solved but arm would enter the trunk (cross-body)',
+    bhShot: 'BH: shot direction out of limits (forward / elevation / lateral)',
+    bhShape: 'BH: reachable and within ROM, but the pose is L (belongs to forehand)',
+    bhNone: 'BH: no solution'
+  }
+};
+
+let lang = 'zh';
+function t(key, ...args){
+  const v = (I18N[lang] && I18N[lang][key]) || (I18N.zh[key]);
+  if (typeof v === 'function') return v(...args);
+  return v !== undefined ? v : key;
+}
+
+// ======================= 状态 =======================
+let modelMode = 'auto';
+let showBoundary = true;
+let useRomLimit = true;
+let flip = false;
+let currentZ = 0;
+let readyZ = 0;
+let useShotLimit = true;
+let useTrunkCollision = true;
+let shotUpMax = 60;
+let shotDownMax = 30;
+let shotAzimuthMax = 30;
+
+const readyPoint = { wx: 0.0, wy: -1.0 };
+const targetPoint = { wx: 0.5, wy: 0.3 };
+let readyIkCache = null;
+
+let dragMode = null;
+let sideDragMode = null;
+let sideVisible = false;
+
+let colorBarPos = { x: CBAR_MARGIN_X, y: 0 };
+let colorBarBox = null;
+let colorBarDrag = null;
+
+let pointerDown = null;
+let lastTap = { t: 0, x: 0, y: 0 };
+
+let winners = null, gridCols = 0, gridRows = 0;
+
+// ======================= 画布 =======================
+const canvas = document.getElementById('cv');
+const ctx    = canvas.getContext('2d');
+const bg = document.createElement('canvas');
+const bgCtx = bg.getContext('2d');
+
+const SWE = 380, THE = 280, TWE = 380;
+
+function w2p(x, y) {
+  const sx = flip ? -1 : 1;
+  return [OX + sx * x * SCALE, OY - y * SCALE];
+}
+function p2w(px, py) {
+  const sx = flip ? -1 : 1;
+  return [sx * (px - OX) / SCALE, (OY - py) / SCALE];
+}
+
+// ======================= 身高 → 几何 =======================
+function applyHeight(){
+  const k = heightScale = userHeight / BASE_H;
+
+  L1 = 0.32 * k;
+  L2 = 0.26 * k;
+  L3 = 0.55 * k;
+  L23 = L2 + L3;
+  SW = 0.40 * k;
+  HIP_DROP = 0.53 * k;
+  KNEE_DROP = 0.95 * k;
+  ANKLE_DROP = 1.36 * k;
+  HEAD_R = 0.10 * k;
+  HEAD_CY = 0.20 * k;
+  NECK_LEN = 0.10 * k;
+  SHOULDER_H = 1.43 * k;
+
+  TRUNK.cx = -0.20 * k;
+  TRUNK.ax = 0.20 * k;
+  TRUNK.az = 0.14 * k;
+  TRUNK.yTop = 0.10 * k;
+  TRUNK.yBot = -0.95 * k;
+
+  Y_MAX = L1 + L23 + 0.12;
+  Y_MIN = -SHOULDER_H - 0.06;
+
+  X_MAX = L1 + L23 + 0.15;
+  X_MIN = -(L1 + L23 * 0.80 + 0.10 + 0.30);
+
+  const PAD_X = 24, PAD_Y = 24;
+  W = Math.round((X_MAX - X_MIN) * SCALE) + PAD_X * 2;
+  H = Math.round((Y_MAX - Y_MIN) * SCALE) + PAD_Y * 2;
+
+  OX = PAD_X - X_MIN * SCALE;
+  OY = PAD_Y + Y_MAX * SCALE;
+  GROUND_PY = OY + SHOULDER_H * SCALE;
+
+  colorBarPos.x = CBAR_MARGIN_X;
+  colorBarPos.y = Math.round(H * CBAR_Y_RATIO);
+}
+
+// ======================= 画布自适应 =======================
+function setBitmap(cv, cssW, cssH, lw, lh){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.style.width = cssW + 'px';
+  cv.style.height = cssH + 'px';
+  const pxW = Math.max(1, Math.round(cssW * dpr));
+  const pxH = Math.max(1, Math.round(cssH * dpr));
+  if (cv.width !== pxW)  cv.width = pxW;
+  if (cv.height !== pxH) cv.height = pxH;
+  const g = cv.getContext('2d');
+  g.setTransform(pxW / lw, 0, 0, pxH / lh, 0, 0);
+}
+
+const wrapEl = document.querySelector('.canvas-wrap');
+const mainColEl = document.querySelector('.main-col');
+const sideEl = document.getElementById('canvasSide');
+const cvSide = document.getElementById('cvSide');
+const ctx2 = cvSide.getContext('2d');
+const cvTop = document.getElementById('cvTop');
+const ctx3 = cvTop.getContext('2d');
+
+function layout(){
+  const cs = getComputedStyle(wrapEl);
+  const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  const availW = Math.max(220, wrapEl.clientWidth - padX);
+  const narrow = window.innerWidth <= 1180;
+  const gap = 12;
+  const maxMainH = Math.max(280, Math.min(window.innerHeight * 0.82, 820));
+
+  let mainW;
+  if (narrow || !sideVisible){
+    mainW = Math.min(availW, W, maxMainH * W / H);
+  } else {
+    const k = (SWE / H) * (H / W);
+    mainW = Math.min(W, (availW - gap) / (1 + k), maxMainH * W / H);
+  }
+  mainW = Math.max(220, Math.round(mainW));
+  const mainH = Math.round(mainW * H / W);
+
+  setBitmap(canvas, mainW, mainH, W, H);
+  if (mainColEl) mainColEl.style.width = mainW + 'px';
+
+  if (sideVisible){
+    let sideW;
+    if (narrow){
+      const maxSideH = Math.min(window.innerHeight * 0.72, 600);
+      sideW = Math.min(availW, 340, maxSideH * SWE / H);
+    } else {
+      sideW = mainW * (SWE / H) * (H / W);
+      sideW = Math.min(sideW, availW * 0.42);
+    }
+    sideW = Math.max(150, Math.round(sideW));
+    const sideH = Math.round(sideW * H / SWE);
+    setBitmap(cvSide, sideW, sideH, SWE, H);
+
+    const topW = sideW;
+    const topH = Math.round(topW * THE / TWE);
+    setBitmap(cvTop, topW, topH, TWE, THE);
+
+    if (sideEl) sideEl.style.width = sideW + 'px';
   }
 
-  document.getElementById('principleClose').addEventListener('click', closeM);
+  renderHeatmap();
+  drawScene();
+}
+
+let layoutRaf = 0;
+function requestLayout(){
+  if (layoutRaf) return;
+  layoutRaf = requestAnimationFrame(() => {
+    layoutRaf = 0;
+    layout();
+  });
+}
+
+// ======================= 3D IK =======================
+function ik3D(P, alpha) {
+  const r = V3.len(P);
+  if (r < Math.abs(L1 - L23) + 1e-9 || r > L1 + L23 - 1e-9) return null;
+  if (r < 1e-9) return null;
+
+  const d = V3.scale(P, 1/r);
+
+  const cosE = (L1*L1 + L23*L23 - r*r) / (2*L1*L23);
+  const thetaElbow = Math.PI - Math.acos(Math.max(-1, Math.min(1, cosE)));
+
+  const cosS = (L1*L1 + r*r - L23*L23) / (2*L1*r);
+  const thetaS = Math.acos(Math.max(-1, Math.min(1, cosS)));
+
+  const C = V3.scale(d, L1 * Math.cos(thetaS));
+  const R = L1 * Math.sin(thetaS);
+
+  let uRef = [0, -1, 0];
+  let u = V3.sub(uRef, V3.scale(d, V3.dot(uRef, d)));
+  if (V3.len(u) < 0.02) {
+    uRef = [1, 0, 0];
+    u = V3.sub(uRef, V3.scale(d, V3.dot(uRef, d)));
+  }
+  u = V3.norm(u);
+  const v = V3.cross(d, u);
+
+  const E = V3.add(C, V3.add(
+    V3.scale(u, R * Math.cos(alpha)),
+    V3.scale(v, R * Math.sin(alpha))
+  ));
+
+  const upperDir = V3.norm(E);
+  const foreDir = V3.norm(V3.sub(P, E));
+
+  return { E, P, upperDir, foreDir, thetaElbow, thetaS };
+}
+
+// ======================= 关节角 =======================
+function jointAngles(ik) {
+  const u = ik.upperDir;
+  const elev = angleBetween(u, DOWN) / DEG;
+  const abdF = Math.atan2(u[0], -u[1]) / DEG;
+  let rho = 0, rotDefined = false;
+  const f0 = V3.sub(ik.foreDir, V3.scale(u, V3.dot(ik.foreDir, u)));
+  const fl = V3.len(f0);
+  if (fl > 0.12) {
+    rotDefined = true;
+    const f = V3.scale(f0, 1 / fl);
+    let r0;
+    const ax = V3.cross(DOWN, u), al = V3.len(ax);
+    const th = angleBetween(DOWN, u);
+    if (al < 1e-6) {
+      r0 = V3.norm(V3.sub(FWD, V3.scale(u, V3.dot(FWD, u))));
+    } else {
+      const k = V3.scale(ax, 1 / al);
+      const kv = V3.dot(k, FWD), kxv = V3.cross(k, FWD);
+      r0 = V3.norm(V3.add(
+        V3.add(V3.scale(FWD, Math.cos(th)), V3.scale(kxv, Math.sin(th))),
+        V3.scale(k, kv * (1 - Math.cos(th)))
+      ));
+    }
+    const c = Math.max(-1, Math.min(1, V3.dot(r0, f)));
+    const sgn = V3.dot(u, V3.cross(r0, f)) >= 0 ? 1 : -1;
+    rho = Math.acos(c) / DEG * sgn;
+  }
+  const az = Math.atan2(u[2], u[0]) / DEG;
+  return { elev, abdF, rho, rotDefined, az };
+}
+
+function maxElevation(az) {
+  const a = Math.abs(az);
+  if (az >= 0) return a <= 90 ? ROM.SH_ABD_MAX
+                              : ROM.SH_ABD_MAX + (a - 90) / 90 * (ROM.SH_ADD_MAX - ROM.SH_ABD_MAX);
+  return a <= 90 ? ROM.SH_ABD_MAX + a / 90 * (ROM.SH_EXT_MAX - ROM.SH_ABD_MAX)
+                 : ROM.SH_EXT_MAX + (a - 90) / 90 * (ROM.SH_ADD_MAX - ROM.SH_EXT_MAX);
+}
+
+function jointFullCheck(ik) {
+  const tags = [];
+  const a = jointAngles(ik);
+  if (useRomLimit) {
+    const eDeg = ik.thetaElbow / DEG;
+    if (eDeg > ROM.ELBOW_MAX)    tags.push(`肘屈${eDeg.toFixed(0)}°>${ROM.ELBOW_MAX}°`);
+    if (a.elev > ROM.SH_ABD_MAX) tags.push(`肩上举${a.elev.toFixed(0)}°>${ROM.SH_ABD_MAX}°`);
+    const cap = maxElevation(a.az);
+    if (Math.sin(a.elev * DEG) > 0.09 && a.elev > cap + 0.5) {
+      tags.push(`肩上举${a.elev.toFixed(0)}°>${cap.toFixed(0)}°`);
+    }
+    if (a.rotDefined) {
+      if (a.rho  > ROM.IR_MAX) tags.push(`肩内旋${a.rho.toFixed(0)}°>${ROM.IR_MAX}°`);
+      if (-a.rho > ROM.ER_MAX) tags.push(`肩外旋${(-a.rho).toFixed(0)}°>${ROM.ER_MAX}°`);
+    }
+  }
+  let body = false;
+  if (useTrunkCollision) {
+    const S = [0, 0, 0];
+    const Wp = V3.add(ik.E, V3.scale(ik.foreDir, L2));
+    body = segHitsTrunk(S, ik.E) || segHitsTrunk(ik.E, Wp);
+  }
+  return { ok: tags.length === 0 && !body, tags, body, a };
+}
+
+// ======================= 出球限位 =======================
+function shotFaceNormal(ik) {
+  const n = V3.cross(ik.upperDir, ik.foreDir);
+  const L = V3.len(n);
+  if (L < 1e-6) return null;
+  let p = V3.scale(n, 1 / L);
+  if (p[2] < 0) p = V3.scale(p, -1);
+  return p;
+}
+function shotCheck(ik) {
+  const n = shotFaceNormal(ik);
+  if (!n) return { ok:false, forward:false, elev:NaN, azim:NaN, elevOk:false, azimOk:false };
+  const forward = n[2] > 1e-6;
+  const elev = Math.asin(Math.max(-1, Math.min(1, n[1]))) / DEG;
+  const azim = Math.atan2(n[0], n[2]) / DEG;
+  const elevOk = (elev <= shotUpMax && elev >= -shotDownMax);
+  const azimOk = (Math.abs(azim) <= shotAzimuthMax);
+  return { ok: forward && elevOk && azimOk, forward, elev, azim, elevOk, azimOk };
+}
+
+// ======================= 2D 投影与形状 =======================
+function project2D(v3) { return [v3[0], v3[1]]; }
+
+function classify2D(S2D, E2D, P2D) {
+  const dx = P2D[0] - S2D[0];
+  const dy = P2D[1] - S2D[1];
+  const d2 = dx*dx + dy*dy;
+  if (d2 < 1e-6) return { shape: 'neutral', perpY: 0 };
+  const tt = ((E2D[0]-S2D[0])*dx + (E2D[1]-S2D[1])*dy) / d2;
+  const projX = S2D[0] + tt*dx;
+  const projY = S2D[1] + tt*dy;
+  const perp = (dx*(E2D[1]-S2D[1]) - dy*(E2D[0]-S2D[0])) / Math.sqrt(d2);
+  let shape;
+  if (perp < -PERP_TOL) shape = 'L';
+  else if (perp >  PERP_TOL) shape = 'antiL';
+  else shape = 'neutral';
+  return { shape, perp, perpY: perp, projX, projY };
+}
+
+function displayShape(shape){
+  if (!flip) return shape;
+  if (shape === 'L') return 'antiL';
+  if (shape === 'antiL') return 'L';
+  return shape;
+}
+
+// ======================= 姿态时间 =======================
+function poseTime(ik) {
+  if (!readyIkCache) {
+    return Math.max(angleBetween(ik.upperDir, DOWN) / OMEGA_S, ik.thetaElbow / OMEGA_E);
+  }
+  const d1 = angleBetween(ik.upperDir, readyIkCache.upperDir);
+  const d2 = Math.abs(ik.thetaElbow - readyIkCache.thetaElbow);
+  return Math.max(d1 / OMEGA_S, d2 / OMEGA_E);
+}
+
+// ======================= 单侧求解 =======================
+function solveAt(P3, side) {
+  let best = null, bestT = Infinity, bestShape = null, bestCls = null;
+  let furthest = 0;
+  let rejectTags = [];
+
+  const S2D = [0, 0];
+  const P2D = project2D(P3);
+
+  for (let i = 0; i < ALPHA_N; i++) {
+    const alpha = i * 2 * Math.PI / ALPHA_N;
+    const ik = ik3D(P3, alpha);
+    if (!ik) continue;
+
+    const jc = jointFullCheck(ik);
+    if (!jc.ok) {
+      const st = jc.body ? 2 : 1;
+      if (st > furthest) {
+        furthest = st;
+        rejectTags = jc.body ? ['手臂穿入躯干'] : jc.tags.slice(0, 4);
+      } else if (st === furthest && !jc.body) {
+        for (const tg of jc.tags) {
+          if (rejectTags.length >= 4) break;
+          if (!rejectTags.includes(tg)) rejectTags.push(tg);
+        }
+      }
+      continue;
+    }
+    if (furthest < 3) { furthest = 3; rejectTags = []; }
+
+    if (useShotLimit && !shotCheck(ik).ok) {
+      if (furthest <= 3) { furthest = 3; rejectTags = ['拍面朝向超限']; }
+      continue;
+    }
+    furthest = 4;
+
+    const E2D = project2D(ik.E);
+    const cls = classify2D(S2D, E2D, P2D);
+
+    if (side === 'fh' && cls.shape === 'antiL') continue;
+    if (side === 'bh' && cls.shape === 'L')     continue;
+
+    const tm = poseTime(ik);
+    if (tm < bestT) {
+      bestT = tm;
+      best = ik;
+      bestShape = cls.shape;
+      bestCls = cls;
+    }
+  }
+
+  if (!best) {
+    const st = furthest >= 4 ? 'shape' : furthest === 3 ? 'shot' : furthest === 2 ? 'body' : furthest === 1 ? 'rom' : 'unreach';
+    return { status: st, rejectTags };
+  }
+  return { status: 'ok', ik: best, time: bestT, side, shape: bestShape, cls: bestCls };
+}
+
+function solveBoth(P) {
+  return { fh: solveAt(P, 'fh'), bh: solveAt(P, 'bh') };
+}
+
+function pickResult(both, mode) {
+  if (mode === 'fh') return both.fh;
+  if (mode === 'bh') return both.bh;
+  const fhOk = both.fh.status === 'ok';
+  const bhOk = both.bh.status === 'ok';
+  if (fhOk && bhOk) return both.fh.time <= both.bh.time ? both.fh : both.bh;
+  if (fhOk) return both.fh;
+  if (bhOk) return both.bh;
+  return { status: 'unreach' };
+}
+
+// ======================= 准备姿态 =======================
+function bestReadyIk(P) {
+  let best = null, bestScore = Infinity;
+  for (let i = 0; i < ALPHA_N; i++) {
+    const ik = ik3D(P, i * 2 * Math.PI / ALPHA_N);
+    if (!ik) continue;
+    const jc = jointFullCheck(ik);
+    if (!jc.ok) continue;
+    const a = jc.a;
+    const score = Math.abs(a.rho) + Math.max(0, -a.abdF) + 0.2 * (ik.thetaElbow / DEG);
+    if (score < bestScore) { bestScore = score; best = ik; }
+  }
+  return best;
+}
+function updateReadyPose() {
+  readyIkCache = bestReadyIk([readyPoint.wx, readyPoint.wy, readyZ]);
+}
+
+// ======================= 配色 =======================
+function jet(tv) {
+  tv = tv < 0 ? 0 : tv > 1 ? 1 : tv;
+  let r, g, b;
+  if      (tv < 0.25) { r=0;              g=tv/0.25*255;      b=255; }
+  else if (tv < 0.50) { const u=(tv-0.25)/0.25; r=0;         g=255; b=255-u*255; }
+  else if (tv < 0.75) { const u=(tv-0.50)/0.25; r=u*255;     g=255; b=0; }
+  else                { const u=(tv-0.75)/0.25; r=255;       g=255-u*255; b=0; }
+  return [r|0,g|0,b|0];
+}
+function timeColor(T) {
+  const [r,g,b] = jet(1 - (T - T_MIN) / (T_MAX - T_MIN));
+  const a = 0.85;
+  return [
+    Math.round(r*a + 255*(1-a)),
+    Math.round(g*a + 255*(1-a)),
+    Math.round(b*a + 255*(1-a))
+  ];
+}
+
+function shapeShort(sh) {
+  return sh === 'L' ? t('shapeL') : sh === 'antiL' ? t('shapeAntiL') : t('shapeNeutral');
+}
+function shapeLabel(sh) {
+  return sh === 'L' ? t('shapeLText') : sh === 'antiL' ? t('shapeAntiLText') : t('shapeNeutralText');
+}
+
+// ======================= 热力图 =======================
+function renderHeatmap() {
+  const z = currentZ;
+  const sx = flip ? -1 : 1;
+
+  gridCols = Math.ceil(W / STEP);
+  gridRows = Math.ceil(H / STEP);
+  winners = new Array(gridCols * gridRows).fill(null);
+
+  bg.width = gridCols;
+  bg.height = gridRows;
+  const img = bgCtx.createImageData(gridCols, gridRows);
+  const data = img.data;
+
+  for (let row = 0; row < gridRows; row++) {
+    const cy = (row + 0.5) * STEP;
+    const wy = (OY - cy) / SCALE;
+    if (wy < Y_MIN || wy > Y_MAX) continue;
+
+    for (let col = 0; col < gridCols; col++) {
+      const cx = (col + 0.5) * STEP;
+      const wx = sx * (cx - OX) / SCALE;
+      if (wx < X_MIN || wx > X_MAX) continue;
+
+      const P = [wx, wy, z];
+      const r = pickResult(solveBoth(P), modelMode);
+      if (r.status !== 'ok') continue;
+
+      const [rr,gg,bb] = timeColor(r.time);
+      const idx = (row * gridCols + col) * 4;
+      data[idx] = rr; data[idx+1] = gg; data[idx+2] = bb; data[idx+3] = 217;
+      winners[row * gridCols + col] = r.side;
+    }
+  }
+  bgCtx.putImageData(img, 0, 0);
+}
+
+function drawBoundary() {
+  if (!showBoundary || modelMode !== 'auto' || !winners) return;
+  ctx.save();
+  ctx.fillStyle = 'rgba(15,23,42,0.55)';
+  const half = STEP / 2;
+  for (let row = 0; row < gridRows; row++) {
+    for (let col = 0; col < gridCols; col++) {
+      const w = winners[row * gridCols + col];
+      if (!w) continue;
+      const wR = (col + 1 < gridCols) ? winners[row * gridCols + (col + 1)] : null;
+      const wD = (row + 1 < gridRows) ? winners[(row + 1) * gridCols + col] : null;
+      if ((wR && wR !== w) || (wD && wD !== w)) {
+        ctx.beginPath();
+        ctx.arc(col * STEP + half, row * STEP + half, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+// ======================= 人体 =======================
+function drawGround() {
+  const [gx0, gy] = w2p(X_MIN, -SHOULDER_H);
+  const [gx1]     = w2p(X_MAX, -SHOULDER_H);
+  const left = Math.min(gx0, gx1), right = Math.max(gx0, gx1);
+  ctx.save();
+  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = '11px system-ui'; ctx.fillStyle = '#94a3b8';
+  ctx.fillText(t('ground'), left + 8, gy - 6);
+  ctx.fillText(t('axisUnitMain'), 14, H - 12);
+  ctx.restore();
+}
+
+function drawBody() {
+  drawGround();
+  ctx.save();
+  ctx.strokeStyle = '#4b5563';
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  const [srX, srY] = w2p(0, 0);
+  const [slX, slY] = w2p(-SW, 0);
+  const [wrX, wrY] = w2p(-0.05 * heightScale, -0.28 * heightScale);
+  const [wlX, wlY] = w2p(-0.35 * heightScale, -0.28 * heightScale);
+  const [hrX, hrY] = w2p(-0.06 * heightScale, -HIP_DROP);
+  const [hlX, hlY] = w2p(-0.34 * heightScale, -HIP_DROP);
+
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(srX, srY); ctx.lineTo(slX, slY);
+  ctx.quadraticCurveTo(wlX-6, (slY+wlY)/2, wlX, wlY);
+  ctx.quadraticCurveTo(hlX-2, (wlY+hlY)/2, hlX, hlY);
+  ctx.lineTo(hrX, hrY);
+  ctx.quadraticCurveTo(wrX+2, (wrY+hrY)/2, wrX, wrY);
+  ctx.quadraticCurveTo(wrX+6, (srY+wrY)/2, srX, srY);
+  ctx.stroke();
+
+  const [n1x,n1y]=w2p(-0.25*heightScale,0), [n2x,n2y]=w2p(-0.25*heightScale,NECK_LEN);
+  const [n3x,n3y]=w2p(-0.15*heightScale,0), [n4x,n4y]=w2p(-0.15*heightScale,NECK_LEN);
+  ctx.beginPath();
+  ctx.moveTo(n1x,n1y); ctx.lineTo(n2x,n2y);
+  ctx.moveTo(n3x,n3y); ctx.lineTo(n4x,n4y);
+  ctx.stroke();
+
+  const [hx,hy]=w2p(-0.20*heightScale,HEAD_CY);
+  ctx.beginPath(); ctx.arc(hx,hy,HEAD_R*SCALE,0,Math.PI*2); ctx.stroke();
+
+  ctx.lineWidth = 1.8;
+  let [ex1,ey1]=w2p(-0.245*heightScale,0.225*heightScale), [ex2,ey2]=w2p(-0.225*heightScale,0.225*heightScale);
+  ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
+  [ex1,ey1]=w2p(-0.175*heightScale,0.225*heightScale); [ex2,ey2]=w2p(-0.155*heightScale,0.225*heightScale);
+  ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
+  [ex1,ey1]=w2p(-0.22*heightScale,0.15*heightScale); [ex2,ey2]=w2p(-0.18*heightScale,0.15*heightScale);
+  ctx.beginPath(); ctx.moveTo(ex1,ey1); ctx.lineTo(ex2,ey2); ctx.stroke();
+
+  ctx.lineWidth = 8;
+  let [rHx,rHy]=w2p(-0.06*heightScale,-HIP_DROP), [rKx,rKy]=w2p(-0.06*heightScale,-KNEE_DROP);
+  let [rAx,rAy]=w2p(-0.06*heightScale,-ANKLE_DROP), [rFx,rFy]=w2p(0.06*heightScale,-ANKLE_DROP);
+  ctx.beginPath(); ctx.moveTo(rHx,rHy); ctx.lineTo(rKx,rKy); ctx.lineTo(rAx,rAy); ctx.stroke();
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(rAx,rAy); ctx.lineTo(rFx,rFy); ctx.stroke();
+
+  ctx.lineWidth = 8;
+  let [lHx,lHy]=w2p(-0.34*heightScale,-HIP_DROP), [lKx,lKy]=w2p(-0.34*heightScale,-KNEE_DROP);
+  let [lAx,lAy]=w2p(-0.34*heightScale,-ANKLE_DROP), [lFx,lFy]=w2p(-0.22*heightScale,-ANKLE_DROP);
+  ctx.beginPath(); ctx.moveTo(lHx,lHy); ctx.lineTo(lKx,lKy); ctx.lineTo(lAx,lAy); ctx.stroke();
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(lAx,lAy); ctx.lineTo(lFx,lFy); ctx.stroke();
+
+  ctx.lineWidth = 7;
+  let [asX,asY]=w2p(-SW,0), [aeX,aeY]=w2p(-SW-0.04*heightScale,-0.30*heightScale);
+  let [awX,awY]=w2p(-SW-0.06*heightScale,-0.55*heightScale), [ahX,ahY]=w2p(-SW-0.06*heightScale,-0.72*heightScale);
+  ctx.beginPath();
+  ctx.moveTo(asX,asY); ctx.lineTo(aeX,aeY);
+  ctx.lineTo(awX,awY); ctx.lineTo(ahX,ahY);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ======================= 关节标签（无引线动态定位） =======================
+const LABEL_DIRS = [
+  [1, 0], [1, -1], [0, -1], [-1, -1],
+  [-1, 0], [-1, 1], [0, 1], [1, 1]
+];
+
+function rrPath(c, x, y, w, h, r) {
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+  c.beginPath();
+  c.moveTo(x + rr, y);
+  c.arcTo(x + w, y,     x + w, y + h, rr);
+  c.arcTo(x + w, y + h, x,     y + h, rr);
+  c.arcTo(x,     y + h, x,     y,     rr);
+  c.arcTo(x,     y,     x + w, y,     rr);
+  c.closePath();
+}
+
+function layoutLabels(items) {
+  ctx.save();
+  const placed = [];
+  const results = [];
+  const gap = 6;
+  const font = '600 12px system-ui';
+  const padX = 6, padY = 4;
+
+  for (const it of items) {
+    ctx.font = font;
+    const tw = ctx.measureText(it.text).width;
+    const w = tw + padX * 2;
+    const h = 12 + padY * 2;
+    const r = it.r || 4;
+
+    let startIdx = 2;
+    if (isFinite(it.avoidAngle)) {
+      const idx = Math.round(-it.avoidAngle / (Math.PI / 4));
+      startIdx = ((idx % 8) + 8) % 8;
+    }
+
+    let best = null, bestScore = -Infinity;
+
+    for (let k = 0; k < 8; k++) {
+      const [dx, dy] = LABEL_DIRS[(startIdx + k) % 8];
+      let bx, by;
+      if (dx === 0)      bx = it.ax - w / 2;
+      else if (dx > 0)   bx = it.ax + r + gap;
+      else               bx = it.ax - r - gap - w;
+      if (dy === 0)      by = it.ay - h / 2;
+      else if (dy > 0)   by = it.ay + r + gap;
+      else               by = it.ay - r - gap - h;
+
+      if (bx < 4 || by < 4 || bx + w > W - 4 || by + h > H - 4) continue;
+
+      const box = { x: bx, y: by, w, h };
+      let overlap = 0;
+      for (const p of placed) {
+        const ix = Math.max(0, Math.min(box.x + box.w, p.x + p.w) - Math.max(box.x, p.x));
+        const iy = Math.max(0, Math.min(box.y + box.h, p.y + p.h) - Math.max(box.y, p.y));
+        overlap += ix * iy;
+      }
+      const distScore = -Math.hypot(bx + w / 2 - it.ax, by + h / 2 - it.ay) * 0.5;
+      const score = -k * 200 - overlap * 50 + distScore;
+      if (score > bestScore) { bestScore = score; best = box; }
+    }
+
+    if (!best) {
+      let bx = it.ax + 14, by = it.ay - 30;
+      if (bx + w > W - 4) bx = Math.max(4, it.ax - 14 - w);
+      if (by < 4) by = it.ay + 14;
+      if (by + h > H - 4) by = H - 4 - h;
+      best = { x: bx, y: by, w, h };
+    }
+
+    placed.push(best);
+    results.push({ ...it, box: best });
+  }
+
+  ctx.restore();
+  return results;
+}
+
+function drawLabelBox(box, text, color) {
+  ctx.save();
+  rrPath(ctx, box.x, box.y, box.w, box.h, 6);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.font = '600 12px system-ui';
+  ctx.fillStyle = color;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, box.x + 6, box.y + box.h / 2 + 0.5);
+  ctx.restore();
+}
+
+// ======================= 主视图 3D 手臂 =======================
+function drawArm3D(ik, side, cls) {
+  const E = ik.E;
+  const Wp = V3.add(E, V3.scale(ik.foreDir, L2));
+  const P  = ik.P;
+
+  const [sX, sY] = w2p(0, 0);
+  const [eX, eY] = w2p(E[0], E[1]);
+  const [wX, wY] = w2p(Wp[0], Wp[1]);
+  const [pX, pY] = w2p(P[0],  P[1]);
+  const [projX2, projY2] = w2p(cls.projX, cls.projY);
+
+  const zAvg = (E[2] + P[2]) / 2;
+  const alphaVis = 0.45 + 0.55 * Math.max(0, Math.min(1, zAvg / 0.8));
+
+  const isBH = side === 'bh';
+  const cUp = isBH ? `rgba(14,165,233,${alphaVis})` : `rgba(249,115,22,${alphaVis})`;
+  const cFo = isBH ? `rgba(37,99,235,${alphaVis})`  : `rgba(220,38,38,${alphaVis})`;
+  const cRa = isBH ? `rgba(30,64,175,${alphaVis})`  : `rgba(185,28,28,${alphaVis})`;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+
+  ctx.strokeStyle = 'rgba(100,116,139,0.45)';
+  ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(pX, pY); ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(15,23,42,0.55)';
+  ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(eX, eY); ctx.lineTo(projX2, projY2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.beginPath(); ctx.arc(projX2, projY2, 3, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(15,23,42,0.6)'; ctx.fill();
+
+  ctx.strokeStyle = cUp; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(eX, eY); ctx.stroke();
+
+  ctx.strokeStyle = cFo; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(eX, eY); ctx.lineTo(wX, wY); ctx.stroke();
+
+  ctx.strokeStyle = cRa; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(wX, wY); ctx.lineTo(pX, pY); ctx.stroke();
+
+  const dx = pX - wX, dy = pY - wY;
+  const projAng = Math.atan2(dy, dx);
+  const headFrac = (L3 - HEAD_R) / L3;
+  const hX = wX + dx * headFrac, hY = wY + dy * headFrac;
+  ctx.save();
+  ctx.translate(hX, hY);
+  ctx.rotate(projAng);
+  ctx.strokeStyle = cRa; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, HEAD_R * SCALE, 0.065 * heightScale * SCALE, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+
+  const drawJointDot = (x, y) => {
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 7);
+    ctx.fillStyle = '#111'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+  };
+  drawJointDot(sX, sY);
+  drawJointDot(eX, eY);
+  drawJointDot(wX, wY);
+
+  ctx.beginPath(); ctx.arc(pX, pY, 3.2, 0, 7);
+  ctx.fillStyle = cRa; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+  const elbowMidX = (sX + wX) / 2, elbowMidY = (sY + wY) / 2;
+  const shDisp = displayShape(cls.shape);
+  const labels = [
+    {
+      ax: sX, ay: sY, r: 5,
+      text: t('shoulder'),
+      color: '#334155',
+      avoidAngle: Math.atan2(sY - eY, sX - eX)
+    },
+    {
+      ax: eX, ay: eY, r: 5,
+      text: `${t('elbow')}(${shapeLabel(shDisp)})`,
+      color: isBH ? '#1d4ed8' : '#b91c1c',
+      avoidAngle: Math.atan2(eY - elbowMidY, eX - elbowMidX)
+    },
+    {
+      ax: wX, ay: wY, r: 5,
+      text: t('wrist'),
+      color: '#334155',
+      avoidAngle: Math.atan2(wY - eY, wX - eX)
+    },
+    {
+      ax: pX, ay: pY, r: 4,
+      text: `${t('racket')} z=${P[2] >= 0 ? '+' : ''}${P[2].toFixed(2)}m`,
+      color: isBH ? '#1e40af' : '#991b1b',
+      avoidAngle: Math.atan2(pY - wY, pX - wX)
+    }
+  ];
+
+  const placedLabels = layoutLabels(labels);
+  for (const lb of placedLabels) {
+    drawLabelBox(lb.box, lb.text, lb.color);
+  }
+
+  ctx.save();
+  ctx.font = '11px ui-monospace,monospace';
+  const perpTxt = `perpY=${cls.perpY.toFixed(3)}`;
+  const tw = ctx.measureText(perpTxt).width;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fillRect(projX2 + 6, projY2 - 14, tw + 4, 15);
+  ctx.fillStyle = cls.perpY < 0 ? '#b91c1c' : cls.perpY > 0 ? '#1e40af' : '#475569';
+  ctx.fillText(perpTxt, projX2 + 8, projY2 - 3);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// ======================= 准备姿态虚线 =======================
+function drawReadyPose() {
+  const ik = readyIkCache;
+  if (!ik) return;
+  const E = ik.E;
+  const Wp = V3.add(E, V3.scale(ik.foreDir, L2));
+  const P = ik.P;
+
+  const [sX, sY] = w2p(0, 0);
+  const [eX, eY] = w2p(E[0], E[1]);
+  const [wX, wY] = w2p(Wp[0], Wp[1]);
+  const [pX, pY] = w2p(P[0], P[1]);
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(71,85,105,0.55)';
+  ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(sX, sY); ctx.lineTo(eX, eY); ctx.lineTo(wX, wY); ctx.lineTo(pX, pY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ======================= 手柄 =======================
+function drawHandleOn(c, cx, cy, color, label, radius) {
+  c.save();
+  c.beginPath(); c.arc(cx, cy, radius, 0, 7);
+  c.fillStyle = 'rgba(255,255,255,0.88)'; c.fill();
+  c.strokeStyle = color; c.lineWidth = 2.4; c.stroke();
+  c.beginPath(); c.arc(cx, cy, radius * 0.32, 0, 7);
+  c.fillStyle = color; c.fill();
+  c.font = '11px system-ui';
+  const tw = c.measureText(label).width;
+  c.fillStyle = 'rgba(255,255,255,0.92)';
+  c.fillRect(cx - tw/2 - 3, cy + radius + 2, tw + 6, 14);
+  c.fillStyle = color;
+  c.fillText(label, cx - tw/2, cy + radius + 13);
+  c.restore();
+}
+
+function drawMainHandles(r) {
+  const [rx, ry] = w2p(readyPoint.wx, readyPoint.wy);
+  drawHandleOn(ctx, rx, ry, '#64748b', t('ready'), 13);
+
+  const [tx, ty] = w2p(targetPoint.wx, targetPoint.wy);
+  const color = r.status === 'ok' ? (r.side === 'bh' ? '#2563eb' : '#dc2626') : '#9ca3af';
+  drawHandleOn(ctx, tx, ty, color, t('target'), 13);
+}
+
+// ======================= 视图徽章 =======================
+function drawViewBadge(c, x, y, text, sub) {
+  c.save();
+  c.font = 'bold 13px system-ui';
+  let w = c.measureText(text).width;
+  if (sub) {
+    c.font = '11px system-ui';
+    w = Math.max(w, c.measureText(sub).width);
+  }
+  const padX = 11, dot = 12, h = sub ? 41 : 26;
+  rrPath(c, x, y, w + dot + padX * 2, h, 9);
+  c.fillStyle = 'rgba(255,255,255,0.93)'; c.fill();
+  c.strokeStyle = 'rgba(22,107,70,0.24)'; c.lineWidth = 1; c.stroke();
+  c.beginPath(); c.arc(x + padX + 3.5, y + (sub ? 14 : 13), 3.2, 0, 7);
+  c.fillStyle = '#22a06b'; c.fill();
+  c.font = 'bold 13px system-ui'; c.fillStyle = '#111';
+  c.fillText(text, x + padX + dot, y + 18);
+  if (sub) {
+    c.font = '11px system-ui'; c.fillStyle = '#64748b';
+    c.fillText(sub, x + padX + dot, y + 33);
+  }
+  c.restore();
+}
+
+// ======================= 色标 =======================
+function drawColorBar() {
+  ctx.save();
+
+  const DOT_R = 8;
+  const NUM_GAP = 4;
+  const NUM_FONT = '11px ui-monospace,monospace';
+
+  ctx.font = '700 11px system-ui';
+  const titleW = ctx.measureText(t('cbTitle')).width;
+  ctx.font = '10px system-ui';
+  const hintW = ctx.measureText(t('cbHint')).width;
+  ctx.font = NUM_FONT;
+  const numW = Math.max(
+    ctx.measureText(T_MIN.toFixed(2)).width,
+    ctx.measureText(((T_MIN + T_MAX) / 2).toFixed(2)).width,
+    ctx.measureText(T_MAX.toFixed(2)).width
+  );
+
+  const dotOver = Math.max(0, DOT_R - CBAR_W / 2);
+  const contentW = dotOver + CBAR_W + dotOver + NUM_GAP + numW;
+  const boxW = Math.max(titleW, hintW, contentW) + CBAR_PAD_X * 2;
+  const boxH = CBAR_H + CBAR_PAD_TOP + CBAR_PAD_BOT;
+
+  colorBarPos.x = clampv(colorBarPos.x, 0, Math.max(0, W - boxW));
+  colorBarPos.y = clampv(colorBarPos.y, 0, Math.max(0, H - boxH));
+
+  const boxX = colorBarPos.x, boxY = colorBarPos.y;
+  const barX = boxX + CBAR_PAD_X + dotOver;
+  const barY = boxY + CBAR_PAD_TOP;
+  const dotCx = barX + CBAR_W / 2;
+  const numX = barX + CBAR_W + dotOver + NUM_GAP;
+  colorBarBox = { x: boxX, y: boxY, w: boxW, h: boxH };
+
+  rrPath(ctx, boxX, boxY, boxW, boxH, 13);
+  ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.font = '700 11px system-ui'; ctx.fillStyle = '#334155';
+  ctx.fillText(t('cbTitle'), boxX + CBAR_PAD_X, boxY + 17);
+  ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+  ctx.fillText(t('cbHint'), boxX + CBAR_PAD_X, boxY + 32);
+
+  ctx.save();
+  rrPath(ctx, barX, barY, CBAR_W, CBAR_H, CBAR_W / 2);
+  ctx.clip();
+  for (let i = 0; i < CBAR_H; i++) {
+    const T = T_MIN + (T_MAX - T_MIN) * i / (CBAR_H - 1);
+    const [r, g, b] = timeColor(T);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(barX, barY + i, CBAR_W, 1);
+  }
+  ctx.restore();
+  rrPath(ctx, barX, barY, CBAR_W, CBAR_H, CBAR_W / 2);
+  ctx.strokeStyle = 'rgba(15,23,42,0.16)'; ctx.lineWidth = 1; ctx.stroke();
+
+  const rows = [
+    { y: barY,                  key: 'fast', color: '#b91c1c', num: T_MIN },
+    { y: barY + CBAR_H / 2,     key: 'mid',  color: '#16a34a', num: (T_MIN + T_MAX) / 2 },
+    { y: barY + CBAR_H,         key: 'slow', color: '#1d4ed8', num: T_MAX }
+  ];
+
+  ctx.textBaseline = 'middle';
+  for (const row of rows) {
+    ctx.beginPath();
+    ctx.arc(dotCx, row.y, DOT_R, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = row.color;
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    ctx.font = '700 10px system-ui';
+    ctx.fillStyle = row.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(t(row.key), dotCx, row.y + 0.5);
+    ctx.textAlign = 'left';
+
+    ctx.font = NUM_FONT;
+    ctx.fillStyle = '#475569';
+    ctx.fillText(row.num.toFixed(2), numX, row.y);
+  }
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.restore();
+}
+
+// ======================= 信息栏 =======================
+const infoBarEl = document.getElementById('infoBar');
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function failReasonShort(res) {
+  if (res.status === 'rom')  return t('reasonRom');
+  if (res.status === 'body') return t('reasonBody');
+  if (res.status === 'shot') return t('reasonShot');
+  if (res.status === 'shape')return t('reasonShape');
+  return t('reasonNone');
+}
+
+function failReasonLong(side, res) {
+  const tags = (res.rejectTags || []).join(', ');
+  const isFh = side === 'fh';
+  if (res.status === 'rom')  return t(isFh ? 'fhRom' : 'bhRom', tags);
+  if (res.status === 'body') return t(isFh ? 'fhBody' : 'bhBody');
+  if (res.status === 'shot') return t(isFh ? 'fhShot' : 'bhShot');
+  if (res.status === 'shape')return t(isFh ? 'fhShape' : 'bhShape');
+  return t(isFh ? 'fhNone' : 'bhNone');
+}
+
+function updateInfoBar(both, r) {
+  let html = '';
+
+  html += `<div class="ib-item ib-target"><span class="ib-k">${t('ibTarget')}</span><span class="ib-v">(${targetPoint.wx.toFixed(2)}, ${targetPoint.wy.toFixed(2)}, ${currentZ.toFixed(2)})</span></div>`;
+  html += `<div class="ib-item ib-ready"><span class="ib-k">${t('ibReady')}</span><span class="ib-v">(${readyPoint.wx.toFixed(2)}, ${readyPoint.wy.toFixed(2)}, ${readyZ.toFixed(2)})</span></div>`;
+
+  for (const side of ['fh', 'bh']) {
+    const res = both[side];
+    const adopted = (r.status === 'ok' && r.side === side);
+    const prefix = side === 'fh' ? 'ib-fh' : 'ib-bh';
+    if (res.status === 'ok') {
+      html += `<div class="ib-item ${prefix}${adopted ? ' ib-adopted' : ''}"><span class="ib-k">${t(side === 'fh' ? 'ibFh' : 'ibBh')}</span><span class="ib-v">${t('ibOkT', res.time.toFixed(3), shapeShort(displayShape(res.shape)))}</span></div>`;
+    } else {
+      const title = escapeHtml(failReasonLong(side, res));
+      html += `<div class="ib-item ${prefix} ib-fail" title="${title}"><span class="ib-k">${t(side === 'fh' ? 'ibFh' : 'ibBh')}</span><span class="ib-v">${failReasonShort(res)}</span></div>`;
+    }
+  }
+
+  if (r.status === 'ok') {
+    const isFh = r.side === 'fh';
+    html += `<div class="ib-item ${isFh ? 'ib-fh' : 'ib-bh'} ib-adopted"><span class="ib-k">${t('ibAdopted')}</span><span class="ib-v">${isFh ? t('ibFh') : t('ibBh')} · ${shapeShort(displayShape(r.shape))}</span></div>`;
+  }
+
+  infoBarEl.innerHTML = html;
+}
+
+// ======================= 合成 =======================
+function drawScene() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bg, 0, 0, W, H);
+  ctx.restore();
+  drawBoundary();
+  drawBody();
+  drawReadyPose();
+
+  const P = [targetPoint.wx, targetPoint.wy, currentZ];
+  const both = solveBoth(P);
+  const r = pickResult(both, modelMode);
+  if (r.status === 'ok') drawArm3D(r.ik, r.side, r.cls);
+
+  drawColorBar();
+  drawMainHandles(r);
+  if (sideVisible) {
+    drawSide(r);
+    drawTop(r);
+  }
+  updateInfoBar(both, r);
+}
+
+function refresh() {
+  renderHeatmap();
+  drawScene();
+}
+
+// ======================= 侧视图 =======================
+const SXC = 130;
+function s2p(z, y) { return [SXC + z * SCALE, OY - y * SCALE]; }
+function sp2(px, py) { return [(px - SXC) / SCALE, (OY - py) / SCALE]; }
+
+function drawSideBody() {
+  ctx2.save();
+  ctx2.strokeStyle = '#cbd5e1'; ctx2.lineWidth = 1.5; ctx2.setLineDash([6,6]);
+  ctx2.beginPath(); ctx2.moveTo(8, GROUND_PY); ctx2.lineTo(SWE-8, GROUND_PY); ctx2.stroke();
+  ctx2.setLineDash([]);
+  ctx2.font = '11px system-ui'; ctx2.fillStyle = '#94a3b8';
+  ctx2.fillText(t('ground'), SWE-50, GROUND_PY-6);
+
+  ctx2.strokeStyle = '#4b5563'; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+  const [sx,sy] = s2p(0,0);
+  const [hx,hy] = s2p(0.03*heightScale, HEAD_CY + 0.06*heightScale);
+  ctx2.lineWidth = 2.5;
+  ctx2.beginPath(); ctx2.arc(hx, hy, HEAD_R*SCALE, 0, Math.PI*2); ctx2.stroke();
+  const [n2x,n2y] = s2p(0.03*heightScale, NECK_LEN + 0.04*heightScale);
+  ctx2.beginPath(); ctx2.moveTo(sx,sy); ctx2.lineTo(n2x,n2y); ctx2.stroke();
+  const [hipx,hipy] = s2p(-0.02*heightScale, -HIP_DROP);
+  ctx2.lineWidth = 6;
+  ctx2.beginPath(); ctx2.moveTo(sx,sy); ctx2.lineTo(hipx,hipy); ctx2.stroke();
+  ctx2.lineWidth = 8;
+  for (const off of [0.0, 0.07*heightScale]) {
+    const [kx,ky] = s2p(off+0.05*heightScale, -KNEE_DROP);
+    const [ax,ay] = s2p(off,                 -ANKLE_DROP);
+    const [fx,fy] = s2p(off+0.15*heightScale, -ANKLE_DROP);
+    ctx2.beginPath(); ctx2.moveTo(hipx,hipy); ctx2.lineTo(kx,ky); ctx2.lineTo(ax,ay); ctx2.stroke();
+    ctx2.lineWidth = 5;
+    ctx2.beginPath(); ctx2.moveTo(ax,ay); ctx2.lineTo(fx,fy); ctx2.stroke();
+    ctx2.lineWidth = 8;
+  }
+  ctx2.restore();
+}
+
+function drawSideArm(ik, color, dashed) {
+  if (!ik) return;
+  const E = ik.E;
+  const Wp = V3.add(E, V3.scale(ik.foreDir, L2));
+  const P = ik.P;
+  const [sx,sy] = s2p(0, 0);
+  const [ex,ey] = s2p(E[2],  E[1]);
+  const [wx,wy] = s2p(Wp[2], Wp[1]);
+  const [px,py] = s2p(P[2],  P[1]);
+  ctx2.save();
+  ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+  if (dashed) ctx2.setLineDash([5,4]);
+  ctx2.strokeStyle = color; ctx2.lineWidth = 7;
+  ctx2.beginPath(); ctx2.moveTo(sx,sy); ctx2.lineTo(ex,ey); ctx2.lineTo(wx,wy); ctx2.stroke();
+  ctx2.lineWidth = 4;
+  ctx2.beginPath(); ctx2.moveTo(wx,wy); ctx2.lineTo(px,py); ctx2.stroke();
+  ctx2.setLineDash([]);
+  const dx = px-wx, dy = py-wy, ang = Math.atan2(dy,dx);
+  const hf = (L3 - HEAD_R) / L3, hcx = wx+dx*hf, hcy = wy+dy*hf;
+  ctx2.save(); ctx2.translate(hcx,hcy); ctx2.rotate(ang);
+  ctx2.strokeStyle = color; ctx2.lineWidth = 2;
+  ctx2.beginPath(); ctx2.ellipse(0,0,HEAD_R*SCALE,0.065*heightScale*SCALE,0,0,Math.PI*2); ctx2.stroke();
+  ctx2.restore();
+  ctx2.fillStyle = color;
+  [[sx,sy,4],[ex,ey,4],[wx,wy,3.5],[px,py,3]].forEach(j=>{
+    ctx2.beginPath(); ctx2.arc(j[0],j[1],j[2],0,7); ctx2.fill();
+  });
+  ctx2.restore();
+}
+
+function drawShotCone(ik) {
+  const P = ik.P;
+  const [px, py] = s2p(P[2], P[1]);
+  const R = 78;
+  const aUp = -shotUpMax * DEG, aDn = shotDownMax * DEG;
+  ctx2.save();
+  if (useShotLimit) {
+    ctx2.beginPath(); ctx2.moveTo(px, py);
+    ctx2.arc(px, py, R, aUp, aDn, false); ctx2.closePath();
+    ctx2.fillStyle = 'rgba(34,197,94,0.13)'; ctx2.fill();
+    ctx2.strokeStyle = 'rgba(22,163,74,0.55)'; ctx2.lineWidth = 1;
+    for (const a of [aUp, aDn]) { ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(px + R*Math.cos(a), py + R*Math.sin(a)); ctx2.stroke(); }
+    ctx2.fillStyle = '#15803d'; ctx2.font = '10px system-ui';
+    ctx2.fillText(t('allowCone'), px + R*0.5, py - R*0.18);
+  }
+  const n = shotFaceNormal(ik);
+  if (n) {
+    const sc = shotCheck(ik);
+    const col2 = (!useShotLimit) ? '#2563eb' : (sc.elevOk ? '#16a34a' : '#dc2626');
+    const ex = px + n[2]*R, ey = py - n[1]*R;
+    ctx2.strokeStyle = col2; ctx2.lineWidth = 2.5;
+    ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(ex, ey); ctx2.stroke();
+    ctx2.beginPath(); ctx2.arc(ex, ey, 3.2, 0, 7); ctx2.fillStyle = col2; ctx2.fill();
+    ctx2.fillStyle = col2; ctx2.font = '11px ui-monospace,monospace';
+    ctx2.fillText(isNaN(sc.elev) ? t('noForward') : `${t('shotDeg')} ${sc.elev.toFixed(0)}°`, ex+5, ey-4);
+  }
+  ctx2.restore();
+}
+
+function drawSideHandles(r) {
+  const [rx, ry] = s2p(readyZ, readyPoint.wy);
+  drawHandleOn(ctx2, rx, ry, '#64748b', t('ready'), 11);
+
+  const [tx, ty] = s2p(currentZ, targetPoint.wy);
+  const color = r.status === 'ok' ? (r.side === 'bh' ? '#2563eb' : '#dc2626') : '#9ca3af';
+  drawHandleOn(ctx2, tx, ty, color, t('target'), 11);
+}
+
+function drawSide(r) {
+  ctx2.clearRect(0, 0, SWE, H);
+  drawSideBody();
+
+  ctx2.save();
+  ctx2.strokeStyle = '#cbd5e1'; ctx2.lineWidth = 1;
+  ctx2.font = '10px ui-monospace,monospace'; ctx2.fillStyle = '#94a3b8';
+  for (let z=-0.2; z<=0.9+1e-9; z+=0.2) {
+    const [zx] = s2p(z,0);
+    ctx2.beginPath(); ctx2.moveTo(zx, GROUND_PY-3); ctx2.lineTo(zx, GROUND_PY+3); ctx2.stroke();
+    ctx2.fillText(z.toFixed(1), zx-8, GROUND_PY+16);
+  }
+  ctx2.fillStyle = '#64748b'; ctx2.font = '11px system-ui';
+  ctx2.textAlign = 'right';
+  ctx2.fillText(t('sideDepth'), SWE-12, OY-10);
+  ctx2.textAlign = 'left';
+  ctx2.restore();
+
+  if (readyIkCache) drawSideArm(readyIkCache, 'rgba(100,116,139,0.85)', true);
+
+  if (r.status === 'ok') {
+    const col = r.side === 'bh' ? '#2563eb' : '#dc2626';
+    drawSideArm(r.ik, col, false);
+    drawShotCone(r.ik);
+  }
+
+  drawSideHandles(r);
+  drawViewBadge(ctx2, 12, 10, t('sideTitle'), t('unitNote'));
+}
+
+// ======================= 俯视图 =======================
+const TS  = 140;
+const TXC = TWE / 2;
+const TZ0 = THE / 2 + ((Z_MIN + Z_MAX) / 2) * TS;
+
+function t2p(x, z) { return [TXC + x * TS, TZ0 - z * TS]; }
+
+function drawTopBody() {
+  ctx3.save();
+  ctx3.strokeStyle = '#4b5563'; ctx3.lineCap = 'round'; ctx3.lineJoin = 'round';
+  const [hx, hy] = t2p(0, 0.16);
+  ctx3.lineWidth = 2;
+  ctx3.beginPath(); ctx3.arc(hx, hy, 0.10 * TS, 0, Math.PI * 2); ctx3.stroke();
+  const [s0x,s0y] = t2p(0,0), [s1x,s1y] = t2p(0,-0.12);
+  ctx3.lineWidth = 6;
+  ctx3.beginPath(); ctx3.moveTo(s0x,s0y); ctx3.lineTo(s1x,s1y); ctx3.stroke();
+  for (const fx of [-0.12, 0.12]) {
+    const [a,b]=t2p(fx,-0.16);
+    ctx3.beginPath(); ctx3.arc(a,b,5,0,7); ctx3.fillStyle='#4b5563'; ctx3.fill();
+  }
+  ctx3.restore();
+}
+
+function drawTopArm(ik, color, dashed) {
+  if (!ik) return;
+  const E = ik.E, Wp = V3.add(E, V3.scale(ik.foreDir, L2)), P = ik.P;
+  const [sx,sy]=t2p(0,0), [ex,ey]=t2p(E[0],E[2]), [wx,wy]=t2p(Wp[0],Wp[2]), [px,py]=t2p(P[0],P[2]);
+  ctx3.save(); ctx3.lineCap='round'; ctx3.lineJoin='round';
+  if (dashed) ctx3.setLineDash([5,4]);
+  ctx3.strokeStyle = color; ctx3.lineWidth = 6;
+  ctx3.beginPath(); ctx3.moveTo(sx,sy); ctx3.lineTo(ex,ey); ctx3.lineTo(wx,wy); ctx3.stroke();
+  ctx3.lineWidth = 4; ctx3.beginPath(); ctx3.moveTo(wx,wy); ctx3.lineTo(px,py); ctx3.stroke();
+  ctx3.setLineDash([]);
+  ctx3.fillStyle = color;
+  [[sx,sy,4],[ex,ey,4],[wx,wy,3.5],[px,py,3]].forEach(j=>{ ctx3.beginPath(); ctx3.arc(j[0],j[1],j[2],0,7); ctx3.fill(); });
+  ctx3.restore();
+}
+
+function drawAzimuthCone(ik) {
+  const P = ik.P; const [px,py] = t2p(P[0], P[2]); const R = 70;
+  ctx3.save();
+  if (useShotLimit) {
+    const aC = -Math.PI / 2, half = shotAzimuthMax * DEG;
+    ctx3.beginPath(); ctx3.moveTo(px,py);
+    ctx3.arc(px,py,R,aC-half,aC+half,false); ctx3.closePath();
+    ctx3.fillStyle = 'rgba(34,197,94,0.13)'; ctx3.fill();
+    ctx3.strokeStyle = 'rgba(22,163,74,0.55)'; ctx3.lineWidth = 1;
+    for (const a of [aC-half, aC+half]) {
+      ctx3.beginPath(); ctx3.moveTo(px,py);
+      ctx3.lineTo(px+R*Math.cos(a),py+R*Math.sin(a)); ctx3.stroke();
+    }
+    ctx3.fillStyle = '#15803d'; ctx3.font = '10px system-ui';
+    ctx3.fillText(t('allowAzim') + shotAzimuthMax + '°', px-28, py-R-6);
+  }
+  const n = shotFaceNormal(ik);
+  if (n) {
+    const sc = shotCheck(ik);
+    const col = (!useShotLimit) ? '#2563eb' : (sc.azimOk ? '#16a34a' : '#dc2626');
+    const hl = Math.hypot(n[0], n[2]) || 1e-6;
+    const ex = px + n[0]/hl*R, ey = py - n[2]/hl*R;
+    ctx3.strokeStyle = col; ctx3.lineWidth = 2.5;
+    ctx3.beginPath(); ctx3.moveTo(px,py); ctx3.lineTo(ex,ey); ctx3.stroke();
+    ctx3.beginPath(); ctx3.arc(ex,ey,3.2,0,7); ctx3.fillStyle=col; ctx3.fill();
+    ctx3.fillStyle = col; ctx3.font = '11px ui-monospace,monospace';
+    ctx3.fillText(isNaN(sc.azim) ? t('noForward') : `${t('lateralDeg')} ${sc.azim.toFixed(0)}°`, ex+5, ey+10);
+  }
+  ctx3.restore();
+}
+
+function drawTop(r) {
+  ctx3.clearRect(0,0,TWE,THE);
+
+  ctx3.save();
+  ctx3.strokeStyle = '#e2e8f0'; ctx3.lineWidth = 1; ctx3.setLineDash([4,4]);
+  ctx3.font = '10px ui-monospace,monospace'; ctx3.fillStyle = '#94a3b8';
+  const gridHalf = 155;
+  for (let z=-0.2; z<=0.9+1e-9; z+=0.2) {
+    const [,zy] = t2p(0,z);
+    ctx3.beginPath(); ctx3.moveTo(TXC-gridHalf,zy); ctx3.lineTo(TXC+gridHalf,zy); ctx3.stroke();
+    ctx3.fillText('z='+z.toFixed(1), TXC+gridHalf+4, zy+3);
+  }
+  ctx3.setLineDash([]);
+  ctx3.strokeStyle = '#cbd5e1';
+  const [,oy] = t2p(0,0);
+  ctx3.beginPath(); ctx3.moveTo(TXC-gridHalf,oy); ctx3.lineTo(TXC+gridHalf,oy); ctx3.stroke();
+  ctx3.fillStyle = '#94a3b8'; ctx3.font = '10px ui-monospace,monospace';
+  ctx3.fillText(t('unitNote'), TWE - 64, THE - 8);
+  drawViewBadge(ctx3, 12, 10, t('topTitle'));
+  ctx3.restore();
+
+  drawTopBody();
+
+  if (readyIkCache) drawTopArm(readyIkCache, 'rgba(100,116,139,0.85)', true);
+
+  if (r.status === 'ok') {
+    const col = r.side === 'bh' ? '#2563eb' : '#dc2626';
+    drawTopArm(r.ik, col, false);
+    drawAzimuthCone(r.ik);
+  }
+}
+
+// ======================= 指针坐标 =======================
+function eventToCanvasXY(e, cv, lw, lh) {
+  const rect = cv.getBoundingClientRect();
+  if (!rect.width || !rect.height) return [0, 0];
+  return [
+    (e.clientX - rect.left) * lw / rect.width,
+    (e.clientY - rect.top)  * lh / rect.height
+  ];
+}
+
+function pointInBox(px, py, box) {
+  return !!box && px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+}
+
+// ======================= 拖拽 =======================
+canvas.addEventListener('pointerdown', e => {
+  pointerDown = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false, src: 'main' };
+
+  const [px, py] = eventToCanvasXY(e, canvas, W, H);
+  const rect = canvas.getBoundingClientRect();
+  const cs = rect.width > 0 ? rect.width / W : 1;
+  const hitR = Math.max(HIT_RADIUS, 22 / cs);
+
+  const [rx, ry] = w2p(readyPoint.wx, readyPoint.wy);
+  const [tx, ty] = w2p(targetPoint.wx, targetPoint.wy);
+  const dR = Math.hypot(px - rx, py - ry);
+  const dT = Math.hypot(px - tx, py - ty);
+
+  if (dR <= hitR && dR <= dT) {
+    dragMode = 'ready';
+  } else if (dT <= hitR) {
+    dragMode = 'target';
+  } else if (pointInBox(px, py, colorBarBox)) {
+    colorBarDrag = { dx: px - colorBarBox.x, dy: py - colorBarBox.y };
+    canvas.style.cursor = 'grabbing';
+  } else {
+    return;
+  }
+
+  e.preventDefault();
+});
+
+cvSide.addEventListener('pointerdown', e => {
+  pointerDown = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false, src: 'side' };
+
+  const [px, py] = eventToCanvasXY(e, cvSide, SWE, H);
+  const rect = cvSide.getBoundingClientRect();
+  const cs = rect.width > 0 ? rect.width / SWE : 1;
+  const hitR = Math.max(SIDE_HIT_RADIUS, 20 / cs);
+
+  const [rx, ry] = s2p(readyZ, readyPoint.wy);
+  const [tx, ty] = s2p(currentZ, targetPoint.wy);
+  const dR = Math.hypot(px - rx, py - ry);
+  const dT = Math.hypot(px - tx, py - ty);
+
+  if (dR <= hitR && dR <= dT) sideDragMode = 'ready';
+  else if (dT <= hitR)        sideDragMode = 'target';
+  else return;
+
+  e.preventDefault();
+});
+
+cvSide.addEventListener('dblclick', e => e.preventDefault());
+canvas.addEventListener('dblclick', e => e.preventDefault());
+
+window.addEventListener('pointermove', e => {
+  if (pointerDown && !pointerDown.moved) {
+    if (Math.hypot(e.clientX - pointerDown.x, e.clientY - pointerDown.y) > 6) {
+      pointerDown.moved = true;
+    }
+  }
+
+  if (colorBarDrag) {
+    const [px, py] = eventToCanvasXY(e, canvas, W, H);
+    if (colorBarBox) {
+      colorBarPos.x = clampv(px - colorBarDrag.dx, 0, Math.max(0, W - colorBarBox.w));
+      colorBarPos.y = clampv(py - colorBarDrag.dy, 0, Math.max(0, H - colorBarBox.h));
+    }
+    drawScene();
+    return;
+  }
+
+  if (dragMode) {
+    const [px, py] = eventToCanvasXY(e, canvas, W, H);
+    const [wx, wy] = p2w(px, py);
+    if (dragMode === 'target') {
+      targetPoint.wx = wx;
+      targetPoint.wy = clampv(wy, Y_MIN, Y_MAX);
+      drawScene();
+    } else if (dragMode === 'ready') {
+      const cy = clampv(wy, Y_MIN, Y_MAX);
+      const ik = bestReadyIk([wx, cy, readyZ]);
+      if (ik) {
+        readyPoint.wx = wx;
+        readyPoint.wy = cy;
+        readyIkCache = ik;
+        drawScene();
+      }
+    }
+    return;
+  }
+
+  if (sideDragMode) {
+    const [px, py] = eventToCanvasXY(e, cvSide, SWE, H);
+    const [z, y] = sp2(px, py);
+    const cz = clampv(z, Z_MIN, Z_MAX);
+    const cy = clampv(y, Y_MIN, Y_MAX);
+    if (sideDragMode === 'target') {
+      targetPoint.wy = cy;
+      currentZ = cz;
+      drawScene();
+    } else if (sideDragMode === 'ready') {
+      const ik = bestReadyIk([readyPoint.wx, cy, cz]);
+      if (ik) {
+        readyPoint.wy = cy;
+        readyZ = cz;
+        readyIkCache = ik;
+        drawScene();
+      }
+    }
+    return;
+  }
+
+  const rect = canvas.getBoundingClientRect();
+  if (e.clientX >= rect.left && e.clientX <= rect.right &&
+      e.clientY >= rect.top  && e.clientY <= rect.bottom) {
+    const [px, py] = eventToCanvasXY(e, canvas, W, H);
+    canvas.style.cursor = pointInBox(px, py, colorBarBox) ? 'move' : '';
+  } else {
+    canvas.style.cursor = '';
+  }
+});
+
+window.addEventListener('pointerup', e => {
+  const pd = pointerDown;
+  pointerDown = null;
+
+  if (colorBarDrag) {
+    colorBarDrag = null;
+    canvas.style.cursor = '';
+    return;
+  }
+
+  let wasDragging = false;
+  if (dragMode) {
+    wasDragging = true;
+    if (dragMode === 'ready') refresh();
+    dragMode = null;
+  }
+  if (sideDragMode) {
+    wasDragging = true;
+    refresh();
+    sideDragMode = null;
+  }
+
+  if (!wasDragging && pd && pd.src === 'main' && !pd.moved) {
+    const now = performance.now();
+    const distPx = Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y);
+    if (lastTap.t > 0 && now - lastTap.t < 360 && distPx < 30) {
+      lastTap = { t: 0, x: 0, y: 0 };
+      toggleSide();
+    } else {
+      lastTap = { t: now, x: e.clientX, y: e.clientY };
+    }
+  }
+});
+
+window.addEventListener('pointercancel', () => {
+  pointerDown = null;
+  if (colorBarDrag) {
+    colorBarDrag = null;
+    canvas.style.cursor = '';
+    return;
+  }
+  if (dragMode) {
+    if (dragMode === 'ready') refresh();
+    dragMode = null;
+  }
+  if (sideDragMode) {
+    refresh();
+    sideDragMode = null;
+  }
+});
+
+function toggleSide(){
+  sideVisible = !sideVisible;
+  sideEl.classList.toggle('hidden', !sideVisible);
+  requestLayout();
+}
+
+// ======================= 顶部控件 =======================
+document.getElementById('modelSel').onchange = function () {
+  modelMode = this.value;
+  refresh();
+};
+document.getElementById('boundaryChk').onchange = function () {
+  showBoundary = this.checked;
+  drawScene();
+};
+document.getElementById('romChk').onchange = function () {
+  useRomLimit = this.checked;
+  refresh();
+};
+document.getElementById('bodyChk').onchange = function () {
+  useTrunkCollision = this.checked;
+  refresh();
+};
+document.getElementById('shotChk').onchange = function () {
+  useShotLimit = this.checked;
+  refresh();
+};
+
+const addSlider = document.getElementById('addSlider'), addVal = document.getElementById('addVal');
+const irSlider  = document.getElementById('irSlider'),  irVal  = document.getElementById('irVal');
+const erSlider  = document.getElementById('erSlider'),  erVal  = document.getElementById('erVal');
+function bindRom(slider, valEl, key) {
+  slider.addEventListener('input', () => {
+    ROM[key] = parseFloat(slider.value);
+    valEl.textContent = slider.value + '°';
+    refresh();
+  });
+}
+bindRom(addSlider, addVal, 'SH_ADD_MAX');
+bindRom(irSlider,  irVal,  'IR_MAX');
+bindRom(erSlider,  erVal,  'ER_MAX');
+
+const shotUpSlider = document.getElementById('shotUpSlider');
+const shotDownSlider = document.getElementById('shotDownSlider');
+const shotUpVal = document.getElementById('shotUpVal');
+const shotDownVal = document.getElementById('shotDownVal');
+shotUpSlider.addEventListener('input', () => {
+  shotUpMax = parseFloat(shotUpSlider.value); shotUpVal.textContent = shotUpMax + '°'; refresh();
+});
+shotDownSlider.addEventListener('input', () => {
+  shotDownMax = parseFloat(shotDownSlider.value); shotDownVal.textContent = shotDownMax + '°'; refresh();
+});
+const shotAzimSlider = document.getElementById('shotAzimSlider');
+const shotAzimVal = document.getElementById('shotAzimVal');
+shotAzimSlider.addEventListener('input', () => {
+  shotAzimuthMax = parseFloat(shotAzimSlider.value); shotAzimVal.textContent = shotAzimuthMax + '°'; refresh();
+});
+
+const heightSlider = document.getElementById('heightSlider');
+const heightVal = document.getElementById('heightVal');
+heightSlider.addEventListener('input', () => {
+  userHeight = parseFloat(heightSlider.value) / 100;
+  heightVal.textContent = heightSlider.value + 'cm';
+  applyHeight();
+  updateReadyPose();
+  layout();
+});
+
+document.getElementById('flipBtn').onclick = function () {
+  flip = !flip;
+  this.classList.toggle('active', flip);
+  refresh();
+};
+
+// ======================= 抽屉 =======================
+const drawerEl = document.getElementById('drawer');
+const drawerMaskEl = document.getElementById('drawerMask');
+function openDrawer(){
+  drawerEl.classList.add('open');
+  drawerMaskEl.classList.add('open');
+  drawerEl.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer(){
+  drawerEl.classList.remove('open');
+  drawerMaskEl.classList.remove('open');
+  drawerEl.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+document.getElementById('drawerBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+drawerMaskEl.addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+// ======================= Header 折叠 =======================
+const appEl = document.getElementById('app');
+document.getElementById('headerCollapse').addEventListener('click', () => {
+  appEl.classList.toggle('header-collapsed');
+  requestLayout();
+});
+
+// ======================= 语言 =======================
+const langBtnEl = document.getElementById('langBtn');
+
+function applyLanguage() {
+  document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+  document.title = t('title');
+  langBtnEl.textContent = t('langBtn');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('[data-lang-block]').forEach(el => {
+    el.classList.toggle('active', el.dataset.langBlock === lang);
+  });
+}
+
+langBtnEl.addEventListener('click', () => {
+  lang = (lang === 'zh') ? 'en' : 'zh';
+  applyLanguage();
+  drawScene();
+});
+
+// ======================= 说明 Modal =======================
+(function(){
+  var mask = document.getElementById('infoModal');
+  var credit = document.getElementById('credit');
+  function openM(){ mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeM(){ mask.classList.remove('open'); document.body.style.overflow = ''; }
+  document.getElementById('infoClose').addEventListener('click', closeM);
   mask.addEventListener('click', function(e){ if (e.target === mask) closeM(); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeM(); });
+
+  var lastTap = 0;
+  credit.addEventListener('dblclick', openM);
+  credit.addEventListener('touchend', function(e){
+    var now = Date.now();
+    if (now - lastTap < 350){ e.preventDefault(); openM(); lastTap = 0; }
+    else { lastTap = now; }
+  }, {passive:false});
 })();
+
+// ======================= 尺寸监听 =======================
+window.addEventListener('resize', requestLayout);
+window.addEventListener('orientationchange', () => setTimeout(requestLayout, 250));
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => requestLayout());
+  ro.observe(wrapEl);
+}
+
+// ======================= 启动 =======================
+applyHeight();
+updateReadyPose();
+applyLanguage();
+layout();
 </script>
 </body>
 </html>
