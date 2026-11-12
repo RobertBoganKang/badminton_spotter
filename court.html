@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>羽毛球落点推荐</title>
+<title>羽毛球远身场地落点</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
 <style>
   :root{
@@ -312,7 +312,7 @@
     <div class="header-left">
       <div class="logo">🏸</div>
       <div>
-        <h1 data-i18n="title">羽毛球落点推荐</h1>
+        <h1 data-i18n="title">羽毛球远身场地落点</h1>
         <p id="pageSub">双打模式 · 拖动 A / B 调整位置</p>
       </div>
     </div>
@@ -352,7 +352,7 @@
   // ================= 国际化 =================
   const I18N = {
     zh: {
-      title: '羽毛球落点推荐',
+      title: '羽毛球远身场地落点',
       subDouble: '双打模式 · 拖动 A / B 调整位置',
       subSingle: '单打模式 · 拖动对手调整位置',
       subHint: ' · 长按球员调速度，双击空白调热力图',
@@ -370,10 +370,86 @@
       speed: '速度',
       footer: '创作 · 保留所有权利',
       langBtn: 'EN',
-      principleTitle: '落点推荐 · 计算原理'
+      collapseHide: '隐藏顶部',
+      collapseShow: '展开顶部',
+      principleTitle: '羽毛球远身场地落点 · 计算原理',
+      principleHTML: `
+      <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉"我方打完能不能回中场"的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
+
+      <h3>一、场地与坐标系</h3>
+      <ul>
+        <li>单打场地：长 <code>L = 13.40 m</code>、宽 <code>W = 5.18 m</code>，球网位于 <code>y = 6.7 m</code></li>
+        <li>合法落点区域：<code>|x| ≤ 2.39，0.2 ≤ y ≤ 13.2</code></li>
+      </ul>
+
+      <h3>二、长按与双击交互</h3>
+      <ul>
+        <li><b>长按球员 A 点（500ms）</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
+        <li><b>长按球员 B 点（500ms）</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
+        <li><b>双击球员点附近</b> → 忽略（手柄由长按控制）</li>
+        <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
+        <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
+      </ul>
+      <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
+
+      <h3>三、三方向速度权重</h3>
+      <table>
+        <thead><tr><th>方向</th><th>权重</th></tr></thead>
+        <tbody>
+          <tr><td>横向（x）</td><td><code>W_X = 1.0</code></td></tr>
+          <tr><td>向前上网（dy&lt;0）</td><td><code>W_FWD = 1.15</code></td></tr>
+          <tr><td>向后后退（dy&gt;0）</td><td><code>W_BACK = 1.7</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>四、启动修正（平滑版）</h3>
+      <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
+      <p>sigmoid 让 k 在投影距离 0 处取中值，往两侧平滑过渡到 0.7 / 1.8。v=0 时 k=1。</p>
+
+      <h3>五、对手难度</h3>
+      <ol>
+        <li>加权跑动距离 × 启动修正</li>
+        <li>× 追身加成（距对手 &lt; 0.45 m 时 ×1.6）</li>
+        <li>× 贴边加成（<code>1 + 1.2·exp(-b/0.3)</code>）</li>
+      </ol>
+
+      <h3>六、热力图</h3>
+      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。双击场地空白处开关。</p>
+
+      <h3>七、总评分 J</h3>
+      <ul>
+        <li><b>单打</b>：<code>J = 对手难度 − 0.3 × 到 (0, 3.35) 的距离</code></li>
+        <li><b>双打</b>：<code>J = min(难度A, 难度B)</code></li>
+      </ul>
+      <p class="muted">红点标签旁用方括号显示 J 值，如「最优[12.3]」，四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上保证不超过红点分数。</p>
+
+      <h3>八、等难度线与结合部</h3>
+      <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。两人距离 &lt; 1.0m 时该线不绘制（无意义）。</p>
+
+      <h3>九、红点与四角次优</h3>
+      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
+
+      <h3>十、可调参数</h3>
+      <ul>
+        <li><code>W_BACK / W_FWD</code>：1.7 / 1.15</li>
+        <li><code>K_REV / K_ADV</code>：1.8 / 0.7</li>
+        <li><code>S0_DIST</code>：1.5m（平滑过渡宽度）</li>
+        <li><code>K_BODY</code>：1.6，<code>K_EDGE</code>：1.2</li>
+        <li><code>W_ME_SINGLE</code>：0.3</li>
+        <li><code>V_GAMMA</code>：3.0（手柄曲线，越大低速越精细）</li>
+        <li><code>LONG_PRESS_MS</code>：500ms（长按球员点触发速度手柄）</li>
+      </ul>
+
+      <h3>十一、局限</h3>
+      <ul>
+        <li>双打不评估我方回位</li>
+        <li>热力图"时间"是等效时间（加权距离），不是真实秒数</li>
+        <li>只算落点，不管球路</li>
+      </ul>
+      `
     },
     en: {
-      title: 'Badminton Landing Spot',
+      title: 'Badminton Court Landing Spot',
       subDouble: 'Doubles · Drag A / B to adjust',
       subSingle: 'Singles · Drag opponent to adjust',
       subHint: ' · Long-press player: velocity, double-click blank: heatmap',
@@ -391,7 +467,83 @@
       speed: 'Speed',
       footer: 'Created · All Rights Reserved',
       langBtn: '中',
-      principleTitle: 'Methodology'
+      collapseHide: 'Hide header',
+      collapseShow: 'Show header',
+      principleTitle: 'Badminton Court Landing Spot · Methodology',
+      principleHTML: `
+      <p class="lead"><b>In short:</b> Among all legal landing spots in the opponent's half, find the one that is <b>hardest for the opponent to reach</b>. <b>Singles</b> additionally deducts the cost of "can I recover to the centre after my shot"; <b>doubles</b> only considers opponent difficulty. Opponents may be stationary or have an initial velocity.</p>
+
+      <h3>1. Court and coordinate system</h3>
+      <ul>
+        <li>Singles court: length <code>L = 13.40 m</code>, width <code>W = 5.18 m</code>; net at <code>y = 6.7 m</code></li>
+        <li>Legal landing area: <code>|x| ≤ 2.39, 0.2 ≤ y ≤ 13.2</code></li>
+      </ul>
+
+      <h3>2. Long-press and double-tap interactions</h3>
+      <ul>
+        <li><b>Long-press player A (500 ms)</b> → toggle A's velocity handle; velocity resets to 0 when hidden</li>
+        <li><b>Long-press player B (500 ms)</b> → toggle B's velocity handle; velocity resets to 0 when hidden</li>
+        <li><b>Double-tap near a player dot</b> → ignored (handle is controlled by long-press)</li>
+        <li><b>Double-tap near a handle</b> → ignored (prevents accidental taps while dragging)</li>
+        <li><b>Double-tap anywhere else on the court</b> → toggle the heatmap</li>
+      </ul>
+      <p>A and B handles are independent. Drag the blue handle: inside the deadzone the velocity is 0; outside it a blue arrow appears. The speed curve is slow-first / fast-later (finer control at low speed), capped at 6 m/s.</p>
+
+      <h3>3. Three-direction velocity weights</h3>
+      <table>
+        <thead><tr><th>Direction</th><th>Weight</th></tr></thead>
+        <tbody>
+          <tr><td>Lateral (x)</td><td><code>W_X = 1.0</code></td></tr>
+          <tr><td>Forward to net (dy&lt;0)</td><td><code>W_FWD = 1.15</code></td></tr>
+          <tr><td>Backward (dy&gt;0)</td><td><code>W_BACK = 1.7</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>4. Startup correction (smooth)</h3>
+      <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
+      <p>The sigmoid makes k take its mid value at projection distance 0, blending smoothly to 0.7 / 1.8 on either side. k = 1 when v = 0.</p>
+
+      <h3>5. Opponent difficulty</h3>
+      <ol>
+        <li>Weighted running distance × startup correction</li>
+        <li>× body-shot bonus (×1.6 when distance to opponent &lt; 0.45 m)</li>
+        <li>× edge bonus (<code>1 + 1.2·exp(-b/0.3)</code>)</li>
+      </ol>
+
+      <h3>6. Heatmap</h3>
+      <p>Each cell colour = equivalent time of <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> (including startup correction). Bluer = faster, redder = slower. Double-tap blank court area to toggle.</p>
+
+      <h3>7. Total score J</h3>
+      <ul>
+        <li><b>Singles</b>: <code>J = opponent difficulty − 0.3 × distance to (0, 3.35)</code></li>
+        <li><b>Doubles</b>: <code>J = min(difficulty A, difficulty B)</code></li>
+      </ul>
+      <p class="muted">The J value is shown in brackets next to the red dot label, e.g. "Best [12.3]"; corner suboptimals likewise "2 [11.8]". Corner scores are filtered from the global grid, so they are mathematically guaranteed not to exceed the red-dot score.</p>
+
+      <h3>8. Equal-difficulty line and the gap</h3>
+      <p>The boundary where "difficulty to A equals difficulty to B" is traced numerically with marching squares. Gap points = on each side of the perpendicular to the line joining the two players, take the point that maximises <code>min(difficulty A, difficulty B)</code>. The line is not drawn when the two players are &lt; 1.0 m apart (meaningless).</p>
+
+      <h3>9. Red dot and corner suboptimals</h3>
+      <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid, same source as the red dot), sorted by J and labeled ②③④⑤ (① is taken by the red dot).</p>
+
+      <h3>10. Tunable parameters</h3>
+      <ul>
+        <li><code>W_BACK / W_FWD</code>: 1.7 / 1.15</li>
+        <li><code>K_REV / K_ADV</code>: 1.8 / 0.7</li>
+        <li><code>S0_DIST</code>: 1.5 m (smooth transition width)</li>
+        <li><code>K_BODY</code>: 1.6, <code>K_EDGE</code>: 1.2</li>
+        <li><code>W_ME_SINGLE</code>: 0.3</li>
+        <li><code>V_GAMMA</code>: 3.0 (handle curve; larger = finer control at low speed)</li>
+        <li><code>LONG_PRESS_MS</code>: 500 ms (long-press a player dot to toggle velocity)</li>
+      </ul>
+
+      <h3>11. Limitations</h3>
+      <ul>
+        <li>Doubles does not evaluate our own recovery</li>
+        <li>Heatmap "time" is equivalent time (weighted distance), not real seconds</li>
+        <li>Only landing spots are considered, not shot paths</li>
+      </ul>
+      `
     }
   };
 
@@ -480,7 +632,7 @@
   let showHeat = false;
   let lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
   let working = false, pendingFine = false;
-  let lastCalcTime = 0, lastMoveTime = 0;
+  let lastCalcTime = 0;
   let cacheBest = {pt: null, J: 0};
   let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
 
@@ -511,9 +663,20 @@
     }
   }
 
+  function isAnyVelocityVisible(){
+    return opp1_velVisible || (mode === 'double' && opp2_velVisible);
+  }
+
+  function getClientXY(e){
+    if (e.touches && e.touches.length) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    if (e.changedTouches && e.changedTouches.length) return {x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY};
+    return {x: e.clientX, y: e.clientY};
+  }
+
   // ================= 语言切换 =================
   function applyLanguage(){
     document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+    document.title = t('title');
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
       el.textContent = t(el.dataset.i18n);
@@ -522,12 +685,17 @@
     langBtnEl.textContent = t('langBtn');
     modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
 
-    updateSubtitle();
-    updateLegend();
+    updateUIForMode();
 
-    const pTitle = document.getElementById('pTitle');
-    if (pTitle) pTitle.textContent = t('principleTitle');
+    const pBody = document.getElementById('principleBody');
+    if (pBody) pBody.innerHTML = t('principleHTML');
+
+    const collapsed = appEl.classList.contains('collapsed');
+    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
   }
+
+  // 供页面底部脚本在 Modal 解析后再次调用
+  window.__applyLang = applyLanguage;
 
   langBtnEl.addEventListener('click', () => {
     lang = (lang === 'zh') ? 'en' : 'zh';
@@ -537,7 +705,7 @@
   // ================= 折叠 =================
   collapseBtn.addEventListener('click', () => {
     const collapsed = appEl.classList.toggle('collapsed');
-    collapseBtn.setAttribute('aria-label', collapsed ? '展开顶部' : '隐藏顶部');
+    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
     requestAnimationFrame(setupCanvas);
   });
 
@@ -582,6 +750,13 @@
   function c2w(cx, cy){
     return {x: (cx - PAD) / SCALE - HALF_W, y: L - (cy - PAD) / SCALE};
   }
+  function clientToWorld(clientX, clientY){
+    const rect = canvas.getBoundingClientRect();
+    return c2w(
+      (clientX - rect.left) / rect.width * LOGICAL_W,
+      (clientY - rect.top) / rect.height * LOGICAL_H
+    );
+  }
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   // ================= 单/双 切换 =================
@@ -603,8 +778,7 @@
 
   function updateSubtitle(){
     const single = mode === 'single';
-    const anyVisible = opp1_velVisible || (mode === 'double' && opp2_velVisible);
-    const hint = anyVisible ? t('subVelActive') : t('subHint');
+    const hint = isAnyVelocityVisible() ? t('subVelActive') : t('subHint');
     pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + hint;
   }
 
@@ -614,7 +788,7 @@
     html += single
       ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
       : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
-    if (opp1_velVisible || (mode === 'double' && opp2_velVisible)){
+    if (isAnyVelocityVisible()){
       html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
     }
     html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
@@ -636,25 +810,9 @@
 
   // ================= 双击：切换热力图 =================
   function handleDoubleTap(clientX, clientY){
-    const rect = canvas.getBoundingClientRect();
-    const lx = (clientX - rect.left) / rect.width * LOGICAL_W;
-    const ly = (clientY - rect.top) / rect.height * LOGICAL_H;
-    const w = c2w(lx, ly);
-
-    // 球员点附近 → 忽略（手柄由长按控制）
-    if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R) return;
-    if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R) return;
-
-    // 手柄附近 → 忽略（防止拖动时误触）
-    if (opp1_velVisible){
-      const h1 = getHandlePos(opp1, opp1_v);
-      if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return;
-    }
-    if (mode === 'double' && opp2_velVisible){
-      const h2 = getHandlePos(opp2, opp2_v);
-      if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return;
-    }
-
+    const w = clientToWorld(clientX, clientY);
+    // 命中球员点或手柄 → 忽略
+    if (hitTest(w) !== null) return;
     // 其余场地空白 → 切换热力图
     showHeat = !showHeat;
     updateLegend();
@@ -676,49 +834,36 @@
     return 1 + (kFull - 1) * blend;
   }
 
-  function difficulty(pt, opp, v){
-    const dx = pt.x - opp.x, dy = pt.y - opp.y;
-    const wy = dy >= 0 ? W_BACK : W_FWD;
-    let run = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    run *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
-    const dBody = Math.sqrt(dx*dx + dy*dy);
-    if (dBody < BODY_R) run *= K_BODY;
-    const dEdge = Math.min(
-      HALF_W - SAFE_DELTA - Math.abs(pt.x),
-      pt.y - OPP_SIDE_Y_MIN,
-      OPP_SIDE_Y_MAX - pt.y
-    );
-    const g = Math.exp(-Math.max(0, dEdge) / B0);
-    return run * (1 + K_EDGE * g);
-  }
-
-  function reachTime(x, y, opp, v){
+  // 加权跑动距离 × 启动修正（不含追身/贴边加成）
+  function evalAt(x, y, opp, v){
     const dx = x - opp.x, dy = y - opp.y;
     const wy = dy >= 0 ? W_BACK : W_FWD;
-    let time = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    time *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
-    return time;
+    let base = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
+    base *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
+    return base;
+  }
+
+  // 追身 + 贴边加成系数
+  function bodyEdgeFactor(x, y, opp){
+    const dx = x - opp.x, dy = y - opp.y;
+    let f = 1;
+    const dBody = Math.sqrt(dx*dx + dy*dy);
+    if (dBody < BODY_R) f *= K_BODY;
+    const dEdge = Math.min(
+      HALF_W - SAFE_DELTA - Math.abs(x),
+      y - OPP_SIDE_Y_MIN,
+      OPP_SIDE_Y_MAX - y
+    );
+    const g = Math.exp(-Math.max(0, dEdge) / B0);
+    return f * (1 + K_EDGE * g);
+  }
+
+  function difficulty(pt, opp, v){
+    return evalAt(pt.x, pt.y, opp, v) * bodyEdgeFactor(pt.x, pt.y, opp);
   }
 
   // ================= 栅格搜索 =================
   function computeGrid(o1, o2, v1, v2, step, m){
-    function evalJ(x, y){
-      if (m === 'single'){
-        const oppScore = difficulty({x, y}, o1, v1);
-        const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
-        return oppScore - W_ME_SINGLE * Math.sqrt(dx*dx + dy*dy);
-      }
-      return Math.min(
-        difficulty({x, y}, o1, v1),
-        difficulty({x, y}, o2, v2)
-      );
-    }
-    function evalTime(x, y){
-      const t1 = reachTime(x, y, o1, v1);
-      if (m === 'single') return t1;
-      return Math.min(t1, reachTime(x, y, o2, v2));
-    }
-
     const xMin = -HALF_W + SAFE_DELTA;
     const xMax =  HALF_W - SAFE_DELTA;
     const yMin =  OPP_SIDE_Y_MIN + SAFE_DELTA;
@@ -734,8 +879,25 @@
       const x = xMin + (xMax - xMin) * i / nX;
       for (let j = 0; j <= nY; j++){
         const y = yMin + (yMax - yMin) * j / nY;
-        const jv = evalJ(x, y);
-        const t = evalTime(x, y);
+
+        // 每个格点对每个对手只算一次 evalAt（双打 ≤2 次，单打 1 次）
+        const base1 = evalAt(x, y, o1, v1);
+
+        let jv, t;
+        if (m === 'single'){
+          const oppScore = base1 * bodyEdgeFactor(x, y, o1);
+          const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
+          jv = oppScore - W_ME_SINGLE * Math.sqrt(dx*dx + dy*dy);
+          t = base1;
+        } else {
+          const base2 = evalAt(x, y, o2, v2);
+          jv = Math.min(
+            base1 * bodyEdgeFactor(x, y, o1),
+            base2 * bodyEdgeFactor(x, y, o2)
+          );
+          t = Math.min(base1, base2);
+        }
+
         heat.push({x, y, val: jv, time: t});
         if (jv > bestJ){ bestJ = jv; bestPt = {x, y}; }
         if (t < minTime) minTime = t;
@@ -882,8 +1044,8 @@
     const W_ME_SINGLE=${W_ME_SINGLE};
     const CORNER_R=${CORNER_R}, CORNER_SHOW_R=${CORNER_SHOW_R};
     ${startFactor.toString()}
-    ${difficulty.toString()}
-    ${reachTime.toString()}
+    ${evalAt.toString()}
+    ${bodyEdgeFactor.toString()}
     ${computeGrid.toString()}
     self.onmessage = function(e){
       const d = e.data;
@@ -1170,10 +1332,14 @@
     ctx.lineWidth = 2;
     ctx.stroke();
     if (label){
+      ctx.save();
       ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
       ctx.fillStyle = color;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
       const m = ctx.measureText(label);
       ctx.fillText(label, p.x - m.width / 2, p.y + (labelDy ?? -(r + 6)));
+      ctx.restore();
     }
   }
 
@@ -1294,7 +1460,7 @@
   }
 
   // ================= 主绘制 =================
-  function draw(gaps, v1, v2, locusSegs){
+  function draw(gaps, locusSegs){
     ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
 
     const tl = w2c({x: -HALF_W, y: L});
@@ -1404,21 +1570,15 @@
       gaps = computeGapPointsFromLocus(locusSegs, opp1, opp2, eV1, eV2);
     }
 
-    draw(gaps, eV1, eV2, locusSegs);
+    draw(gaps, locusSegs);
     submitCalc();
     requestAnimationFrame(loop);
   }
 
   // ================= 交互 =================
   function getWorldPos(e){
-    let cx = e.clientX, cy = e.clientY;
-    if (e.touches && e.touches.length){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-    else if (e.changedTouches && e.changedTouches.length){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
-    const rect = canvas.getBoundingClientRect();
-    return c2w(
-      (cx - rect.left) / rect.width * LOGICAL_W,
-      (cy - rect.top) / rect.height * LOGICAL_H
-    );
+    const p = getClientXY(e);
+    return clientToWorld(p.x, p.y);
   }
 
   function hitTest(w){
@@ -1441,11 +1601,7 @@
     if (!t) return;
     dragTarget = t;
     dragActive = false;
-    dragStartPos = {
-      x: (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX,
-      y: (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY
-    };
-    lastMoveTime = performance.now();
+    dragStartPos = getClientXY(e);
     canvas.style.cursor = 'grabbing';
 
     // 命中球员点 → 启动长按计时器
@@ -1485,9 +1641,8 @@
 
     // 未超过拖动阈值 → 不改坐标
     if (!dragActive && dragStartPos){
-      const cx = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
-      const cy = (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
-      if (Math.hypot(cx - dragStartPos.x, cy - dragStartPos.y) < DRAG_START_THRESHOLD) return;
+      const p = getClientXY(e);
+      if (Math.hypot(p.x - dragStartPos.x, p.y - dragStartPos.y) < DRAG_START_THRESHOLD) return;
       dragActive = true;
       clearLongPress();
     }
@@ -1521,7 +1676,6 @@
       }
     }
 
-    lastMoveTime = performance.now();
     if (e.cancelable) e.preventDefault();
   }
 
@@ -1543,21 +1697,19 @@
 
   // 触摸：在 touchstart 里做双击检测
   canvas.addEventListener('touchstart', (e) => {
-    const t0 = e.touches && e.touches[0];
-    if (!t0){ startDrag(e); return; }
-
+    const p = getClientXY(e);
     const now = Date.now();
     const dt = now - lastTouchTap.t;
-    const distPx = Math.hypot(t0.clientX - lastTouchTap.x, t0.clientY - lastTouchTap.y);
+    const distPx = Math.hypot(p.x - lastTouchTap.x, p.y - lastTouchTap.y);
 
     if (lastTouchTap.t > 0 && dt < DBLCLICK_MS && distPx < DBLCLICK_DIST){
       lastTouchTap = {t: 0, x: 0, y: 0};
-      handleDoubleTap(t0.clientX, t0.clientY);
+      handleDoubleTap(p.x, p.y);
       e.preventDefault();
       return;
     }
 
-    lastTouchTap = {t: now, x: t0.clientX, y: t0.clientY};
+    lastTouchTap = {t: now, x: p.x, y: p.y};
     startDrag(e);
   }, {passive:false});
 
@@ -1578,85 +1730,10 @@
 <div class="modal-mask" id="principleModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pTitle">
     <div class="modal-head">
-      <h2 id="pTitle" data-i18n="principleTitle">落点推荐 · 计算原理</h2>
+      <h2 id="pTitle" data-i18n="principleTitle">羽毛球远身场地落点 · 计算原理</h2>
       <button class="modal-close" id="principleClose" aria-label="关闭">×</button>
     </div>
-    <div class="modal-body">
-
-      <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉"我方打完能不能回中场"的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
-
-      <h3>一、场地与坐标系</h3>
-      <ul>
-        <li>单打场地：长 <code>L = 13.40 m</code>、宽 <code>W = 5.18 m</code>，球网位于 <code>y = 6.7 m</code></li>
-        <li>合法落点区域：<code>|x| ≤ 2.39，0.2 ≤ y ≤ 13.2</code></li>
-      </ul>
-
-      <h3>二、长按与双击交互</h3>
-      <ul>
-        <li><b>长按球员 A 点（500ms）</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
-        <li><b>长按球员 B 点（500ms）</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
-        <li><b>双击球员点附近</b> → 忽略（手柄由长按控制）</li>
-        <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
-        <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
-      </ul>
-      <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
-
-      <h3>三、三方向速度权重</h3>
-      <table>
-        <thead><tr><th>方向</th><th>权重</th></tr></thead>
-        <tbody>
-          <tr><td>横向（x）</td><td><code>W_X = 1.0</code></td></tr>
-          <tr><td>向前上网（dy&lt;0）</td><td><code>W_FWD = 1.15</code></td></tr>
-          <tr><td>向后后退（dy&gt;0）</td><td><code>W_BACK = 1.7</code></td></tr>
-        </tbody>
-      </table>
-
-      <h3>四、启动修正（平滑版）</h3>
-      <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
-      <p>sigmoid 让 k 在投影距离 0 处取中值，往两侧平滑过渡到 0.7 / 1.8。v=0 时 k=1。</p>
-
-      <h3>五、对手难度</h3>
-      <ol>
-        <li>加权跑动距离 × 启动修正</li>
-        <li>× 追身加成（距对手 &lt; 0.45 m 时 ×1.6）</li>
-        <li>× 贴边加成（<code>1 + 1.2·exp(-b/0.3)</code>）</li>
-      </ol>
-
-      <h3>六、热力图</h3>
-      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。双击场地空白处开关。</p>
-
-      <h3>七、总评分 J</h3>
-      <ul>
-        <li><b>单打</b>：<code>J = 对手难度 − 0.3 × 到 (0, 3.35) 的距离</code></li>
-        <li><b>双打</b>：<code>J = min(难度A, 难度B)</code></li>
-      </ul>
-      <p class="muted">红点标签旁用方括号显示 J 值，如「最优[12.3]」，四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上保证不超过红点分数。</p>
-
-      <h3>八、等难度线与结合部</h3>
-      <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。两人距离 &lt; 1.0m 时该线不绘制（无意义）。</p>
-
-      <h3>九、红点与四角次优</h3>
-      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
-
-      <h3>十、可调参数</h3>
-      <ul>
-        <li><code>W_BACK / W_FWD</code>：1.7 / 1.15</li>
-        <li><code>K_REV / K_ADV</code>：1.8 / 0.7</li>
-        <li><code>S0_DIST</code>：1.5m（平滑过渡宽度）</li>
-        <li><code>K_BODY</code>：1.6，<code>K_EDGE</code>：1.2</li>
-        <li><code>W_ME_SINGLE</code>：0.3</li>
-        <li><code>V_GAMMA</code>：3.0（手柄曲线，越大低速越精细）</li>
-        <li><code>LONG_PRESS_MS</code>：500ms（长按球员点触发速度手柄）</li>
-      </ul>
-
-      <h3>十一、局限</h3>
-      <ul>
-        <li>双打不评估我方回位</li>
-        <li>热力图"时间"是等效时间（加权距离），不是真实秒数</li>
-        <li>只算落点，不管球路</li>
-      </ul>
-
-    </div>
+    <div class="modal-body" id="principleBody"></div>
   </div>
 </div>
 
@@ -1664,6 +1741,9 @@
 (function(){
   var mask = document.getElementById('principleModal');
   var credit = document.getElementById('credit');
+
+  // Modal 已解析完成，重新应用一次语言以填充原理说明
+  if (typeof window.__applyLang === 'function') window.__applyLang();
 
   function openM(){ mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
   function closeM(){ mask.classList.remove('open'); document.body.style.overflow = ''; }
