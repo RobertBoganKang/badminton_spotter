@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>羽毛球场站位点</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏸</text></svg>">
+<style>
+  :root{
+    --bg:#eef2f6; --card:#fff; --text:#1a2b22; --text-2:#5b6b62; --text-3:#8a9a91;
+    --border:#e4ebe6; --shadow:0 1px 2px rgba(20,50,35,.04), 0 8px 24px rgba(20,50,35,.05);
+    --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
+    --def:#1f6f8b; --atk:#c0392b; --post:#8e44ad;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:16px 12px;
+    background:
+      radial-gradient(1000px 500px at 15% -5%, #d9ece1 0%, transparent 55%),
+      radial-gradient(800px 400px at 90% 0%, #e3e9f7 0%, transparent 50%),
+      var(--bg);
+    font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--text); -webkit-font-smoothing:antialiased;
+    min-height:100vh; -webkit-text-size-adjust:100%;
+  }
+  .app{max-width:620px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
+  .card{background:var(--card); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow)}
+
+  .header{
+    padding:14px 18px; display:flex; align-items:flex-start; gap:14px; flex-wrap:nowrap;
+    position:relative; overflow:hidden;
+  }
+  .header::before{
+    content:''; position:absolute; top:-80px; right:-80px; width:240px; height:240px;
+    background:radial-gradient(circle, rgba(31,138,91,.10) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  .header-left{display:flex; gap:12px; align-items:flex-start; flex:1; min-width:0; position:relative}
+  .header-left > div:not(.logo){min-width:0; flex:1}
+  .logo{
+    width:42px; height:42px; flex-shrink:0; border-radius:12px;
+    background:linear-gradient(135deg, var(--primary-bright), var(--primary));
+    display:flex; align-items:center; justify-content:center; font-size:21px;
+    box-shadow:0 4px 12px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  h1{margin:0 0 4px; font-size:16.5px; font-weight:700; letter-spacing:.2px; line-height:1.35}
+  .header p{margin:0; font-size:11.5px; color:var(--text-3); line-height:1.55; word-break:break-word}
+  .header-actions{display:flex; gap:6px; align-items:center; flex-shrink:0; position:relative}
+  .lang-btn{
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    padding:3px 7px; background:transparent; border:none; border-radius:5px;
+    color:var(--text-3); font-size:11.5px; font-weight:700; font-family:inherit;
+    line-height:1; letter-spacing:.3px; opacity:.85;
+    transition:color .15s, opacity .15s, transform .12s;
+  }
+  .lang-btn:hover{color:var(--primary); opacity:1}
+  .lang-btn:active{transform:scale(.92)}
+  .app.collapsed .header{display:none}
+
+  .canvas-card{padding:0; overflow:hidden}
+  .canvas-topbar{
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    padding:9px 12px; border-bottom:1px solid #f0f4f1;
+    font-size:11.5px; color:var(--text-2);
+  }
+  .tb-item{display:inline-flex; align-items:center; gap:5px; white-space:nowrap}
+  .tb-item.hidden{display:none}
+  .sep{color:#cfd8d3}
+
+  .sidebar-btn{
+    flex-shrink:0;
+    width:26px; height:26px; border-radius:7px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#f0f5f2; border:1px solid var(--border); color:var(--text-2);
+    cursor:pointer; padding:0; font-family:inherit;
+    transition:background .15s, color .15s, transform .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sidebar-btn:hover{background:#e6efe9; color:var(--primary)}
+  .sidebar-btn:active{transform:scale(.92)}
+  .sidebar-btn svg{width:13px; height:13px; stroke-width:2.4; fill:none; stroke:currentColor; stroke-linecap:round}
+
+  .collapse-btn{
+    flex-shrink:0; width:24px; height:24px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:transparent; border:none; border-radius:0;
+    color:var(--text-3); cursor:pointer; padding:0;
+    box-shadow:none; opacity:.75;
+    transition:color .15s, transform .12s, opacity .15s;
+    font-family:inherit;
+  }
+  .collapse-btn:hover{color:var(--primary); opacity:1}
+  .collapse-btn:active{transform:scale(.9)}
+  .collapse-btn svg{width:14px; height:14px; stroke-width:2.2; fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round}
+  .collapse-btn .chev-down{display:none}
+  .app.collapsed .collapse-btn .chev-up{display:none}
+  .app.collapsed .collapse-btn .chev-down{display:inline}
+
+  .mode-toggle{
+    appearance:none; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:5px 13px; background:#e8eee9; border:1px solid transparent;
+    border-radius:7px; color:var(--primary); font-weight:700; font-size:12px;
+    font-family:inherit; line-height:1; letter-spacing:.3px; min-width:46px;
+    transition:background .15s, color .15s, transform .12s;
+  }
+  .mode-toggle:hover{background:#dde6e0}
+  .mode-toggle:active{transform:scale(.96)}
+  .mode-toggle[data-mode="single"]{background:#e8f0f7; color:#1e6bb8}
+  .mode-toggle[data-mode="single"]:hover{background:#dbe7f3}
+
+  .hitter-btn{
+    appearance:none; cursor:pointer; font-family:inherit;
+    padding:2px 11px; border-radius:999px;
+    font-size:11.5px; font-weight:700; letter-spacing:.4px;
+    background:rgba(192,57,43,.12); color:#c0392b;
+    border:1px solid rgba(192,57,43,.30);
+    transition:all .15s; -webkit-tap-highlight-color:transparent; min-width:30px;
+  }
+  .hitter-btn:active{transform:scale(.92); background:rgba(192,57,43,.22)}
+
+  .scenario-btn{cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:4px; padding:1px 4px; margin:-1px -2px; transition:background .12s}
+  .scenario-btn:active{background:#eef4f0}
+  .scenario-btn b{border-bottom:1px dashed currentColor; padding-bottom:1px}
+  .def-b{color:var(--def)} .atk-b{color:var(--atk)} .post-b{color:var(--post)}
+
+  .mode-dot{
+    width:20px; height:20px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; font-family:inherit;
+    border:1px solid transparent; cursor:pointer; padding:0;
+    transition:all .15s; background:transparent; color:var(--text-3);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mode-dot.auto{background:#e3f2eb; color:var(--primary); border-color:#cfe5d9}
+  .mode-dot.manual{background:#f6f0e0; color:#a0741a; border-color:#e8dfc2}
+  .mode-dot:active{transform:scale(.9)}
+
+  .tb-right{
+    display:inline-flex; align-items:center; gap:6px;
+    margin-left:auto; flex-shrink:0;
+  }
+  .pill-group{display:inline-flex; gap:3px; align-items:center}
+  .pill{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:2px 8px; border-radius:999px;
+    font-size:10.5px; font-weight:700; letter-spacing:.2px;
+    border:1px solid transparent; white-space:nowrap; line-height:1.5;
+    transition:background .2s, color .2s, border-color .2s;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .canvas-wrap{padding:9px 10px 8px; display:flex; justify-content:center}
+  canvas{
+    display:block; border-radius:10px; touch-action:none; background:#f7fbf9;
+    max-width:100%; box-shadow:0 1px 3px rgba(20,50,35,.06), 0 4px 14px rgba(20,50,35,.05);
+  }
+  .info-line{
+    padding:0 12px 10px; font-size:11px; color:var(--text-3);
+    text-align:center; line-height:1.5; font-variant-numeric:tabular-nums;
+  }
+
+  .footer{
+    padding:2px 8px 6px; text-align:center; font-size:12px;
+    color:var(--text-3); letter-spacing:.3px; line-height:1.7;
+  }
+  .footer b{color:var(--text-2); font-weight:600}
+  #credit{cursor:pointer; user-select:none}
+
+  .sidebar{
+    position:fixed; top:0; left:0; bottom:0; width:min(330px, 88vw);
+    background:#fff; z-index:60; transform:translateX(-103%);
+    transition:transform .26s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column;
+    box-shadow:4px 0 26px rgba(20,50,35,.14);
+  }
+  .sidebar.open{transform:none}
+  .sidebar-mask{
+    position:fixed; inset:0; background:rgba(10,30,20,.40);
+    opacity:0; pointer-events:none; transition:opacity .26s; z-index:59;
+    backdrop-filter:blur(1px); -webkit-backdrop-filter:blur(1px);
+  }
+  .sidebar-mask.open{opacity:1; pointer-events:auto}
+  .sidebar-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 16px; color:#fff;
+    background:linear-gradient(135deg, var(--primary-2), var(--primary));
+    flex-shrink:0;
+  }
+  .sidebar-head h2{margin:0; font-size:14.5px; font-weight:700; letter-spacing:.2px}
+  .sidebar-close{
+    background:transparent; border:none; color:#fff; font-size:22px;
+    line-height:1; cursor:pointer; padding:0 4px; font-family:inherit;
+  }
+  .sidebar-close:active{transform:scale(.9)}
+  .sidebar-body{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch}
+  .sidebar-foot{padding:10px 14px; border-top:1px solid var(--border); flex-shrink:0}
+  .sidebar-foot button{
+    width:100%; padding:8px; border-radius:8px; border:1px solid var(--border);
+    background:#f5f9f6; color:var(--text-2); font-family:inherit; font-weight:600;
+    font-size:12px; cursor:pointer; transition:background .15s;
+  }
+  .sidebar-foot button:hover{background:#eaf2ed}
+  .sidebar-foot button:active{transform:scale(.98)}
+
+  .s-group{padding:9px 14px 10px; border-bottom:1px solid #f0f4f1}
+  .s-group:last-child{border-bottom:none}
+  .s-title{
+    font-size:10.5px; font-weight:700; color:var(--text-2);
+    margin-bottom:7px; display:flex; justify-content:space-between; align-items:baseline; gap:6px;
+  }
+  .s-title span{font-weight:500; color:var(--text-3); font-size:9.5px; text-align:right}
+  .s-grid{display:grid; grid-template-columns:1fr; gap:6px}
+  .s-item{
+    display:grid; grid-template-columns:74px 1fr 46px; gap:6px; align-items:center;
+    font-size:11px; color:var(--text-2); min-width:0;
+  }
+  .s-item span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .s-item b{font-weight:700; color:var(--primary); text-align:right; font-variant-numeric:tabular-nums; font-size:11px}
+  .s-item input[type=range]{width:100%; height:16px; accent-color:var(--primary); cursor:pointer; margin:0}
+  .s-item.near b{color:#1f6f8b}
+  .s-item.far b{color:#c0392b}
+
+  .modal-mask{
+    position:fixed; inset:0; z-index:70; background:rgba(10,30,20,.46);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:26px 14px; overflow:auto; backdrop-filter:blur(2px);
+    -webkit-overflow-scrolling:touch;
+  }
+  .modal-mask.open{display:flex}
+  .modal{
+    background:#fff; border-radius:16px; width:100%; max-width:660px;
+    box-shadow:0 24px 70px rgba(0,0,0,.28); overflow:hidden;
+    animation:pop .22s ease;
+  }
+  @keyframes pop{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; color:#fff;
+    background:linear-gradient(135deg, var(--primary-2), var(--primary));
+    position:sticky; top:0; z-index:1;
+  }
+  .modal-head h2{margin:0; font-size:16px; font-weight:650}
+  .modal-close{
+    background:transparent!important; box-shadow:none!important; color:#fff;
+    font-size:24px; line-height:1; padding:0 6px; border:none; cursor:pointer;
+  }
+  .modal-body{
+    padding:18px 22px 24px; font-size:14px; line-height:1.78; color:var(--text);
+    max-height:76vh; overflow:auto; -webkit-overflow-scrolling:touch;
+  }
+  .modal-body h3{
+    font-size:15px; margin:22px 0 8px; color:var(--primary); font-weight:650;
+    padding-bottom:4px; border-bottom:1px solid #e8f0ec;
+  }
+  .modal-body h3:first-child{margin-top:0; border-top:none}
+  .modal-body p{margin:6px 0}
+  .modal-body .lead{
+    color:var(--text); font-size:13.5px; background:#f2f7f4;
+    padding:10px 13px; border-radius:8px; margin-bottom:12px;
+    border-left:3px solid var(--primary);
+  }
+  .formula{
+    background:#f2f7f4; border-left:3px solid var(--primary);
+    padding:8px 13px; border-radius:6px; margin:8px 0;
+    font-family:"Cambria Math","Times New Roman",Georgia,serif;
+    font-size:14px; overflow-x:auto; white-space:nowrap;
+  }
+  .modal-body code{background:#eef2f6; padding:1px 6px; border-radius:5px; font-size:12.5px}
+  .modal-body .muted{
+    color:var(--text-2); font-size:12.5px; background:#fafbfa;
+    padding:6px 10px; border-radius:6px; border-left:2px solid #cfd8d3;
+  }
+  .modal-body ul, .modal-body ol{margin:6px 0; padding-left:22px}
+  .modal-body li{margin:4px 0}
+
+  @media (max-width: 520px){
+    body{padding:10px 8px}
+    .app{gap:10px}
+    .header{padding:11px 13px; gap:10px}
+    .logo{width:36px; height:36px; font-size:18px; border-radius:10px}
+    h1{font-size:14.5px}
+    .header p{font-size:10.5px; line-height:1.45}
+    .lang-btn{padding:2px 5px; font-size:11px}
+
+    .canvas-topbar{padding:8px 10px; gap:5px; font-size:11px}
+    .mode-toggle{padding:4px 11px; font-size:11.5px; min-width:42px}
+    .hitter-btn{padding:1px 9px; font-size:11px}
+    .pill{font-size:10px; padding:1px 7px}
+    .tb-right{gap:5px}
+    .sidebar-btn{width:24px; height:24px}
+    .collapse-btn{width:20px; height:20px}
+    .collapse-btn svg{width:12px; height:12px}
+
+    .canvas-wrap{padding:7px 7px 6px}
+    .info-line{font-size:10px; padding:0 10px 8px}
+
+    .footer{font-size:11px}
+    .modal-mask{padding:8px 6px}
+    .modal{border-radius:13px}
+    .modal-head{padding:12px 16px}
+    .modal-head h2{font-size:15px}
+    .modal-body{padding:14px 16px 20px; font-size:13.5px; line-height:1.72; max-height:84vh}
+    .modal-body h3{font-size:14px; margin:18px 0 6px}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="card header">
+    <div class="header-left">
+      <div class="logo">🏸</div>
+      <div>
+        <h1 id="pageTitle">羽毛球场站位点</h1>
+        <p id="pageSub"></p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="langBtn" class="lang-btn" aria-label="Switch language">EN</button>
+    </div>
+  </header>
+
+  <div class="card canvas-card">
+    <div class="canvas-topbar">
+      <button class="sidebar-btn" id="sidebarBtn" aria-label="参数">
+        <svg viewBox="0 0 24 24">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <circle cx="9" cy="7" r="2.4" fill="none" stroke="currentColor"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+          <circle cx="15" cy="17" r="2.4" fill="none" stroke="currentColor"/>
+        </svg>
+      </button>
+
+      <button class="mode-toggle" id="modeToggle" data-mode="double">双打</button>
+
+      <span class="tb-item" id="tbHitter">
+        <span class="sep">·</span>
+        <span id="lblHitter">击球</span>
+        <button class="hitter-btn" id="hitterBtn" title="单击切换击球者">A</button>
+      </span>
+
+      <span class="tb-item" id="tbScenario">
+        <span class="sep">·</span>
+        <span class="scenario-btn" id="scenarioBtn" title="单击切换攻/守">
+          <span id="lblStance">站位</span>：<b class="def-b" id="statusScenario">防守</b>
+        </span>
+        <button class="mode-dot auto" id="modeDot" title="自动 / 手动">A</button>
+      </span>
+
+      <span class="tb-item" id="tbPosture">
+        <span class="sep">·</span>
+        <span><span id="lblPosture">姿态</span>：<b class="post-b" id="statusPosture">前后</b></span>
+      </span>
+
+      <div class="tb-right">
+        <div class="pill-group" id="pillGroup">
+          <span class="pill" id="pillClear" data-label="高">高 22%</span>
+          <span class="pill" id="pillDrop"  data-label="吊">吊 23%</span>
+          <span class="pill" id="pillKill"  data-label="杀">杀 55%</span>
+        </div>
+        <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
+          <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>
+          <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+    <div class="info-line" id="infoLine"></div>
+  </div>
+
+  <footer class="footer" id="credit">
+    © <b>Robert Bogan Kang</b> <span id="footerText">创作 · 保留所有权利</span>
+  </footer>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <h2 id="sidebarTitle">参数</h2>
+    <button class="sidebar-close" id="sidebarClose" aria-label="关闭">×</button>
+  </div>
+  <div class="sidebar-body" id="sliders"></div>
+  <div class="sidebar-foot">
+    <button id="resetBtn">恢复默认</button>
+  </div>
+</aside>
+<div class="sidebar-mask" id="sidebarMask"></div>
+
+<div class="modal-mask" id="principleModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div class="modal-head">
+      <h2 id="pTitle">羽毛球场站位点 · 计算方法</h2>
+      <button class="modal-close" id="principleClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="principleBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================
+   1. 国际化
+   ========================================================= */
+const I18N = {
+  zh: {
+    title: '羽毛球场站位点',
+    sub: '单击击球按钮 / 长按对手点切换击球者 · 长按我方球员切换攻/守 · 双击场地开关热力图 · 单击「站位」手动切换 · 小圆 A 自动 / M 手动',
+    doubles: '双打', singles: '单打',
+    hitter: '击球', stance: '站位', posture: '姿态',
+    defense: '防守', attack: '进攻',
+    frontBack: '前后', parallel: '平行', mixed: '混合',
+    hitting: '击球',
+    oppA: '对手 A', oppB: '对手 B',
+    ourStraight: '我方 直线', ourDiag: '我方 斜线',
+    ourBack: '我方 后场', ourFront: '我方 前场', ourSolo: '我方站位',
+    params: '参数', reset: '恢复默认',
+    footer: '创作 · 保留所有权利',
+    principleTitle: '羽毛球场站位点 · 计算方法',
+    net: '网',
+    lblNearDrop: '近吊 1.5 m',
+    lblFrontPen: '前压 4.0 m',
+    lblFarDrop:  '远吊 4.5 m',
+    infoDoubleAuto:   '间距 {d} m · 杀 {s}% / 平高 {c}% / 吊 {dp}% · 方案系数 守 {cd} / 攻 {ca} · 期望价值 守 {fb} / 攻 {sb} → 选{choice}',
+    infoDoubleManual: '间距 {d} m · 杀 {s}% / 平高 {c}% / 吊 {dp}% · 方案系数 守 {cd} / 攻 {ca} · 手动{choice}（守 {fb} / 攻 {sb}）',
+    infoSingle: '单人站位 · 期望净得分最大化',
+    gSpeed: '球速', gSpeedHint: '初速 m/s · 衰减 1/m',
+    gProb: '概率', gProbHint: '三者联动 · 总和 100%',
+    gReach: '可达性', gReachHint: '启动延迟 s · 速度 m/s',
+    sl_v0_smash: '杀球 v0', sl_lam_smash: '杀球 λ',
+    sl_v0_clear: '平高 v0', sl_lam_clear: '平高 λ',
+    sl_v0_drop_near: '近吊 v0', sl_lam_drop_near: '近吊 λ',
+    sl_v0_drop_far: '远吊 v0', sl_lam_drop_far: '远吊 λ',
+    sl_p_smash: '杀球 %', sl_p_clear: '平高 %', sl_p_drop: '吊球 %',
+    sl_t_react: '启动延迟', sl_w_def: '反应宽度',
+    sl_v_run: '跑动速度', sl_k2: '上网/后退',
+    collapseHide: '隐藏标题', collapseShow: '展开标题',
+    langBtn: 'EN',
+    principleHTML: `
+      <p class="lead"><b>一句话：</b>把「防守」和「进攻」当成<b>两个候选方案</b>，各自求出最优站位，再用同一个<b>期望净得分</b>公式打分，取分数更高的那个。攻/守判定不再是 if-else 规则，而是两套方案在数学上的直接比较。</p>
+
+      <h3>一、坐标系与参考线</h3>
+      <ul>
+        <li>场地长 <code>13.40 m</code>、宽 <code>6.10 m</code>，球网位于 <code>y = 0</code></li>
+        <li>我方半场 <code>y &lt; 0</code>，对手半场 <code>y &gt; 0</code></li>
+        <li>左侧场外标出：<b>网</b>、<b>近吊 1.5 m</b>、<b>前压 4.0 m</b>、<b>远吊 4.5 m</b> 四条参考线</li>
+        <li>近吊 / 远吊：吊球初速 / 衰减参数在这两条线之间线性过渡</li>
+        <li>前压：防守方案中，站位越过此线（更靠网）会被扣分</li>
+      </ul>
+
+      <h3>二、飞行时间</h3>
+      <div class="formula">t(d) = (e<sup>λd</sup> − 1) / (λ · v₀)</div>
+      <p><code>d</code> 为击球点到落点的距离，<code>v₀</code> 为初速，<code>λ</code> 为空气阻力衰减系数。杀球、平高球、吊球各有独立参数；吊球按落点距网远近在「近吊」与「远吊」之间线性插值。</p>
+      <p class="muted" style="margin-top:8px">
+        <b>参数默认值依据：</b>
+        杀球 v₀ = 60 m/s 对应甲组/省队级别原地杀球初速（跳杀约 68 m/s、原地约 62 m/s）；
+        平高球 v₀ = 42 m/s，体现"速度高于高远、快速压底线"的战术意图；
+        启动延迟 0.24 s 为双打全身反应时间文献均值（0.26 ± 0.02 s）；
+        跑动速度 3.8 m/s 取"启动—加速—制动"全程有效平均速度（并非 5.6 m/s 的冲刺峰值）。
+        以上默认值面向高水平业余 / 半专业场景，可在参数面板按实际对手水平调档。
+      </p>
+
+      <h3>三、可达概率</h3>
+      <div class="formula">p = sigmoid( (t − t<sub>react</sub> − τ) / w )</div>
+      <p><code>τ</code> 为跑动到落点所需时间，<code>t<sub>react</sub></code> 为启动延迟，<code>w</code> 为反应宽度。后退方向的等效距离额外乘以 <code>1/k₂</code> 的惩罚。双打时取「两人中至少一个够到」的概率：<code>reach = 1 − (1−p₁)(1−p₂)</code>。</p>
+
+      <h3>四、期望净得分</h3>
+      <p>对每个落点 L，定义<b>期望净得分</b> <code>V(L)</code>：</p>
+      <div class="formula">V(L) = reach(L) · c − (1 − reach(L))</div>
+      <p>其中 <code>c</code> 为「接到球后这拍我方占优的概率」。<b>c 不是常量，而是按对手的球路概率加权计算：</b></p>
+      <ul>
+        <li><b>杀球</b> <code>c_smash = 0.20</code>：接到杀球后只能挡网或挑球，下一拍仍然被动</li>
+        <li><b>平高</b> <code>c_clear = 0.65</code>：接到平高球后可以下压（杀 / 点杀 / 吊），大概率转化为主动</li>
+        <li><b>吊球</b> <code>c_drop = 0.55</code>：接到吊球后可以放网或挑球，中等偏主动</li>
+      </ul>
+      <p>加权和：</p>
+      <div class="formula">c_base = p<sub>smash</sub> · 0.20 + p<sub>clear</sub> · 0.65 + p<sub>drop</sub> · 0.55</div>
+      <p>在此基础上：</p>
+      <ul>
+        <li><b>防守方案和单打</b>：<code>c = c_base</code></li>
+        <li><b>进攻方案</b>：<code>c = min(0.95, c_base + 0.15)</code>，前压抢攻有额外优势</li>
+      </ul>
+      <p class="muted">这个设计解决了一个常见的战术问题：<b>对手摆出进攻站位（前后站位）但实际只打平高/吊球时，c_base 会被拉高（例如 p<sub>smash</sub>=0、p<sub>clear</sub>=p<sub>drop</sub>=0.5 时 c_base ≈ 0.60），进攻方案的 c 优势（0.75 vs 0.60）会盖过防守方案的 reach 优势，模型自动判为进攻。</b>反过来，对手杀球为主时 c_base 被压低，防守方案胜出。</p>
+      <p>公式含义：接到球时价值为 <code>+c</code>，接不到时为 <code>−1</code>（丢分）。防守方案 <code>reach</code> 高但 <code>c</code> 低；进攻方案 <code>reach</code> 低但 <code>c</code> 高。<b>两者在同一个公式下自然形成攻守权衡。</b></p>
+
+      <h3>五、方案总分（按落点概率加权）</h3>
+      <div class="formula">E(方案) = Σ<sub>L</sub> P(L) · V(L)</div>
+      <p><code>P(L)</code> 为球落到 L 点的先验概率（见「六、落点权重」）。<code>E</code> 越大，方案越好。所有方案的 <code>E</code> 都在 <code>−1 ~ c</code> 之间，量纲统一，可以直接比较。</p>
+
+      <h3>六、落点权重</h3>
+      <p>每个落点按球路赋予高斯权重：杀球峰值在距网 <code>5.8 m</code>，平高 <code>5.5 m</code>，吊球 <code>2.8 m</code>。距离网 1.5 m 与 4.5 m 处是「近吊 / 远吊」的过渡区间。</p>
+
+      <h3>七、攻 / 守双方案比较</h3>
+      <ol>
+        <li>分别用「防守」和「进攻」两种 <code>c</code> 值，各自求解<b>期望价值最大的站位</b></li>
+        <li>用第四节公式给两套站位分别打分：<code>E_def</code> 和 <code>E_atk</code></li>
+        <li><b>auto 模式</b>：选 <code>E</code> 更高者</li>
+        <li><b>manual 模式</b>：尊重用户手动选择，但页面下方仍显示两个分数，方便对照</li>
+      </ol>
+      <p class="muted">性质：<code>E_def</code> 与 <code>E_atk</code> 是同一个量（期望净得分），可以直接比较；拖动对手位置或调整概率滑块时两者连续变化，判定不会在阈值点跳变，而是随场上形势平滑翻转。</p>
+
+      <h3>八、优化</h3>
+      <ul>
+        <li><b>双打</b>：交替固定一人优化另一人，迭代 4 轮。目标 = <code>0.7 × 最坏点期望价值 + 0.3 × 平均期望价值 − 间距惩罚 − 前压惩罚</code></li>
+        <li><b>单打</b>：单点全局搜索，最大化加权平均期望价值</li>
+        <li>前压惩罚：防守方案中若杀球概率显著高于吊球，距网 4 m 以内的位置会被扣分，避免站位过前被追身</li>
+      </ul>
+
+      <h3>九、热力图</h3>
+      <p>每个落点的颜色表示该点的风险，偏蓝低、偏红高。双击场地空白处开关。</p>
+
+      <h3>十、交互</h3>
+      <ul>
+        <li><b>单击击球按钮 / 长按对手点</b> → 切换击球者（双打）</li>
+        <li><b>长按我方球员点</b> → 手动切换攻 / 守并锁定（切到手动模式）</li>
+        <li><b>双击场地空白</b> → 开关热力图</li>
+        <li><b>单击「站位」文字</b> → 手动切换攻 / 守</li>
+        <li><b>小圆 A / M</b> → 自动 / 手动</li>
+        <li><b>最左 ☰</b> → 打开参数侧边栏；<b>最右箭头</b> → 收起标题栏</li>
+      </ul>
+
+      <h3>十一、局限</h3>
+      <ul>
+        <li>不考虑球的弧线与网高</li>
+        <li>不考虑对手的二次移动</li>
+        <li><code>c_by_shot</code> 值为模型先验（参考真实比赛统计），不是从数据反推；想要调整可修改代码顶部 <code>C_BY_SHOT</code> 常量</li>
+        <li>模型不直接读取对手的站位关系（前后 / 平行），攻守判定仅取决于球路概率和两套方案的期望价值</li>
+        <li>站位是概率意义上的最优，不是绝对最优</li>
+      </ul>
+    `
+  },
+  en: {
+    title: 'Badminton Player Ground Position',
+    sub: 'Tap hitter button / long-press an opponent to switch hitter · Long-press our player to toggle attack/defence · Double-tap court to toggle heatmap · Tap “Stance” to toggle · Dot A = auto, M = manual',
+    doubles: 'Doubles', singles: 'Singles',
+    hitter: 'Hitter', stance: 'Stance', posture: 'Shape',
+    defense: 'Defence', attack: 'Attack',
+    frontBack: 'Front/Back', parallel: 'Parallel', mixed: 'Mixed',
+    hitting: 'hitting',
+    oppA: 'Opponent A', oppB: 'Opponent B',
+    ourStraight: 'Us · Straight', ourDiag: 'Us · Cross',
+    ourBack: 'Us · Rear', ourFront: 'Us · Front', ourSolo: 'Our spot',
+    params: 'Parameters', reset: 'Reset to defaults',
+    footer: 'Created · All Rights Reserved',
+    principleTitle: 'Badminton Player Ground Position · Methodology',
+    net: 'Net',
+    lblNearDrop: 'Near drop 1.5 m',
+    lblFrontPen: 'Front 4.0 m',
+    lblFarDrop:  'Far drop 4.5 m',
+    infoDoubleAuto:   'Gap {d} m · Smash {s}% / Clear {c}% / Drop {dp}% · c 守 {cd} / 攻 {ca} · EV def {fb} / atk {sb} → {choice}',
+    infoDoubleManual: 'Gap {d} m · Smash {s}% / Clear {c}% / Drop {dp}% · c 守 {cd} / 攻 {ca} · manual {choice} (def {fb} / atk {sb})',
+    infoSingle: 'Single position · maximises expected net score',
+    gSpeed: 'Shuttle speed', gSpeedHint: 'initial m/s · decay 1/m',
+    gProb: 'Probabilities', gProbHint: 'linked · sum = 100%',
+    gReach: 'Reachability', gReachHint: 'reaction s · speed m/s',
+    sl_v0_smash: 'Smash v0', sl_lam_smash: 'Smash λ',
+    sl_v0_clear: 'Clear v0', sl_lam_clear: 'Clear λ',
+    sl_v0_drop_near: 'Near drop v0', sl_lam_drop_near: 'Near drop λ',
+    sl_v0_drop_far: 'Far drop v0', sl_lam_drop_far: 'Far drop λ',
+    sl_p_smash: 'Smash %', sl_p_clear: 'Clear %', sl_p_drop: 'Drop %',
+    sl_t_react: 'Reaction delay', sl_w_def: 'Reaction width',
+    sl_v_run: 'Run speed', sl_k2: 'Net / back',
+    collapseHide: 'Hide header', collapseShow: 'Show header',
+    langBtn: '中',
+    principleHTML: `
+      <p class="lead"><b>In short:</b> Treat "defence" and "attack" as <b>two candidate plans</b>, solve the optimal position for each, score both with the same <b>expected net score</b> formula, and take the higher one. Attack/defence detection is no longer an if-else rule — it is a direct mathematical comparison of two plans.</p>
+
+      <h3>1. Coordinate system &amp; reference lines</h3>
+      <ul>
+        <li>Court length <code>13.40 m</code>, width <code>6.10 m</code>; the net sits at <code>y = 0</code></li>
+        <li>Our half is <code>y &lt; 0</code>; the opponent's half is <code>y &gt; 0</code></li>
+        <li>Left-hand side labels: <b>Net</b>, <b>Near drop 1.5 m</b>, <b>Front 4.0 m</b>, <b>Far drop 4.5 m</b></li>
+        <li>Near / far drop: drop-shot v₀ / λ interpolate linearly between these two lines</li>
+        <li>Front: in the defensive plan, standing closer to the net than this line incurs a cost</li>
+      </ul>
+
+      <h3>2. Flight time</h3>
+      <div class="formula">t(d) = (e<sup>λd</sup> − 1) / (λ · v₀)</div>
+      <p><code>d</code> is the distance from contact point to landing spot, <code>v₀</code> the initial speed and <code>λ</code> the drag decay factor. Smash, clear and drop each have their own parameters; drops interpolate between "near drop" and "far drop" according to distance from the net.</p>
+      <p class="muted" style="margin-top:8px">
+        <b>Default value rationale:</b>
+        Smash v₀ = 60 m/s corresponds to elite/collegiate-level standing smash (jump smash ~68 m/s, standing ~62 m/s);
+        clear v₀ = 42 m/s reflects the tactical intent of "faster than a high clear, pinning the rear court";
+        reaction delay 0.24 s is the mean whole-body reaction time for doubles (0.26 ± 0.02 s);
+        running speed 3.8 m/s is the effective average across start–accel–decel (not the 5.6 m/s sprint peak).
+        These defaults target advanced amateur / semi-pro scenarios and can be tuned in the parameter panel.
+      </p>
+
+      <h3>3. Reach probability</h3>
+      <div class="formula">p = sigmoid( (t − t<sub>react</sub> − τ) / w )</div>
+      <p><code>τ</code> is the running time to the landing spot, <code>t<sub>react</sub></code> the reaction delay and <code>w</code> the reaction width. Moving backwards carries an extra <code>1/k₂</code> equivalent-distance penalty. In doubles, use "at least one of the two reaches": <code>reach = 1 − (1−p₁)(1−p₂)</code>.</p>
+
+      <h3>4. Expected net score</h3>
+      <p>For each landing spot L, define the <b>expected net score</b> <code>V(L)</code>:</p>
+      <div class="formula">V(L) = reach(L) · c − (1 − reach(L))</div>
+      <p>where <code>c</code> is "the probability that this rally is favourable to us after we reach the shuttle". <b>c is not a constant — it is weighted by the opponent's shot-type probabilities:</b></p>
+      <ul>
+        <li><b>Smash</b> <code>c_smash = 0.20</code>: after digging out a smash you can only block or lift — still defensive next shot</li>
+        <li><b>Clear</b> <code>c_clear = 0.65</code>: after receiving a clear you can attack downwards (smash / half-smash / drop) — usually transitions to offence</li>
+        <li><b>Drop</b> <code>c_drop = 0.55</code>: after receiving a drop you can net-shot or lift — moderately offensive</li>
+      </ul>
+      <p>Weighted sum:</p>
+      <div class="formula">c_base = p<sub>smash</sub> · 0.20 + p<sub>clear</sub> · 0.65 + p<sub>drop</sub> · 0.55</div>
+      <p>Then:</p>
+      <ul>
+        <li><b>Defensive plan and singles</b>: <code>c = c_base</code></li>
+        <li><b>Attacking plan</b>: <code>c = min(0.95, c_base + 0.15)</code> — forward pressure adds extra advantage</li>
+      </ul>
+      <p class="muted">This design fixes a common tactical issue: <b>when the opponent lines up in an attacking (front-back) formation but actually only plays clears and drops, c_base goes up (e.g., with p<sub>smash</sub>=0 and p<sub>clear</sub>=p<sub>drop</sub>=0.5, c_base ≈ 0.60), so the attacking plan's c advantage (0.75 vs 0.60) outweighs the defensive plan's reach advantage, and the model correctly picks attack.</b> Conversely, when smash dominates, c_base is pushed down and the defensive plan wins.</p>
+      <p>Interpretation: reaching the shuttle is worth <code>+c</code>, missing it is <code>−1</code> (lost point). The defensive plan has high <code>reach</code> but low <code>c</code>; the attacking plan has low <code>reach</code> but high <code>c</code>. <b>The attack/defence trade-off emerges naturally from one formula.</b></p>
+
+      <h3>5. Plan total score (probability-weighted)</h3>
+      <div class="formula">E(plan) = Σ<sub>L</sub> P(L) · V(L)</div>
+      <p><code>P(L)</code> is the prior probability of the shuttle landing at L (see "6. Landing weights"). Higher <code>E</code> = better plan. All plans have <code>E</code> in <code>−1 ~ c</code>, so they are directly comparable.</p>
+
+      <h3>6. Landing weights</h3>
+      <p>Each landing spot gets a Gaussian weight per shot type: smash peaks at <code>5.8 m</code> from the net, clear at <code>5.5 m</code>, drop at <code>2.8 m</code>. The bands at 1.5 m and 4.5 m from the net are the near/far drop transition zones.</p>
+
+      <h3>7. Comparing the defensive and attacking plans</h3>
+      <ol>
+        <li>Solve the <b>expected-value-maximising position</b> separately for the defensive and attacking <code>c</code></li>
+        <li>Score both plans with the formula in section 4: <code>E_def</code> and <code>E_atk</code></li>
+        <li><b>auto mode</b>: pick the higher <code>E</code></li>
+        <li><b>manual mode</b>: respect the user's choice, but the info line still shows both scores for comparison</li>
+      </ol>
+      <p class="muted">Property: <code>E_def</code> and <code>E_atk</code> are the same quantity (expected net score) and can be compared directly. As the opponent moves or the probabilities change, both scores change continuously, so the decision flips smoothly with the situation rather than snapping at a threshold.</p>
+
+      <h3>8. Optimisation</h3>
+      <ul>
+        <li><b>Doubles</b>: alternately fix one player and optimise the other, for 4 rounds. Objective = <code>0.7 × worst-case expected value + 0.3 × average expected value − separation penalty − forward penalty</code></li>
+        <li><b>Singles</b>: global single-point search maximising weighted average expected value</li>
+        <li>Forward penalty: in the defensive plan, if smash probability substantially exceeds drop probability, positions within 4 m of the net are penalised to avoid standing too far forward</li>
+      </ul>
+
+      <h3>9. Heatmap</h3>
+      <p>Each landing spot is coloured by its risk: blue = low, red = high. Double-tap empty court area to toggle.</p>
+
+      <h3>10. Interactions</h3>
+      <ul>
+        <li><b>Tap hitter button / long-press an opponent</b> → switch hitter (doubles)</li>
+        <li><b>Long-press our player dot</b> → manually toggle attack / defence (locks to manual mode)</li>
+        <li><b>Double-tap empty court</b> → toggle heatmap</li>
+        <li><b>Tap “Stance” text</b> → manually toggle attack / defence</li>
+        <li><b>Dot A / M</b> → auto / manual</li>
+        <li><b>☰ at far left</b> → open parameter sidebar; <b>chevron at far right</b> → collapse header</li>
+      </ul>
+
+      <h3>11. Limitations</h3>
+      <ul>
+        <li>Shuttle trajectory and net height are ignored</li>
+        <li>The opponent's second movement is ignored</li>
+        <li><code>c_by_shot</code> values are model priors (based on real match statistics), not fitted from data; to tune, edit the <code>C_BY_SHOT</code> constant at the top of the code</li>
+        <li>The model does not read the opponent's formation (front-back vs parallel) directly — attack/defence depends only on shot probabilities and the two plans' expected values</li>
+        <li>Positions are probabilistically optimal, not absolutely optimal</li>
+      </ul>
+    `
+  }
+};
+
+let lang = 'zh';
+function t(k){ return (I18N[lang] && I18N[lang][k]) || (I18N.zh[k] || k); }
+
+/* =========================================================
+   2. 参数定义
+   ========================================================= */
+const SLIDER_DEFS = [
+  { group:'speed', key:'v0_smash',      min:35, max:80, step:1,    def:60,  unit:'m/s' },
+  { group:'speed', key:'lam_smash',     min:0.15,max:0.32,step:0.01, def:0.22,unit:'/m' },
+  { group:'speed', key:'v0_clear',      min:18, max:55, step:1,    def:42,  unit:'m/s' },
+  { group:'speed', key:'lam_clear',     min:0.08,max:0.35,step:0.01, def:0.18,unit:'/m' },
+  { group:'speed', key:'v0_drop_near',  min:8,  max:24, step:1,    def:14,  unit:'m/s', cls:'near' },
+  { group:'speed', key:'lam_drop_near', min:0.10,max:0.40,step:0.01, def:0.26,unit:'/m',  cls:'near' },
+  { group:'speed', key:'v0_drop_far',   min:14, max:35, step:1,    def:22,  unit:'m/s', cls:'far' },
+  { group:'speed', key:'lam_drop_far',  min:0.08,max:0.30,step:0.01, def:0.18,unit:'/m',  cls:'far' },
+  { group:'prob',  key:'p_smash',       min:0,  max:100,step:1,    def:55 },
+  { group:'prob',  key:'p_clear',       min:0,  max:100,step:1,    def:22 },
+  { group:'prob',  key:'p_drop',        min:0,  max:100,step:1,    def:23 },
+  { group:'reach', key:'t_react',       min:0.10,max:0.35,step:0.01, def:0.24,unit:'s' },
+  { group:'reach', key:'w_def',         min:0.04,max:0.30,step:0.01, def:0.12 },
+  { group:'reach', key:'v_run',         min:3.0, max:6.5, step:0.1, def:3.8, unit:'m/s' },
+  { group:'reach', key:'k2',            min:1.0, max:1.6, step:0.01, def:1.30 }
+];
+
+const PRM = {};
+SLIDER_DEFS.forEach(d => { PRM[d.key] = d.def; });
+
+const PROB_KEYS = ['p_smash','p_clear','p_drop'];
+const PILL_RGB  = { kill:'192,57,43', drop:'31,111,139', clear:'230,126,34' };
+
+/* =========================================================
+   3. 场地与参考线常量
+   ========================================================= */
+const L = 13.4, W = 6.10, HL = L/2, HW = W/2;
+const SINGLES_HW = 2.59, SHORT_SVC = 1.98, LONG_SVC = 0.76;
+
+const DROP_NEAR_EDGE = 1.5;
+const DROP_FAR_EDGE  = 4.5;
+const FRONT_PEN_Y    = 4.0;
+
+const C_COURT_LINE  = '#3a7d5c';
+const C_COURT_FRAME = '#1e4d38';
+const C_REF_BLUE    = 'rgba(31,111,139,0.22)';
+const C_REF_RED     = 'rgba(192,57,43,0.16)';
+const C_NET         = '#1e4d38';
+
+/* ---- 球路 → 「接到后占优」系数 ----
+   杀球：接到只能挡/挑，被动
+   平高：接到可以下压，主动
+   吊球：接到可以放网/挑，中等偏主动 */
+const C_BY_SHOT = {
+  smash: 0.20,
+  clear: 0.65,
+  drop:  0.55
+};
+const ATTACK_BONUS = 0.15;   // 进攻方案额外的抢攻优势
+const C_CAP        = 0.95;   // 上限保护
+
+/* 按对手球路概率加权得到方案系数 c
+   planType: 'defense' | 'attack' | 'solo'
+   防守 / 单打用 c_base；进攻在 c_base 上 +0.15（前压抢攻优势） */
+function getPlanC(probs, planType){
+  const cBase = probs.ps * C_BY_SHOT.smash
+              + probs.pc * C_BY_SHOT.clear
+              + probs.pd * C_BY_SHOT.drop;
+  if(planType === 'attack'){
+    return Math.min(C_CAP, cBase + ATTACK_BONUS);
+  }
+  return cBase;
+}
+
+/* =========================================================
+   4. 物理模型
+   ========================================================= */
+function flightTime(v0, lam, d){
+  if(d < 0.1) return 0.15;
+  const x = lam * d;
+  if(x > 15) return 3.0;
+  return Math.max(0.15, Math.min(3.0, (Math.exp(x) - 1) / (lam * v0)));
+}
+
+function getDropParams(distFromNet){
+  const u = Math.max(0, Math.min(1, (distFromNet - DROP_NEAR_EDGE) / (DROP_FAR_EDGE - DROP_NEAR_EDGE)));
+  return {
+    v0:  PRM.v0_drop_near  * (1-u) + PRM.v0_drop_far  * u,
+    lam: PRM.lam_drop_near * (1-u) + PRM.lam_drop_far * u
+  };
+}
+
+function runTime(pos, Lp){
+  const dx = Lp.x - pos.x;
+  const dy = Lp.y - pos.y;
+  const dEff = dy > 0
+    ? Math.sqrt(dx*dx + (dy/PRM.k2)*(dy/PRM.k2))
+    : Math.hypot(dx, dy);
+  return dEff / Math.max(0.5, PRM.v_run);
+}
+
+function sigmoid(x){
+  if(x > 30) return 1;
+  if(x < -30) return 0;
+  return 1 / (1 + Math.exp(-x));
+}
+
+function pDef(pos, Lp, t){
+  const tau = runTime(pos, Lp);
+  return sigmoid((t - PRM.t_react - tau) / Math.max(0.02, PRM.w_def));
+}
+
+function getProbs(){
+  const ps = PRM.p_smash / 100;
+  const pc = PRM.p_clear / 100;
+  const pd = PRM.p_drop / 100;
+  const total = ps + pc + pd || 1;
+  return { ps: ps/total, pc: pc/total, pd: pd/total };
+}
+
+function reachAt(P1, P2, Lp, t){
+  const a = pDef(P1, Lp, t);
+  if(!P2) return a;
+  const b = pDef(P2, Lp, t);
+  return 1 - (1 - a) * (1 - b);
+}
+
+/* 单个落点期望净得分：V = reach·c − (1 − reach) = reach·(c+1) − 1 */
+function pointValue(P1, P2, Lp, times, probs, c){
+  const cp1 = c + 1;
+  const rS = reachAt(P1, P2, Lp, times.t_smash);
+  const rC = reachAt(P1, P2, Lp, times.t_clear);
+  const rD = reachAt(P1, P2, Lp, times.t_drop);
+  return probs.ps * (rS * cp1 - 1)
+       + probs.pc * (rC * cp1 - 1)
+       + probs.pd * (rD * cp1 - 1);
+}
+
+function landingWeight(Lp, probs){
+  const dn = -Lp.y;
+  const wS = Math.exp(-Math.pow((dn - 5.8)/1.2, 2));
+  const wC = Math.exp(-Math.pow((dn - 5.5)/1.4, 2));
+  const wD = Math.exp(-Math.pow((dn - 2.8)/1.6, 2));
+  const raw = probs.ps*wS + probs.pc*wC + probs.pd*wD;
+  return 0.12 + 0.88 * raw;
+}
+
+/* 方案总分（用于攻/守两个方案之间比较） */
+function evaluatePlan(P1, P2, items, probs, planType){
+  const c = getPlanC(probs, planType);
+  let sumW = 0, sumWV = 0;
+  for(const it of items){
+    const w = landingWeight(it.L, probs);
+    const V = pointValue(P1, P2, it.L, it, probs, c);
+    sumWV += w * V;
+    sumW  += w;
+  }
+  return sumW > 0 ? sumWV / sumW : -1;
+}
+
+/* =========================================================
+   5. 姿态描述
+   ========================================================= */
+function getPostureLabel(){
+  const a = opponents[0], b = opponents[1];
+  const dy = Math.abs(a.y - b.y);
+  const dx = Math.abs(a.x - b.x);
+  if(dy > 1.5) return t('frontBack');
+  if(dx > 1.5 && dy < 1.2) return t('parallel');
+  return t('mixed');
+}
+
+/* =========================================================
+   6. 状态
+   ========================================================= */
+let mode = 'double';
+const opponents = [{x:-1.6, y:4.60, tag:'A'}, {x:0.2, y:2.10, tag:'B'}];
+let hitterIdx = 0;
+let scenarioMode = 'auto';
+let manualScenario = 'defense';
+let dragIdx = -1, dragStarted = false, dragStartPos = null, longPressTimer = null;
+let ourLongPressPos = null;
+let needsSolve = true, quality = 'full';
+let lastTap = {time:0, x:0, y:0};
+let showHeat = false;
+
+let result = {
+  P1:{x:2.2, y:-4.5}, P2:{x:-0.5, y:-4.5},
+  probs:{ps:.55, pc:.22, pd:.23},
+  scenario:'defense', fb:0, sb:0, cd:0, ca:0, valid:false
+};
+
+const LONG_PRESS_MS   = 480;
+const DOUBLE_TAP_MS   = 300;
+const DOUBLE_TAP_DIST = 32;
+const DRAG_THRESHOLD  = 6;
+const DR_HIT = ('ontouchstart' in window) ? 1.0 : 0.55;
+
+/* =========================================================
+   7. 画布坐标与工具
+   ========================================================= */
+const SCALE = 40;
+const PAD_L = 85, PAD_R = 20, PAD_T = 20, PAD_B = 20;
+const LW = W*SCALE + PAD_L + PAD_R;
+const LH = L*SCALE + PAD_T + PAD_B;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function w2c(p){ return { x: PAD_L + (p.x + HW)*SCALE, y: PAD_T + (HL - p.y)*SCALE }; }
+function c2w(cx, cy){ return { x: (cx - PAD_L)/SCALE - HW, y: HL - (cy - PAD_T)/SCALE }; }
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+
+function lineStroke(a, b){
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+
+function roundRectPath(c, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.arcTo(x+w, y,   x+w, y+h, r);
+  c.arcTo(x+w, y+h, x,   y+h, r);
+  c.arcTo(x,   y+h, x,   y,   r);
+  c.arcTo(x,   y,   x+w, y,   r);
+  c.closePath();
+}
+
+function drawCourtTag(text, anchorX, anchorY, color, align){
+  ctx.save();
+  ctx.font = 'bold 9px system-ui';
+  const tw = ctx.measureText(text).width;
+  const padX = 4, padY = 2;
+  const w = tw + padX*2, h = 11 + padY*2;
+  let bx;
+  if(align === 'right')       bx = anchorX - w;
+  else if(align === 'center') bx = anchorX - w/2;
+  else                        bx = anchorX;
+  const by = anchorY - h/2;
+
+  roundRectPath(ctx, bx, by, w, h, 3.5);
+  ctx.fillStyle = 'rgba(255,255,255,0.94)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, bx + padX, by + h/2 + 0.3);
+  ctx.restore();
+}
+
+/* =========================================================
+   8. 画布自适应
+   ========================================================= */
+function setup(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const wrap = canvas.parentElement, cs = getComputedStyle(wrap);
+  const avail = wrap.clientWidth - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
+  let cw = Math.min(avail, LW), ch = cw * LH / LW;
+  const maxH = Math.min(window.innerHeight * 0.75, 720);
+  if(ch > maxH){ ch = maxH; cw = ch * LW / LH; }
+  cw = Math.max(150, cw);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  canvas.width  = Math.round(cw * dpr);
+  canvas.height = Math.round(ch * dpr);
+  const s = canvas.width / LW;
+  ctx.setTransform(s, 0, 0, s, 0, 0);
+}
+setup();
+window.addEventListener('resize', setup);
+window.addEventListener('orientationchange', () => setTimeout(setup, 250));
+
+/* =========================================================
+   9. 求解
+   ========================================================= */
+function buildItems(hitter, step){
+  const items = [];
+  for(let x = -HW+0.15; x <= HW-0.15+1e-9; x += step){
+    for(let y = -HL+0.15; y <= -0.15+1e-9; y += step){
+      const Lp = { x, y };
+      const d = Math.hypot(Lp.x - hitter.x, Lp.y - hitter.y);
+      const dp = getDropParams(-y);
+      items.push({
+        L: Lp,
+        t_smash: flightTime(PRM.v0_smash, PRM.lam_smash, d),
+        t_clear: flightTime(PRM.v0_clear, PRM.lam_clear, d),
+        t_drop:  flightTime(dp.v0, dp.lam, d)
+      });
+    }
+  }
+  return items;
+}
+
+/* 单点优化：给定 planType 下最大化期望价值
+   目标：0.7 × 最坏点期望价值 + 0.3 × 平均期望价值 − 惩罚项 */
+function optimizeSingle(items, otherPos, x0, x1, y0, y1, step, probs, planType){
+  const c   = getPlanC(probs, planType);
+  const cp1 = c + 1;
+  const isDefense = planType === 'defense';
+
+  const od = items.map(it => ({
+    s: pDef(otherPos, it.L, it.t_smash),
+    c: pDef(otherPos, it.L, it.t_clear),
+    d: pDef(otherPos, it.L, it.t_drop)
+  }));
+  const wts = items.map(it => landingWeight(it.L, probs));
+
+  const frontPenFactor = isDefense ? Math.max(0, probs.ps - probs.pd) * 1.5 : 0;
+
+  let best = null, bestCost = Infinity;
+  const n = items.length;
+
+  for(let x = x0; x <= x1+1e-9; x += step){
+    for(let y = y0; y <= y1+1e-9; y += step){
+      const pos = { x, y };
+      let minV = Infinity, sumWV = 0, sumW = 0;
+
+      for(let i = 0; i < n; i++){
+        const it = items[i], o = od[i];
+        const myS = pDef(pos, it.L, it.t_smash);
+        const myC = pDef(pos, it.L, it.t_clear);
+        const myD = pDef(pos, it.L, it.t_drop);
+
+        const rS = 1 - (1 - myS) * (1 - o.s);
+        const rC = 1 - (1 - myC) * (1 - o.c);
+        const rD = 1 - (1 - myD) * (1 - o.d);
+
+        const V = probs.ps * (rS * cp1 - 1)
+                + probs.pc * (rC * cp1 - 1)
+                + probs.pd * (rD * cp1 - 1);
+
+        const w  = wts[i];
+        const wv = w * V;
+        if(wv < minV) minV = wv;
+        sumWV += wv; sumW += w;
+      }
+      const avgV = sumW > 0 ? sumWV / sumW : 0;
+      const sep  = Math.hypot(x - otherPos.x, y - otherPos.y);
+      const sepPen   = sep < 1.2 ? (1.2 - sep) * 0.25 : 0;
+      const frontPen = (y > -FRONT_PEN_Y) ? (y + FRONT_PEN_Y) * frontPenFactor : 0;
+
+      const cost = -(0.7 * minV + 0.3 * avgV) + sepPen + frontPen;
+      if(cost < bestCost){ bestCost = cost; best = pos; }
+    }
+  }
+  return best || { x:(x0+x1)/2, y:(y0+y1)/2 };
+}
+
+function optimizeSolo(items, probs, step){
+  const c   = getPlanC(probs, 'solo');
+  const cp1 = c + 1;
+  const wts = items.map(it => landingWeight(it.L, probs));
+  const n = items.length;
+  const x0 = -HW + 0.30, x1 = HW - 0.30;
+  const y0 = -HL + 0.40, y1 = -1.5;
+
+  let best = null, bestCost = Infinity;
+
+  for(let x = x0; x <= x1 + 1e-9; x += step){
+    for(let y = y0; y <= y1 + 1e-9; y += step){
+      const pos = { x, y };
+      let sumWV = 0, sumW = 0;
+      for(let i = 0; i < n; i++){
+        const it = items[i];
+        const myS = pDef(pos, it.L, it.t_smash);
+        const myC = pDef(pos, it.L, it.t_clear);
+        const myD = pDef(pos, it.L, it.t_drop);
+        const V = probs.ps * (myS * cp1 - 1)
+                + probs.pc * (myC * cp1 - 1)
+                + probs.pd * (myD * cp1 - 1);
+        const w = wts[i];
+        sumWV += w * V; sumW += w;
+      }
+      const avgV = sumW > 0 ? sumWV / sumW : 0;
+      const cost = -avgV;
+      if(cost < bestCost){ bestCost = cost; best = pos; }
+    }
+  }
+  return best || { x: 0, y: -4.0 };
+}
+
+function solveForScenario(items, probs, scenario, stepPos, iters, hitter){
+  const sign = hitter.x >= 0 ? 1 : -1;
+  const isDefense = scenario === 'defense';
+  let P1, P2;
+  let bx0_1, bx1_1, by0_1, by1_1;
+  let bx0_2, bx1_2, by0_2, by1_2;
+
+  if(isDefense){
+    if(sign > 0){
+      bx0_1 = 1.0;        bx1_1 = HW - 0.25;
+      bx0_2 = -HW + 0.3;  bx1_2 = 1.0;
+    } else {
+      bx0_1 = -HW + 0.25; bx1_1 = -1.0;
+      bx0_2 = -1.0;       bx1_2 = HW - 0.3;
+    }
+    by0_1 = -HL + 0.4; by1_1 = -3.2;
+    by0_2 = -HL + 0.4; by1_2 = -3.2;
+    P1 = { x: sign*2.2, y: -4.5 };
+    P2 = { x: -sign*0.5, y: -4.5 };
+  } else {
+    bx0_1 = -1.6; bx1_1 = 1.6;
+    by0_1 = -HL + 0.4; by1_1 = -4.2;
+    bx0_2 = -2.4; bx1_2 = 2.4;
+    by0_2 = -3.2; by1_2 = -1.4;
+    P1 = { x: 0, y: -5.3 };
+    P2 = { x: 0, y: -2.2 };
+  }
+
+  for(let it = 0; it < iters; it++){
+    P1 = optimizeSingle(items, P2, bx0_1, bx1_1, by0_1, by1_1, stepPos, probs, scenario);
+    P2 = optimizeSingle(items, P1, bx0_2, bx1_2, by0_2, by1_2, stepPos, probs, scenario);
+  }
+  return { P1, P2 };
+}
+
+function solve(fast){
+  const single = mode === 'single';
+  const hitter = single ? opponents[0] : opponents[hitterIdx];
+  const stepPts = fast ? 0.80 : 0.42;
+  const stepPos = fast ? 0.55 : 0.28;
+  const iters   = fast ? 1 : 4;
+
+  const items = buildItems(hitter, stepPts);
+  const probs = getProbs();
+
+  if(single){
+    const P1 = optimizeSolo(items, probs, stepPos);
+    return { P1, P2: null, probs, scenario:'defense', fb:0, sb:0, cd:0, ca:0, valid:true };
+  }
+
+  /* 双打：分别求防守、进攻两套最优站位 */
+  const defRes = solveForScenario(items, probs, 'defense', stepPos, iters, hitter);
+  const atkRes = solveForScenario(items, probs, 'attack',  stepPos, iters, hitter);
+
+  /* 用统一的期望净得分比较两套方案 */
+  const Edef = evaluatePlan(defRes.P1, defRes.P2, items, probs, 'defense');
+  const Eatk = evaluatePlan(atkRes.P1, atkRes.P2, items, probs, 'attack');
+
+  const autoChoice = Edef >= Eatk ? 'defense' : 'attack';
+  const scenario   = scenarioMode === 'manual' ? manualScenario : autoChoice;
+  const res        = scenario === 'defense' ? defRes : atkRes;
+
+  return {
+    P1: res.P1, P2: res.P2, probs,
+    scenario,
+    fb: Edef,
+    sb: Eatk,
+    cd: getPlanC(probs, 'defense'),
+    ca: getPlanC(probs, 'attack'),
+    autoChoice,
+    valid: true
+  };
+}
+
+/* =========================================================
+   10. 绘制
+   ========================================================= */
+function drawCourt(){
+  const tl = w2c({x:-HW, y:HL}), br = w2c({x:HW, y:-HL});
+  const w = br.x-tl.x, h = br.y-tl.y;
+  ctx.fillStyle = '#f7fbf9'; ctx.fillRect(tl.x, tl.y, w, h);
+
+  ctx.strokeStyle = C_COURT_LINE; ctx.lineWidth = 1.3; ctx.setLineDash([]);
+  for(const yy of [HL, HL-LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL-LONG_SVC), -HL]){
+    lineStroke(w2c({x:-HW, y:yy}), w2c({x:HW, y:yy}));
+  }
+  for(const xx of [-HW, HW, -SINGLES_HW, SINGLES_HW]){
+    lineStroke(w2c({x:xx, y:-HL}), w2c({x:xx, y:HL}));
+  }
+  for(const s of [-1, 1]){
+    lineStroke(w2c({x:0, y:s*SHORT_SVC}), w2c({x:0, y:s*HL}));
+  }
+
+  ctx.strokeStyle = C_COURT_FRAME; ctx.lineWidth = 2.2;
+  ctx.strokeRect(tl.x, tl.y, w, h);
+
+  const n1 = w2c({x:-HW, y:0}), n2 = w2c({x:HW, y:0});
+  ctx.beginPath(); ctx.strokeStyle = C_NET; ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.moveTo(n1.x, n1.y); ctx.lineTo(n2.x, n2.y); ctx.stroke();
+  ctx.lineCap = 'butt';
+
+  ctx.save();
+  ctx.setLineDash([3,4]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = C_REF_BLUE;
+  for(const dn of [DROP_NEAR_EDGE, DROP_FAR_EDGE]){
+    lineStroke(w2c({x:-HW, y:-dn}), w2c({x:HW, y:-dn}));
+  }
+  ctx.setLineDash([2,6]);
+  ctx.strokeStyle = C_REF_RED;
+  lineStroke(w2c({x:-HW, y:-FRONT_PEN_Y}), w2c({x:HW, y:-FRONT_PEN_Y}));
+  ctx.restore();
+}
+
+function drawCourtTags(){
+  const tagRightX = w2c({x:-HW, y:0}).x - 6;
+
+  drawCourtTag(t('lblNearDrop'), tagRightX, w2c({x:0, y:-DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
+  drawCourtTag(t('lblFrontPen'), tagRightX, w2c({x:0, y:-FRONT_PEN_Y}).y - 4, '#c0392b', 'right');
+  drawCourtTag(t('lblFarDrop'),  tagRightX, w2c({x:0, y:-DROP_FAR_EDGE}).y + 4, '#1f6f8b', 'right');
+  drawCourtTag(t('net'), tagRightX, w2c({x:0, y:0}).y, C_NET, 'right');
+}
+
+/* ---- 热力图 ---- */
+const heatCanvas = document.createElement('canvas');
+const heatCtx = heatCanvas.getContext('2d');
+let heatDirty = true;
+let heatBounds = null;
+
+function rampColor(t){
+  t = clamp(t, 0, 1);
+  const st = [[0,69,117,180],[.25,145,191,219],[.5,255,255,191],[.75,252,141,89],[1,215,48,39]];
+  let a = st[0], b = st[st.length-1];
+  for(let i = 0; i < st.length-1; i++){
+    if(t >= st[i][0] && t <= st[i+1][0]){ a = st[i]; b = st[i+1]; break; }
+  }
+  const f = (b[0]-a[0]) > 0 ? (t-a[0])/(b[0]-a[0]) : 0;
+  return [
+    Math.round(a[1] + (b[1]-a[1])*f),
+    Math.round(a[2] + (b[2]-a[2])*f),
+    Math.round(a[3] + (b[3]-a[3])*f)
+  ];
+}
+
+function riskTeam(P1, P2, Lp, times, probs){
+  const d1s = pDef(P1, Lp, times.t_smash), d2s = pDef(P2, Lp, times.t_smash);
+  const d1c = pDef(P1, Lp, times.t_clear), d2c = pDef(P2, Lp, times.t_clear);
+  const d1d = pDef(P1, Lp, times.t_drop),  d2d = pDef(P2, Lp, times.t_drop);
+  return probs.ps * (1-d1s)*(1-d2s)
+       + probs.pc * (1-d1c)*(1-d2c)
+       + probs.pd * (1-d1d)*(1-d2d);
+}
+
+function riskSolo(P1, Lp, times, probs){
+  const d1s = pDef(P1, Lp, times.t_smash);
+  const d1c = pDef(P1, Lp, times.t_clear);
+  const d1d = pDef(P1, Lp, times.t_drop);
+  return probs.ps * (1-d1s) + probs.pc * (1-d1c) + probs.pd * (1-d1d);
+}
+
+function computeHeatCanvas(){
+  if(!result.valid) return;
+  const single = mode === 'single';
+  const hitter = single ? opponents[0] : opponents[hitterIdx];
+  const probs = result.probs;
+  const P1 = result.P1, P2 = result.P2;
+
+  const xMin = -HW + 0.15, xMax = HW - 0.15;
+  const yMin = -HL + 0.15, yMax = -0.15;
+  const STEP = 0.10;
+
+  const cw = Math.max(2, Math.round((xMax-xMin)/STEP));
+  const ch = Math.max(2, Math.round((yMax-yMin)/STEP));
+
+  if(heatCanvas.width !== cw || heatCanvas.height !== ch){
+    heatCanvas.width = cw; heatCanvas.height = ch;
+  }
+
+  const img = heatCtx.createImageData(cw, ch);
+  const data = img.data;
+  const vals = new Float32Array(cw*ch);
+  let mn = Infinity, mx = -Infinity;
+
+  for(let iy = 0; iy < ch; iy++){
+    const y = yMax - (yMax-yMin)*iy/(ch-1);
+    for(let ix = 0; ix < cw; ix++){
+      const x = xMin + (xMax-xMin)*ix/(cw-1);
+      const d = Math.hypot(x-hitter.x, y-hitter.y);
+      const dp = getDropParams(-y);
+      const times = {
+        t_smash: flightTime(PRM.v0_smash, PRM.lam_smash, d),
+        t_clear: flightTime(PRM.v0_clear, PRM.lam_clear, d),
+        t_drop:  flightTime(dp.v0, dp.lam, d)
+      };
+      const r = single
+        ? riskSolo(P1, {x,y}, times, probs)
+        : riskTeam(P1, P2, {x,y}, times, probs);
+      vals[iy*cw+ix] = r;
+      if(r < mn) mn = r;
+      if(r > mx) mx = r;
+    }
+  }
+
+  const span = (mx-mn) || 1;
+  for(let i = 0; i < vals.length; i++){
+    const c = rampColor((vals[i]-mn)/span);
+    data[i*4]   = c[0];
+    data[i*4+1] = c[1];
+    data[i*4+2] = c[2];
+    data[i*4+3] = 255;
+  }
+  heatCtx.putImageData(img, 0, 0);
+  heatBounds = { xMin, xMax, yMin, yMax };
+  heatDirty = false;
+}
+
+function drawHeat(){
+  if(!showHeat || !result.valid) return;
+  if(heatDirty) computeHeatCanvas();
+  if(!heatBounds) return;
+  const tl = w2c({x: heatBounds.xMin, y: heatBounds.yMax});
+  const br = w2c({x: heatBounds.xMax, y: heatBounds.yMin});
+  ctx.save();
+  ctx.globalAlpha = 0.52;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(heatCanvas, tl.x, tl.y, br.x-tl.x, br.y-tl.y);
+  ctx.restore();
+}
+
+function drawOpponents(){
+  const list = (mode === 'single') ? [0] : [0, 1];
+
+  for(const i of list){
+    const p = opponents[i], c = w2c(p);
+    const isH = (mode === 'single') ? true : (i === hitterIdx);
+    const act = dragIdx === i;
+
+    if(isH){
+      ctx.beginPath(); ctx.fillStyle = 'rgba(192,57,43,.14)';
+      ctx.arc(c.x, c.y, 21, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.strokeStyle = 'rgba(192,57,43,.45)'; ctx.lineWidth = 1.3;
+      ctx.setLineDash([3,3]); ctx.arc(c.x, c.y, 15, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if(act){
+      ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,.12)';
+      ctx.arc(c.x, c.y, 16, 0, Math.PI*2); ctx.fill();
+    }
+
+    ctx.beginPath(); ctx.fillStyle = isH ? '#c0392b' : '#111';
+    ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+    ctx.save();
+    ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.lineWidth = 3.5; ctx.strokeStyle = '#fff'; ctx.fillStyle = isH ? '#c0392b' : '#111';
+    const tag = (i === 0) ? t('oppA') : t('oppB');
+    const txt = tag + (isH ? ' · ' + t('hitting') : '');
+    ctx.strokeText(txt, c.x, c.y-11);
+    ctx.fillText(txt, c.x, c.y-11);
+    ctx.restore();
+  }
+
+  if(mode === 'double'){
+    const c1 = w2c(opponents[0]);
+    const c2 = w2c(opponents[1]);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(142,68,173,0.35)';
+    ctx.lineWidth = 1.3; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawOurPoint(p, label, color){
+  const c = w2c(p);
+  const rgb = color === '#1f6f8b' ? '31,111,139'
+            : color === '#2a9d8f' ? '42,157,143'
+            : color === '#c0392b' ? '192,57,43'
+            : '230,126,34';
+
+  ctx.beginPath(); ctx.fillStyle = `rgba(${rgb},.15)`;
+  ctx.arc(c.x, c.y, 16, 0, Math.PI*2); ctx.fill();
+
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 1.1; ctx.setLineDash([3,3]);
+  ctx.beginPath();
+  ctx.moveTo(c.x-15, c.y); ctx.lineTo(c.x+15, c.y);
+  ctx.moveTo(c.x, c.y-15); ctx.lineTo(c.x, c.y+15);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.beginPath(); ctx.fillStyle = color;
+  ctx.arc(c.x, c.y, 7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+  ctx.save();
+  ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.lineWidth = 3.5; ctx.strokeStyle = '#fff'; ctx.fillStyle = color;
+  ctx.strokeText(label, c.x, c.y+11);
+  ctx.fillText(label, c.x, c.y+11);
+  ctx.restore();
+}
+
+function drawOurs(){
+  if(!result.valid) return;
+
+  if(mode === 'single'){
+    if(result.P1) drawOurPoint(result.P1, t('ourSolo'), '#1f6f8b');
+    return;
+  }
+
+  const list = result.scenario === 'defense'
+    ? [{p: result.P1, l: t('ourStraight'), col:'#1f6f8b'},
+       {p: result.P2, l: t('ourDiag'),     col:'#2a9d8f'}]
+    : [{p: result.P1, l: t('ourBack'),     col:'#c0392b'},
+       {p: result.P2, l: t('ourFront'),    col:'#e67e22'}];
+
+  for(const it of list){
+    if(it.p) drawOurPoint(it.p, it.l, it.col);
+  }
+}
+
+function draw(){
+  ctx.clearRect(0, 0, LW, LH);
+  drawCourt();
+  drawHeat();
+  drawOpponents();
+  drawOurs();
+  drawCourtTags();
+}
+
+/* =========================================================
+   11. DOM 引用
+   ========================================================= */
+const infoLine       = document.getElementById('infoLine');
+const pageSub        = document.getElementById('pageSub');
+const pageTitle      = document.getElementById('pageTitle');
+const statusScenario = document.getElementById('statusScenario');
+const statusPosture  = document.getElementById('statusPosture');
+const modeDot        = document.getElementById('modeDot');
+const hitterBtn      = document.getElementById('hitterBtn');
+const modeToggle     = document.getElementById('modeToggle');
+const pillKill       = document.getElementById('pillKill');
+const pillDrop       = document.getElementById('pillDrop');
+const pillClear      = document.getElementById('pillClear');
+const lblHitter      = document.getElementById('lblHitter');
+const lblStance      = document.getElementById('lblStance');
+const lblPosture     = document.getElementById('lblPosture');
+const tbHitter       = document.getElementById('tbHitter');
+const tbScenario     = document.getElementById('tbScenario');
+const tbPosture      = document.getElementById('tbPosture');
+const footerText     = document.getElementById('footerText');
+const sidebarTitle   = document.getElementById('sidebarTitle');
+const resetBtn       = document.getElementById('resetBtn');
+const appEl          = document.getElementById('app');
+const collapseBtn    = document.getElementById('collapseBtn');
+const langBtnEl      = document.getElementById('langBtn');
+
+/* =========================================================
+   12. 面板更新
+   ========================================================= */
+function updatePill(el, p, rgb){
+  const pct = Math.round(p * 100);
+  el.textContent = el.dataset.label + ' ' + pct + '%';
+  const k = Math.min(1, p / 0.70);
+  el.style.background  = `rgba(${rgb}, ${0.10 + 0.68 * k})`;
+  el.style.borderColor = `rgba(${rgb}, ${0.18 + 0.42 * k})`;
+  el.style.color = (p > 0.42) ? '#ffffff' : `rgb(${rgb})`;
+}
+
+function updateStats(){
+  if(!result.valid) return;
+
+  const single = mode === 'single';
+
+  hitterBtn.textContent = opponents[hitterIdx].tag;
+
+  if(single){
+    statusScenario.textContent = t('defense');
+    statusScenario.className = 'def-b';
+  } else {
+    const sc = result.scenario;
+    statusScenario.textContent = t(sc);
+    statusScenario.className = sc === 'defense' ? 'def-b' : 'atk-b';
+  }
+
+  modeDot.textContent = scenarioMode === 'auto' ? 'A' : 'M';
+  modeDot.className = 'mode-dot ' + scenarioMode;
+  modeDot.title = scenarioMode === 'auto'
+    ? '自动（点击切手动） / Auto (tap for manual)'
+    : '手动（点击切自动） / Manual (tap for auto)';
+
+  statusPosture.textContent = getPostureLabel();
+
+  const probs = result.probs;
+  updatePill(pillKill,  probs.ps, PILL_RGB.kill);
+  updatePill(pillDrop,  probs.pd, PILL_RGB.drop);
+  updatePill(pillClear, probs.pc, PILL_RGB.clear);
+
+  if(single){
+    infoLine.textContent = t('infoSingle');
+    return;
+  }
+
+  const dist = Math.hypot(result.P2.x - result.P1.x, result.P2.y - result.P1.y);
+  const fb = (result.fb >= 0 ? '+' : '') + result.fb.toFixed(2);
+  const sb = (result.sb >= 0 ? '+' : '') + result.sb.toFixed(2);
+  const vars = {
+    d:  dist.toFixed(2),
+    s:  Math.round(probs.ps*100),
+    c:  Math.round(probs.pc*100),
+    dp: Math.round(probs.pd*100),
+    fb,
+    sb,
+    cd: result.cd.toFixed(2),
+    ca: result.ca.toFixed(2),
+    choice: result.scenario === 'defense' ? t('defense') : t('attack')
+  };
+  const tpl = scenarioMode === 'auto' ? t('infoDoubleAuto') : t('infoDoubleManual');
+  infoLine.textContent = tpl
+    .replace('{d}', vars.d).replace('{s}', vars.s)
+    .replace('{c}', vars.c).replace('{dp}', vars.dp)
+    .replace('{fb}', vars.fb).replace('{sb}', vars.sb)
+    .replace('{cd}', vars.cd).replace('{ca}', vars.ca)
+    .replace('{choice}', vars.choice);
+}
+
+/* =========================================================
+   13. 概率联动 & 滑块
+   ========================================================= */
+function syncProbs(changedKey){
+  const others = PROB_KEYS.filter(k => k !== changedKey);
+  const remain = Math.max(0, 100 - PRM[changedKey]);
+  const sumOthers = PRM[others[0]] + PRM[others[1]];
+  const r0 = sumOthers < 1e-6 ? remain / 2 : remain * PRM[others[0]] / sumOthers;
+  PRM[others[0]] = r0;
+  PRM[others[1]] = remain - r0;
+}
+
+const sliderInputs = {};
+const sliderVals = {};
+
+function buildSliders(){
+  const root = document.getElementById('sliders');
+  root.innerHTML = '';
+  Object.keys(sliderInputs).forEach(k => delete sliderInputs[k]);
+  Object.keys(sliderVals).forEach(k => delete sliderVals[k]);
+
+  const groups = {};
+  for(const d of SLIDER_DEFS){
+    if(!groups[d.group]) groups[d.group] = [];
+    groups[d.group].push(d);
+  }
+
+  const groupTitles = { speed:'gSpeed', prob:'gProb', reach:'gReach' };
+  const groupHints  = { speed:'gSpeedHint', prob:'gProbHint', reach:'gReachHint' };
+  let syncing = false;
+
+  for(const gname of Object.keys(groups)){
+    const gEl = document.createElement('div');
+    gEl.className = 's-group';
+
+    const title = document.createElement('div');
+    title.className = 's-title';
+    title.innerHTML = `<span>${t(groupTitles[gname])}</span><span>${t(groupHints[gname])}</span>`;
+    gEl.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 's-grid';
+
+    for(const d of groups[gname]){
+      const item = document.createElement('div');
+      item.className = 's-item' + (d.cls ? ' ' + d.cls : '');
+
+      const label = document.createElement('span');
+      label.textContent = t('sl_' + d.key);
+
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = d.min; input.max = d.max; input.step = d.step;
+      input.value = PRM[d.key];
+
+      const val = document.createElement('b');
+      val.textContent = fmtVal(PRM[d.key], d, gname === 'prob');
+
+      sliderInputs[d.key] = input;
+      sliderVals[d.key]   = val;
+
+      input.addEventListener('input', () => {
+        if(gname === 'prob'){
+          if(syncing) return;
+          syncing = true;
+          PRM[d.key] = Math.max(0, Math.min(100, parseFloat(input.value)));
+          syncProbs(d.key);
+          for(const k of PROB_KEYS){
+            sliderInputs[k].value = Math.round(PRM[k]);
+            sliderVals[k].textContent = Math.round(PRM[k]) + '%';
+          }
+          syncing = false;
+        } else {
+          PRM[d.key] = parseFloat(input.value);
+          val.textContent = fmtVal(PRM[d.key], d, false);
+        }
+        quality = 'fast';
+        needsSolve = true;
+        heatDirty = true;
+      });
+
+      item.appendChild(label);
+      item.appendChild(input);
+      item.appendChild(val);
+      grid.appendChild(item);
+    }
+
+    gEl.appendChild(grid);
+    root.appendChild(gEl);
+  }
+
+  function fmtVal(v, d, asPct){
+    if(asPct) return Math.round(v) + '%';
+    return d.step < 1 ? v.toFixed(2) : String(Math.round(v));
+  }
+}
+
+/* =========================================================
+   14. 侧边栏
+   ========================================================= */
+const sidebar     = document.getElementById('sidebar');
+const sidebarMask = document.getElementById('sidebarMask');
+
+function openSidebar(){
+  sidebar.classList.add('open');
+  sidebarMask.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar(){
+  sidebar.classList.remove('open');
+  sidebarMask.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('sidebarBtn').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+sidebarMask.addEventListener('click', closeSidebar);
+
+resetBtn.addEventListener('click', () => {
+  SLIDER_DEFS.forEach(d => { PRM[d.key] = d.def; });
+  buildSliders();
+  quality = 'full';
+  needsSolve = true;
+  heatDirty = true;
+});
+
+/* =========================================================
+   15. 语言 / 折叠 / 静态文本
+   ========================================================= */
+function refreshStaticText(){
+  document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+  document.title = t('title');
+  pageTitle.textContent = t('title');
+  pageSub.textContent   = t('sub');
+  lblHitter.textContent  = t('hitter');
+  lblStance.textContent  = t('stance');
+  lblPosture.textContent = t('posture');
+  footerText.textContent = t('footer');
+  sidebarTitle.textContent = t('params');
+  resetBtn.textContent     = t('reset');
+  langBtnEl.textContent    = t('langBtn');
+
+  document.getElementById('pTitle').textContent = t('principleTitle');
+  document.getElementById('principleBody').innerHTML = t('principleHTML');
+
+  pillKill.dataset.label  = lang === 'zh' ? '杀' : 'Sm';
+  pillDrop.dataset.label  = lang === 'zh' ? '吊' : 'Dr';
+  pillClear.dataset.label = lang === 'zh' ? '高' : 'Cl';
+
+  const collapsed = appEl.classList.contains('collapsed');
+  collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+
+  modeToggle.textContent  = mode === 'single' ? t('singles') : t('doubles');
+  modeToggle.dataset.mode = mode;
+
+  const single = mode === 'single';
+  tbHitter.classList.toggle('hidden', single);
+  tbScenario.classList.toggle('hidden', single);
+  tbPosture.classList.toggle('hidden', single);
+
+  updateStats();
+}
+
+langBtnEl.addEventListener('click', () => {
+  lang = (lang === 'zh') ? 'en' : 'zh';
+  buildSliders();
+  refreshStaticText();
+});
+
+collapseBtn.addEventListener('click', () => {
+  const collapsed = appEl.classList.toggle('collapsed');
+  collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+  requestAnimationFrame(setup);
+});
+
+/* =========================================================
+   16. 命中测试与交互
+   ========================================================= */
+function getW(ev){
+  const r = canvas.getBoundingClientRect();
+  return c2w((ev.clientX - r.left)/r.width*LW, (ev.clientY - r.top)/r.height*LH);
+}
+function clearLongPress(){ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } }
+
+function hitOpponent(w){
+  const list = (mode === 'single') ? [0] : [0, 1];
+  for(const i of list){
+    if(Math.hypot(w.x - opponents[i].x, w.y - opponents[i].y) < DR_HIT) return i;
+  }
+  return -1;
+}
+
+function hitOurPlayers(w){
+  if(!result.valid || mode === 'single') return -1;
+  const r = DR_HIT * 1.2;
+  if(result.P1 && Math.hypot(w.x - result.P1.x, w.y - result.P1.y) < r) return 1;
+  if(result.P2 && Math.hypot(w.x - result.P2.x, w.y - result.P2.y) < r) return 2;
+  return -1;
+}
+
+function toggleScenarioManual(){
+  const cur = result.scenario || 'defense';
+  manualScenario = cur === 'defense' ? 'attack' : 'defense';
+  scenarioMode = 'manual';
+  quality = 'full'; needsSolve = true; heatDirty = true;
+  updateStats();
+}
+
+hitterBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(mode !== 'double') return;
+  hitterIdx = 1 - hitterIdx;
+  quality = 'full'; needsSolve = true; heatDirty = true;
+  updateStats();
+});
+
+modeToggle.addEventListener('click', () => {
+  mode = (mode === 'double') ? 'single' : 'double';
+  if(mode === 'single') hitterIdx = 0;
+  quality = 'full'; needsSolve = true; heatDirty = true;
+  refreshStaticText();
+});
+
+document.getElementById('scenarioBtn').addEventListener('click', () => {
+  if(mode === 'single') return;
+  toggleScenarioManual();
+});
+
+modeDot.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(mode === 'single') return;
+  if(scenarioMode === 'auto'){
+    scenarioMode = 'manual';
+    manualScenario = result.scenario || 'defense';
+  } else {
+    scenarioMode = 'auto';
+  }
+  quality = 'full'; needsSolve = true; heatDirty = true;
+  updateStats();
+});
+
+canvas.addEventListener('pointerdown', ev => {
+  const w = getW(ev);
+  const now = performance.now();
+  const oppIdx = hitOpponent(w);
+  const ourIdx = (oppIdx < 0) ? hitOurPlayers(w) : -1;
+
+  if(oppIdx < 0 && ourIdx < 0){
+    const dt = now - lastTap.time;
+    const dd = Math.hypot(ev.clientX - lastTap.x, ev.clientY - lastTap.y);
+    if(lastTap.time > 0 && dt < DOUBLE_TAP_MS && dd < DOUBLE_TAP_DIST){
+      lastTap = {time:0, x:0, y:0};
+      showHeat = !showHeat;
+      heatDirty = true;
+      updateStats();
+      ev.preventDefault();
+      return;
+    }
+    lastTap = {time: now, x: ev.clientX, y: ev.clientY};
+    return;
+  }
+
+  lastTap = {time:0, x:0, y:0};
+
+  if(ourIdx > 0){
+    ourLongPressPos = {x: ev.clientX, y: ev.clientY};
+    canvas.setPointerCapture(ev.pointerId);
+    clearLongPress();
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      ourLongPressPos = null;
+      toggleScenarioManual();
+    }, LONG_PRESS_MS);
+    ev.preventDefault();
+    return;
+  }
+
+  dragIdx = oppIdx;
+  dragStarted = false;
+  dragStartPos = {x: ev.clientX, y: ev.clientY};
+  canvas.setPointerCapture(ev.pointerId);
+  canvas.style.cursor = 'grabbing';
+
+  clearLongPress();
+  const captured = oppIdx;
+  if(mode === 'double'){
+    longPressTimer = setTimeout(() => {
+      if(dragIdx === captured && !dragStarted){
+        hitterIdx = captured;
+        quality = 'full'; needsSolve = true; heatDirty = true;
+        dragIdx = -1; dragStarted = false; dragStartPos = null;
+        canvas.style.cursor = 'default';
+        updateStats();
+      }
+      longPressTimer = null;
+    }, LONG_PRESS_MS);
+  }
+
+  ev.preventDefault();
+});
+
+canvas.addEventListener('pointermove', ev => {
+  if(ourLongPressPos && longPressTimer){
+    const dx = ev.clientX - ourLongPressPos.x, dy = ev.clientY - ourLongPressPos.y;
+    if(Math.hypot(dx, dy) > DRAG_THRESHOLD){
+      clearLongPress();
+      ourLongPressPos = null;
+    }
+  }
+
+  const w = getW(ev);
+  if(dragIdx >= 0){
+    if(!dragStarted && dragStartPos){
+      const dx = ev.clientX - dragStartPos.x, dy = ev.clientY - dragStartPos.y;
+      if(Math.hypot(dx, dy) > DRAG_THRESHOLD){ dragStarted = true; clearLongPress(); }
+      else return;
+    }
+    if(dragStarted){
+      opponents[dragIdx].x = clamp(w.x, -HW + .15, HW - .15);
+      opponents[dragIdx].y = clamp(w.y, 0.25, HL - .15);
+      needsSolve = true; quality = 'fast'; heatDirty = true;
+      ev.preventDefault();
+    }
+    return;
+  }
+
+  if(hitOpponent(w) >= 0)        canvas.style.cursor = 'grab';
+  else if(hitOurPlayers(w) > 0)  canvas.style.cursor = 'pointer';
+  else                           canvas.style.cursor = 'default';
+});
+
+function endDrag(ev){
+  clearLongPress();
+  ourLongPressPos = null;
+  if(dragIdx >= 0 && dragStarted){ quality = 'full'; needsSolve = true; heatDirty = true; }
+  dragIdx = -1; dragStarted = false; dragStartPos = null;
+  canvas.style.cursor = 'default';
+  if(ev && ev.pointerId !== undefined && canvas.hasPointerCapture(ev.pointerId)){
+    canvas.releasePointerCapture(ev.pointerId);
+  }
+}
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('pointerleave', () => { if(dragIdx < 0) canvas.style.cursor = 'default'; });
+
+/* =========================================================
+   17. 原理弹窗（双击版权）
+   ========================================================= */
+(function(){
+  const mask = document.getElementById('principleModal');
+  const credit = document.getElementById('credit');
+
+  const openM  = () => { mask.classList.add('open'); document.body.style.overflow = 'hidden'; };
+  const closeM = () => { mask.classList.remove('open'); document.body.style.overflow = ''; };
+
+  credit.addEventListener('dblclick', openM);
+  let lastTapTime = 0;
+  credit.addEventListener('touchend', function(e){
+    const now = Date.now();
+    if(now - lastTapTime < 350){ e.preventDefault(); openM(); lastTapTime = 0; }
+    else { lastTapTime = now; }
+  }, {passive:false});
+
+  document.getElementById('principleClose').addEventListener('click', closeM);
+  mask.addEventListener('click', function(e){ if(e.target === mask) closeM(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeM(); });
+})();
+
+/* =========================================================
+   18. 主循环
+   ========================================================= */
+let last = 0;
+function loop(ts){
+  if(needsSolve && ts - last > (quality === 'fast' ? 70 : 0)){
+    try{
+      result = solve(quality === 'fast');
+      heatDirty = true;
+    } catch(err){
+      console.error('solve error:', err);
+    }
+    needsSolve = false;
+    last = ts;
+    updateStats();
+  }
+  try{ draw(); }
+  catch(err){ console.error('draw error:', err); }
+  requestAnimationFrame(loop);
+}
+
+/* ---- 启动 ---- */
+try{
+  result = solve('full');
+  heatDirty = true;
+}catch(e){ console.error('init error:', e); }
+
+buildSliders();
+refreshStaticText();
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
