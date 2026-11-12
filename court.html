@@ -44,6 +44,7 @@
     pointer-events:none;
   }
   .header-left{display:flex; gap:14px; align-items:flex-start; flex:1; min-width:0; position:relative}
+  .header-left > div:not(.logo){min-width:0; flex:1}
   .logo{
     width:44px; height:44px; flex-shrink:0; border-radius:12px;
     background:linear-gradient(135deg, var(--primary-bright), var(--primary));
@@ -51,8 +52,7 @@
     box-shadow:0 4px 12px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.2);
   }
   h1{margin:0 0 3px; font-size:17px; font-weight:700; letter-spacing:.2px; line-height:1.4}
-  .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5}
-
+  .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5; white-space:normal; word-break:break-word}
   .header-actions{display:flex; gap:8px; align-items:center; flex-shrink:0; position:relative}
 
   /* 语言按钮（独立样式，不依赖 tool-btn） */
@@ -258,7 +258,7 @@
     .header-left{gap:10px; flex:1; min-width:0}
     .logo{width:36px; height:36px; font-size:18px; border-radius:10px; flex-shrink:0}
     h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .header p{font-size:12px; line-height:1.35}
+    .header p{font-size:12px; line-height:1.35; white-space:normal; word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
     .header-actions{width:auto; gap:6px; flex-shrink:0}
     .lang-btn{flex:0 0 auto; padding:2px 5px; font-size:11px}
 
