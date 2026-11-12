@@ -1816,7 +1816,10 @@ const TS  = 140;
 const TXC = TWE / 2;
 const TZ0 = THE / 2 + ((Z_MIN + Z_MAX) / 2) * TS;
 
-function t2p(x, z) { return [TXC + x * TS, TZ0 - z * TS]; }
+function t2p(x, z) { 
+  const sx = flip ? -1 : 1;
+  return [TXC + sx * x * TS, TZ0 - z * TS]; 
+}
 
 function drawTopBody() {
   ctx3.save();
@@ -1870,7 +1873,8 @@ function drawAzimuthCone(ik) {
     const sc = shotCheck(ik);
     const col = (!useShotLimit) ? '#2563eb' : (sc.azimOk ? '#16a34a' : '#dc2626');
     const hl = Math.hypot(n[0], n[2]) || 1e-6;
-    const ex = px + n[0]/hl*R, ey = py - n[2]/hl*R;
+    const dirX = (flip ? -1 : 1) * n[0]/hl*R;
+    const ex = px + dirX, ey = py - n[2]/hl*R;
     ctx3.strokeStyle = col; ctx3.lineWidth = 2.5;
     ctx3.beginPath(); ctx3.moveTo(px,py); ctx3.lineTo(ex,ey); ctx3.stroke();
     ctx3.beginPath(); ctx3.arc(ex,ey,3.2,0,7); ctx3.fillStyle=col; ctx3.fill();
