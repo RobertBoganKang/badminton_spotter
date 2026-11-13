@@ -8,6 +8,9 @@
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏸</text></svg>">
   <style>
+    /* ============================================================
+       1. 设计变量
+       ============================================================ */
     :root {
       --bg: #eef2f6;
       --card: #fff;
@@ -19,6 +22,11 @@
       --primary: #166b46;
       --primary-2: #1f8a5b;
       --primary-bright: #22a06b;
+
+      /* 高 / 吊 / 杀 三色（RGB 分量，便于 rgba 拼接） */
+      --seg-clear: 45, 90, 200;
+      --seg-drop: 40, 170, 80;
+      --seg-kill: 192, 57, 43;
     }
 
     * {
@@ -52,6 +60,9 @@
       box-shadow: var(--shadow)
     }
 
+    /* ============================================================
+       2. 页头
+       ============================================================ */
     .header {
       padding: 14px 18px;
       display: flex;
@@ -157,6 +168,9 @@
       display: none
     }
 
+    /* ============================================================
+       3. 画布卡片 & 顶栏
+       ============================================================ */
     .canvas-card {
       padding: 0;
       overflow: hidden
@@ -303,12 +317,16 @@
       flex-shrink: 0
     }
 
+    /* ============================================================
+       4. 胶囊组：击球高 · 小点 · 高/吊/杀分段胶囊
+       ============================================================ */
     .pill-group {
       display: inline-flex;
       gap: 3px;
       align-items: center
     }
 
+    /* ---- 4.1 击球高（独立圆角胶囊） ---- */
     .pill {
       display: inline-flex;
       align-items: center;
@@ -338,6 +356,91 @@
       color: #1f6f8b
     }
 
+    /* ---- 4.2 击球高 与 高/吊/杀 之间的小间隔点 ---- */
+    .pill-sep {
+      flex-shrink: 0;
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(91, 107, 98, .45);
+      margin: 0 1px;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none
+    }
+
+    /* ---- 4.3 高/吊/杀 分段胶囊 ----
+       高：左半圆弧，右侧直角
+       吊：四角全直角
+       杀：左侧直角，右半圆弧
+       每段 1px 描边，负边距让相邻边框重叠成一条线 */
+    .seg-group {
+      display: inline-flex;
+      align-items: stretch;
+      flex-shrink: 0;
+      border-radius: 999px
+    }
+
+    .seg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 9px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums;
+      cursor: ns-resize;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      position: relative;
+      margin-left: -1px;
+      transition: filter .15s
+    }
+
+    .seg:first-child {
+      margin-left: 0
+    }
+
+    .seg:hover {
+      z-index: 1;
+      filter: brightness(.96)
+    }
+
+    .seg:active {
+      filter: brightness(.92)
+    }
+
+    /* 形状与基础配色（JS 会按概率覆盖背景/边框/文字色） */
+    .seg-clear {
+      border-radius: 999px 0 0 999px;
+      background: rgba(var(--seg-clear), .12);
+      border-color: rgba(var(--seg-clear), .28);
+      color: rgb(var(--seg-clear))
+    }
+
+    .seg-drop {
+      border-radius: 0;
+      background: rgba(var(--seg-drop), .12);
+      border-color: rgba(var(--seg-drop), .28);
+      color: rgb(var(--seg-drop))
+    }
+
+    .seg-kill {
+      border-radius: 0 999px 999px 0;
+      background: rgba(var(--seg-kill), .12);
+      border-color: rgba(var(--seg-kill), .28);
+      color: rgb(var(--seg-kill))
+    }
+
+    /* ============================================================
+       5. 画布与信息栏
+       ============================================================ */
     .canvas-wrap {
       padding: 9px 10px 8px;
       display: flex;
@@ -386,6 +489,9 @@
       user-select: none
     }
 
+    /* ============================================================
+       6. 侧边栏（参数面板）
+       ============================================================ */
     .sidebar {
       position: fixed;
       top: 0;
@@ -590,6 +696,9 @@
       line-height: 1.5
     }
 
+    /* ============================================================
+       7. 计算方法弹窗
+       ============================================================ */
     .modal-mask {
       position: fixed;
       inset: 0;
@@ -726,6 +835,9 @@
       margin: 4px 0
     }
 
+    /* ============================================================
+       8. 响应式
+       ============================================================ */
     @media (max-width: 520px) {
       body {
         padding: 10px 8px
@@ -776,6 +888,17 @@
       .pill {
         font-size: 10px;
         padding: 1px 7px
+      }
+
+      .seg {
+        font-size: 10px;
+        padding: 1px 7px
+      }
+
+      .pill-sep {
+        width: 3px;
+        height: 3px;
+        margin: 0
       }
 
       .tb-right {
@@ -873,9 +996,12 @@
         <div class="tb-right">
           <div class="pill-group" id="pillGroup">
             <span class="pill pill-height" id="pillHeight">击球高 2.8m</span>
-            <span class="pill" id="pillClear" data-label="高">高 22%</span>
-            <span class="pill" id="pillDrop" data-label="吊">吊 23%</span>
-            <span class="pill" id="pillKill" data-label="杀">杀 55%</span>
+            <span class="pill-sep" aria-hidden="true"></span>
+            <div class="seg-group" role="group" aria-label="高吊杀概率">
+              <span class="seg seg-clear" id="pillClear" data-label="高">高 22%</span>
+              <span class="seg seg-drop" id="pillDrop" data-label="吊">吊 23%</span>
+              <span class="seg seg-kill" id="pillKill" data-label="杀">杀 55%</span>
+            </div>
           </div>
           <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
             <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
@@ -925,6 +1051,9 @@
 
       const $ = id => document.getElementById(id);
 
+      /* ============================================================
+         一、国际化文案
+         ============================================================ */
       const I18N = {
         zh: {
           title: '羽毛球场站位点',
@@ -957,7 +1086,7 @@
           pillHint: '拖动调整（上增下减）',
           heightHint: '上下拖动调整击球高度',
           pillHeight: '击球高',
-          ourBack: '后场', ourFront: '前场', ourSolo: '站位',
+          ourBack: '后', ourFront: '前', ourSolo: '站位',
           labelLeft: '左', labelRight: '右',
           infoContact: '击球高',
           infoSmash: '杀', infoClear: '高', infoDrop: '吊',
@@ -982,7 +1111,7 @@
       <p><b>高球</b>：目标是“<b>最快到达底线参考线</b>”。v0 从 <code>v0_clear_lo</code> 到 <code>v0_clear_hi</code>（默认 36–50 m/s）几何扫描（粗筛 5 档 + 几何插值加密），elev −10~60°、azim ±1.5σ 全扫，直接模拟到真实落地：</p>
       <ul>
         <li>过网高度必须 ≥ <code>高球过网最低</code>（默认 2.5 m）——<b>只限下限，不限上限</b></li>
-        <li>落点必须 ≤ <code>−底线参考线</code>（默认 −4.5 m），未到底线丢弃</li>
+        <li>落点必须 ≤ <code>−底线参考线</code>（默认 −4.0 m），未到底线丢弃</li>
         <li>落点必须在场地内（y ∈ (−6.7, 0)，|x| ≤ 半场宽）</li>
         <li>如果一轮扫描没有任何合格路径，整体提高 v0（×1.12）重试，最多 6 轮</li>
       </ul>
@@ -1070,7 +1199,7 @@
       <p><b>High</b>: goal is <b>fastest arrival at the baseline reference</b>. v0 scanned geometrically from <code>v0_clear_lo</code> to <code>v0_clear_hi</code> (default 36–50 m/s, 5 coarse + geometric interp), elev −10~60°, azim ±1.5σ, simulated to the real landing:</p>
       <ul>
         <li>Crossing height at net must be ≥ <code>high net min H</code> (default 2.5 m) — <b>lower bound only, no upper bound</b></li>
-        <li>Landing must be ≤ <code>−baseline ref</code> (default −4.5 m); discarded otherwise</li>
+        <li>Landing must be ≤ <code>−baseline ref</code> (default −4.0 m); discarded otherwise</li>
         <li>Landing must be in court (y ∈ (−6.7, 0), |x| ≤ half width)</li>
         <li>If a full scan yields no valid path, raise v0 by ×1.12 and retry, up to 6 rounds</li>
       </ul>
@@ -1104,6 +1233,9 @@
       let lang = 'zh';
       function t(k) {return (I18N[lang] && I18N[lang][k]) || (I18N.zh[k] || k);}
 
+      /* ============================================================
+         二、参数定义与运行时状态
+         ============================================================ */
       const SLIDER_DEFS = [
         {group: 'prob', key: 'p_smash', min: 0, max: 100, step: 1, def: 55},
         {group: 'prob', key: 'p_clear', min: 0, max: 100, step: 1, def: 22},
@@ -1114,7 +1246,7 @@
         {group: 'reach', key: 'v_run', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
         {group: 'reach', key: 'k2', min: 1.0, max: 1.6, step: 0.01, def: 1.30},
         {group: 'filter', key: 'dropMaxOverNet', min: 0, max: 1.0, step: 0.01, def: 0.20},
-        {group: 'filter', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.5},
+        {group: 'filter', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
         {group: 'filter', key: 'clearHeight', min: 1.7, max: 3.5, step: 0.05, def: 2.7},
         {group: 'speed', key: 'v0_smash', min: 15, max: 80, step: 1, def: 60},
         {group: 'speed', key: 'v0_clear_lo', min: 28, max: 42, step: 1, def: 36},
@@ -1130,12 +1262,14 @@
       const PROB_KEYS = ['p_smash', 'p_clear', 'p_drop'];
       const SHOT_TYPES = ['smash', 'clear', 'drop'];
 
-      const PILL_COLOR = {
-        kill: '192,57,43',
+      /* 高 / 吊 / 杀 三色（用于胶囊按概率着色） */
+      const SHOT_RGB = {
+        clear: '45,90,200',
         drop: '40,170,80',
-        clear: '45,90,200'
+        kill: '192,57,43'
       };
 
+      /* ---- 场地常量 ---- */
       const L = 13.4, W = 6.10, HL = L / 2, HW = W / 2;
       const SINGLES_HW = 2.59, SHORT_SVC = 1.98, LONG_SVC = 0.76;
 
@@ -1146,6 +1280,7 @@
       const SEP_MIN_DIST = 2.0;
       const SEP_PEN_K = 0.35;
 
+      /* ---- 绘图颜色与字体 ---- */
       const C_COURT_LINE = '#3a7d5c';
       const C_COURT_FRAME = '#1e4d38';
       const C_REF_BLUE = 'rgba(31,111,139,0.22)';
@@ -1160,6 +1295,9 @@
       const HALO_W = 3.5;
 
       const C_PERSON = '#111';
+      /* 未完成精细化计算时的占位灰 */
+      const C_PERSON_PENDING = '#b4bdb8';
+      const C_PERSON_PENDING_LINE = 'rgba(120,132,126,.30)';
 
       const HEAT_RGB = {
         smash: [192, 57, 43],
@@ -1171,6 +1309,7 @@
       const HEAT_SIGMA = 0.26;
       const HEAT_CUT = 0.01;
 
+      /* ---- 空气动力学 ---- */
       const AERO = {dt: 0.005, tMax: 6.0, g: 9.81, RHO: 1.2, S_SHUTTLE: 0.003, M_SHUTTLE: 0.005};
       const AERO_K = 0.5 * AERO.RHO * AERO.S_SHUTTLE / AERO.M_SHUTTLE;
 
@@ -1189,6 +1328,164 @@
       /* 方向速度系数 */
       const V_FWD_K = 1.15, V_SIDE_K = 0.95;
 
+      /* ---- 运行时状态 ---- */
+      let mode = 'double';
+      let opponents = [{x: 0, y: 4.6}];
+      let dragIdx = -1, dragStarted = false, dragStartPos = null;
+      let needsSolve = true, quality = 'full';
+      let lastTap = {time: 0, x: 0, y: 0};
+      let showHeat = false;
+
+      let result = {
+        P1: {x: 2.2, y: -4.5}, P2: {x: -0.5, y: -4.5},
+        valid: false,
+        precise: false,
+        reachStats: null,
+        highTMin: null
+      };
+
+      const DR_HIT = ('ontouchstart' in window) ? 1.0 : 0.55;
+      const DOUBLE_TAP_MS = 300;
+      const DOUBLE_TAP_DIST = 32;
+      const DRAG_THRESHOLD = 6;
+
+      const SCALE = 40;
+      const PAD_R = 20, PAD_T = 20, PAD_B = 20;
+      let PAD_L = 85;
+      let LW = W * SCALE + PAD_L + PAD_R;
+      let LH = L * SCALE + PAD_T + PAD_B;
+
+      const canvas = $('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+
+      /* ============================================================
+         三、坐标与绘制辅助
+         ============================================================ */
+      function w2c(p) {return {x: PAD_L + (p.x + HW) * SCALE, y: PAD_T + (HL - p.y) * SCALE};}
+      function c2w(cx, cy) {return {x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE};}
+
+      function measureTagWidth(line1, line2) {
+        ctx.save();
+        ctx.font = FONT_TAG_MAIN;
+        const w1 = ctx.measureText(line1).width;
+        ctx.font = FONT_TAG_SUB;
+        const w2 = line2 ? ctx.measureText(line2).width : 0;
+        ctx.restore();
+        return Math.max(w1, w2) + TAG_PADX * 2;
+      }
+
+      function computePadL() {
+        const w = Math.max(
+          measureTagWidth(t('net'), null),
+          measureTagWidth(t('lblNearDrop'), t('lblNearDropV')),
+          measureTagWidth(t('lblFrontPen'), '4.5 m'),
+          measureTagWidth(t('lblFarDrop'), t('lblFarDropV'))
+        );
+        return Math.ceil(w) + 12;
+      }
+
+      function lineStroke(a, b) {
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+
+      function roundRectPath(c, x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+      }
+
+      function drawLabelWithHalo(text, x, y, color, font, align, baseline) {
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.lineWidth = HALO_W;
+        ctx.strokeStyle = '#fff';
+        ctx.fillStyle = color;
+        ctx.strokeText(text, x, y);
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function drawCourtTag(line1, line2, anchorX, anchorY, color, align) {
+        ctx.save();
+        ctx.font = FONT_TAG_MAIN;
+        const w1 = ctx.measureText(line1).width;
+        ctx.font = FONT_TAG_SUB;
+        const w2 = line2 ? ctx.measureText(line2).width : 0;
+        const tw = Math.max(w1, w2);
+
+        const padX = TAG_PADX, padY = 3, lineH = 10;
+        const rows = line2 ? 2 : 1;
+        const w = tw + padX * 2;
+        const h = lineH * rows + padY * 2;
+
+        let bx;
+        if (align === 'right') bx = anchorX - w;
+        else if (align === 'center') bx = anchorX - w / 2;
+        else bx = anchorX;
+        const by = anchorY - h / 2;
+
+        roundRectPath(ctx, bx, by, w, h, 3.5);
+        ctx.fillStyle = 'rgba(255,255,255,0.94)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        const cx = bx + w / 2;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = color;
+
+        if (line2) {
+          ctx.font = FONT_TAG_MAIN;
+          ctx.fillText(line1, cx, by + padY + lineH * 0.5 + 0.3);
+          ctx.font = FONT_TAG_SUB;
+          ctx.globalAlpha = 0.85;
+          ctx.fillText(line2, cx, by + padY + lineH * 1.5 + 0.3);
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.font = FONT_TAG_MAIN;
+          ctx.fillText(line1, cx, by + h / 2 + 0.3);
+        }
+        ctx.restore();
+      }
+
+      function setup() {
+        PAD_L = computePadL();
+        LW = W * SCALE + PAD_L + PAD_R;
+        LH = L * SCALE + PAD_T + PAD_B;
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const wrap = canvas.parentElement, cs = getComputedStyle(wrap);
+        const avail = wrap.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+        let cw = Math.min(avail, LW), ch = cw * LH / LW;
+        const maxH = Math.min(window.innerHeight * 0.75, 720);
+        if (ch > maxH) {ch = maxH; cw = ch * LW / LH;}
+        cw = Math.max(150, cw);
+        canvas.style.width = cw + 'px';
+        canvas.style.height = ch + 'px';
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(ch * dpr);
+        const s = canvas.width / LW;
+        ctx.setTransform(s, 0, 0, s, 0, 0);
+      }
+      setup();
+
+      /* ============================================================
+         四、物理与可达性
+         ============================================================ */
       function touchScale(type) {
         if (type === 'smash') return 0.72;
         if (type === 'drop') return 0.95;
@@ -1379,6 +1676,9 @@
         return ranges;
       }
 
+      /* ============================================================
+         五、球路落点生成
+         ============================================================ */
       const W_MIN_REL = 0.01;
 
       function genSmashLandings(hitter, fast) {
@@ -1625,156 +1925,9 @@
         return out;
       }
 
-      let mode = 'double';
-      let opponents = [{x: 0, y: 4.6}];
-      let dragIdx = -1, dragStarted = false, dragStartPos = null;
-      let needsSolve = true, quality = 'full';
-      let lastTap = {time: 0, x: 0, y: 0};
-      let showHeat = false;
-
-      let result = {
-        P1: {x: 2.2, y: -4.5}, P2: {x: -0.5, y: -4.5},
-        valid: false,
-        reachStats: null,
-        highTMin: null
-      };
-
-      const DR_HIT = ('ontouchstart' in window) ? 1.0 : 0.55;
-      const DOUBLE_TAP_MS = 300;
-      const DOUBLE_TAP_DIST = 32;
-      const DRAG_THRESHOLD = 6;
-
-      const SCALE = 40;
-      const PAD_R = 20, PAD_T = 20, PAD_B = 20;
-      let PAD_L = 85;
-      let LW = W * SCALE + PAD_L + PAD_R;
-      let LH = L * SCALE + PAD_T + PAD_B;
-
-      const canvas = $('canvas');
-      const ctx = canvas.getContext('2d');
-
-      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
-
-      function w2c(p) {return {x: PAD_L + (p.x + HW) * SCALE, y: PAD_T + (HL - p.y) * SCALE};}
-      function c2w(cx, cy) {return {x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE};}
-
-      function measureTagWidth(line1, line2) {
-        ctx.save();
-        ctx.font = FONT_TAG_MAIN;
-        const w1 = ctx.measureText(line1).width;
-        ctx.font = FONT_TAG_SUB;
-        const w2 = line2 ? ctx.measureText(line2).width : 0;
-        ctx.restore();
-        return Math.max(w1, w2) + TAG_PADX * 2;
-      }
-
-      function computePadL() {
-        const w = Math.max(
-          measureTagWidth(t('net'), null),
-          measureTagWidth(t('lblNearDrop'), t('lblNearDropV')),
-          measureTagWidth(t('lblFrontPen'), '4.5 m'),
-          measureTagWidth(t('lblFarDrop'), t('lblFarDropV'))
-        );
-        return Math.ceil(w) + 12;
-      }
-
-      function lineStroke(a, b) {
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-      }
-
-      function roundRectPath(c, x, y, w, h, r) {
-        r = Math.min(r, w / 2, h / 2);
-        c.beginPath();
-        c.moveTo(x + r, y);
-        c.arcTo(x + w, y, x + w, y + h, r);
-        c.arcTo(x + w, y + h, x, y + h, r);
-        c.arcTo(x, y + h, x, y, r);
-        c.arcTo(x, y, x + w, y, r);
-        c.closePath();
-      }
-
-      function drawLabelWithHalo(text, x, y, color, font, align, baseline) {
-        ctx.save();
-        ctx.font = font;
-        ctx.textAlign = align;
-        ctx.textBaseline = baseline;
-        ctx.lineWidth = HALO_W;
-        ctx.strokeStyle = '#fff';
-        ctx.fillStyle = color;
-        ctx.strokeText(text, x, y);
-        ctx.fillText(text, x, y);
-        ctx.restore();
-      }
-
-      function drawCourtTag(line1, line2, anchorX, anchorY, color, align) {
-        ctx.save();
-        ctx.font = FONT_TAG_MAIN;
-        const w1 = ctx.measureText(line1).width;
-        ctx.font = FONT_TAG_SUB;
-        const w2 = line2 ? ctx.measureText(line2).width : 0;
-        const tw = Math.max(w1, w2);
-
-        const padX = TAG_PADX, padY = 3, lineH = 10;
-        const rows = line2 ? 2 : 1;
-        const w = tw + padX * 2;
-        const h = lineH * rows + padY * 2;
-
-        let bx;
-        if (align === 'right') bx = anchorX - w;
-        else if (align === 'center') bx = anchorX - w / 2;
-        else bx = anchorX;
-        const by = anchorY - h / 2;
-
-        roundRectPath(ctx, bx, by, w, h, 3.5);
-        ctx.fillStyle = 'rgba(255,255,255,0.94)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-
-        const cx = bx + w / 2;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = color;
-
-        if (line2) {
-          ctx.font = FONT_TAG_MAIN;
-          ctx.fillText(line1, cx, by + padY + lineH * 0.5 + 0.3);
-          ctx.font = FONT_TAG_SUB;
-          ctx.globalAlpha = 0.85;
-          ctx.fillText(line2, cx, by + padY + lineH * 1.5 + 0.3);
-          ctx.globalAlpha = 1;
-        } else {
-          ctx.font = FONT_TAG_MAIN;
-          ctx.fillText(line1, cx, by + h / 2 + 0.3);
-        }
-        ctx.restore();
-      }
-
-      function setup() {
-        PAD_L = computePadL();
-        LW = W * SCALE + PAD_L + PAD_R;
-        LH = L * SCALE + PAD_T + PAD_B;
-
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const wrap = canvas.parentElement, cs = getComputedStyle(wrap);
-        const avail = wrap.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-        let cw = Math.min(avail, LW), ch = cw * LH / LW;
-        const maxH = Math.min(window.innerHeight * 0.75, 720);
-        if (ch > maxH) {ch = maxH; cw = ch * LW / LH;}
-        cw = Math.max(150, cw);
-        canvas.style.width = cw + 'px';
-        canvas.style.height = ch + 'px';
-        canvas.width = Math.round(cw * dpr);
-        canvas.height = Math.round(ch * dpr);
-        const s = canvas.width / LW;
-        ctx.setTransform(s, 0, 0, s, 0, 0);
-      }
-      setup();
-
+      /* ============================================================
+         六、站位优化
+         ============================================================ */
       function itemV(pos1, pos2, item) {
         const pa = pDef(pos1, item.L, item.t, item.type) * qRun(pos1, item);
         let r = pa;
@@ -1942,15 +2095,20 @@
           items = [{L: {x: 0, y: -PRM.clearLineY}, w: 1, type: 'clear', t: 0.6}];
         }
 
+        const precise = !fast;
+
         if (mode === 'single') {
           const P1 = optimizeSolo(items, stepPos);
-          return {P1, P2: null, valid: true, reachStats: avgReachByType(items, P1, null), highTMin};
+          return {P1, P2: null, valid: true, precise, reachStats: avgReachByType(items, P1, null), highTMin};
         }
 
         const [P1, P2] = optimizeDouble(items, fast);
-        return {P1, P2, valid: true, reachStats: avgReachByType(items, P1, P2), highTMin};
+        return {P1, P2, valid: true, precise, reachStats: avgReachByType(items, P1, P2), highTMin};
       }
 
+      /* ============================================================
+         七、绘图
+         ============================================================ */
       function drawCourtBase() {
         const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
         ctx.fillStyle = '#f7fbf9';
@@ -2005,6 +2163,7 @@
         drawCourtTag(t('net'), null, tagRightX, w2c({x: 0, y: 0}).y, C_NET, 'right');
       }
 
+      /* ---- 热力图 ---- */
       const heatCanvas = document.createElement('canvas');
       const heatCtx = heatCanvas.getContext('2d');
       let heatDirty = true;
@@ -2137,22 +2296,25 @@
         drawLabelWithHalo(lang === 'zh' ? '对手' : 'Opp', c.x, c.y - 11, C_PERSON, FONT_PLAYER, 'center', 'bottom');
       }
 
+      /* 我方站位点：精细化计算完成前用灰色，完成后用黑色 */
       function drawOurPoint(p, label) {
         const c = w2c(p);
+        const col = result.precise ? C_PERSON : C_PERSON_PENDING;
+        const lineCol = result.precise ? 'rgba(0,0,0,.30)' : C_PERSON_PENDING_LINE;
 
-        ctx.beginPath(); ctx.fillStyle = C_PERSON;
+        ctx.beginPath(); ctx.fillStyle = col;
         ctx.arc(c.x, c.y, 8, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.save();
-        ctx.strokeStyle = 'rgba(0,0,0,.30)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+        ctx.strokeStyle = lineCol; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
         ctx.beginPath();
         ctx.moveTo(c.x - 15, c.y); ctx.lineTo(c.x + 15, c.y);
         ctx.moveTo(c.x, c.y - 15); ctx.lineTo(c.x, c.y + 15);
         ctx.stroke();
         ctx.restore();
 
-        drawLabelWithHalo(label, c.x, c.y + 11, C_PERSON, FONT_OUR, 'center', 'top');
+        drawLabelWithHalo(label, c.x, c.y + 11, col, FONT_OUR, 'center', 'top');
       }
 
       function drawOurs() {
@@ -2192,6 +2354,9 @@
         drawCourtTags();
       }
 
+      /* ============================================================
+         八、DOM 引用与 UI 更新
+         ============================================================ */
       const infoLine = $('infoLine');
       const pageSub = $('pageSub');
       const pageTitle = $('pageTitle');
@@ -2207,6 +2372,7 @@
       const collapseBtn = $('collapseBtn');
       const langBtnEl = $('langBtn');
 
+      /* 按概率给分段胶囊上色：p 越高，背景越深；超过 42% 文字转白 */
       function updatePill(el, p, rgb) {
         const pct = Math.round(p * 100);
         el.textContent = el.dataset.label + ' ' + pct + '%';
@@ -2231,9 +2397,9 @@
         const single = mode === 'single';
         const probs = getProbs();
 
-        updatePill(pillKill, probs.ps, PILL_COLOR.kill);
-        updatePill(pillDrop, probs.pd, PILL_COLOR.drop);
-        updatePill(pillClear, probs.pc, PILL_COLOR.clear);
+        updatePill(pillKill, probs.ps, SHOT_RGB.kill);
+        updatePill(pillDrop, probs.pd, SHOT_RGB.drop);
+        updatePill(pillClear, probs.pc, SHOT_RGB.clear);
         updateHeightPill();
 
         const ps = Math.round(probs.ps * 100);
@@ -2275,6 +2441,7 @@
         return val.toFixed(digits);
       }
 
+      /* ---- 反应曲线小图 ---- */
       let reachCurveCanvas = null;
       let reachCurveCaption = null;
 
@@ -2366,6 +2533,9 @@
         }
       }
 
+      /* ============================================================
+         九、参数面板
+         ============================================================ */
       const sliderInputs = {};
       const sliderVals = {};
 
@@ -2480,6 +2650,9 @@
         requestAnimationFrame(drawReachCurve);
       }
 
+      /* ============================================================
+         十、胶囊拖拽
+         ============================================================ */
       function setupPillDrag(el, key) {
         let drag = null;
         el.title = t('pillHint');
@@ -2547,6 +2720,9 @@
         el.addEventListener('pointercancel', finish);
       }
 
+      /* ============================================================
+         十一、侧边栏开关
+         ============================================================ */
       const sidebar = $('sidebar');
       const sidebarMask = $('sidebarMask');
 
@@ -2576,6 +2752,9 @@
         heatDirty = true;
       });
 
+      /* ============================================================
+         十二、静态文案刷新
+         ============================================================ */
       function refreshStaticText() {
         document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
         document.title = t('title');
@@ -2618,6 +2797,9 @@
         requestAnimationFrame(() => {setup(); heatDirty = true;});
       });
 
+      /* ============================================================
+         十三、画布交互
+         ============================================================ */
       function getW(ev) {
         const r = canvas.getBoundingClientRect();
         return c2w((ev.clientX - r.left) / r.width * LW, (ev.clientY - r.top) / r.height * LH);
@@ -2697,6 +2879,9 @@
       canvas.addEventListener('pointercancel', endDrag);
       canvas.addEventListener('pointerleave', () => {if (dragIdx < 0) canvas.style.cursor = 'default';});
 
+      /* ============================================================
+         十四、计算方法弹窗
+         ============================================================ */
       (function () {
         const mask = $('principleModal');
         const credit = $('credit');
@@ -2717,6 +2902,9 @@
         document.addEventListener('keydown', function (e) {if (e.key === 'Escape') closeM();});
       })();
 
+      /* ============================================================
+         十五、主循环
+         ============================================================ */
       let last = 0;
       function loop(ts) {
         if (needsSolve && ts - last > (quality === 'fast' ? 70 : 0)) {
@@ -2735,6 +2923,7 @@
         requestAnimationFrame(loop);
       }
 
+      /* ---- 初始化 ---- */
       try {
         result = solve('full');
         heatDirty = true;
