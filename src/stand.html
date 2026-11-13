@@ -23,7 +23,6 @@
       --primary-2: #1f8a5b;
       --primary-bright: #22a06b;
 
-      /* 高 / 吊 / 杀 三色（RGB 分量，便于 rgba 拼接） */
       --seg-clear: 45, 90, 200;
       --seg-drop: 40, 170, 80;
       --seg-kill: 192, 57, 43;
@@ -318,7 +317,7 @@
     }
 
     /* ============================================================
-       4. 胶囊组：击球高 · 小点 · 高/吊/杀分段胶囊
+       4. 胶囊组
        ============================================================ */
     .pill-group {
       display: inline-flex;
@@ -326,7 +325,6 @@
       align-items: center
     }
 
-    /* ---- 4.1 击球高（独立圆角胶囊） ---- */
     .pill {
       display: inline-flex;
       align-items: center;
@@ -356,7 +354,6 @@
       color: #1f6f8b
     }
 
-    /* ---- 4.2 击球高 与 高/吊/杀 之间的小间隔点 ---- */
     .pill-sep {
       flex-shrink: 0;
       display: inline-block;
@@ -370,11 +367,6 @@
       -webkit-user-select: none
     }
 
-    /* ---- 4.3 高/吊/杀 分段胶囊 ----
-       高：左半圆弧，右侧直角
-       吊：四角全直角
-       杀：左侧直角，右半圆弧
-       每段 1px 描边，负边距让相邻边框重叠成一条线 */
     .seg-group {
       display: inline-flex;
       align-items: stretch;
@@ -416,7 +408,6 @@
       filter: brightness(.92)
     }
 
-    /* 形状与基础配色（JS 会按概率覆盖背景/边框/文字色） */
     .seg-clear {
       border-radius: 999px 0 0 999px;
       background: rgba(var(--seg-clear), .12);
@@ -444,7 +435,9 @@
     .canvas-wrap {
       padding: 9px 10px 8px;
       display: flex;
-      justify-content: center
+      justify-content: center;
+      align-items: flex-start;
+      gap: 8px
     }
 
     canvas {
@@ -454,6 +447,11 @@
       background: #f7fbf9;
       max-width: 100%;
       box-shadow: 0 1px 3px rgba(20, 50, 35, .06), 0 4px 14px rgba(20, 50, 35, .05)
+    }
+
+    #sideCanvas {
+      flex: 0 0 auto;
+      touch-action: none
     }
 
     .info-line {
@@ -490,7 +488,7 @@
     }
 
     /* ============================================================
-       6. 侧边栏（参数面板）
+       6. 侧边栏
        ============================================================ */
     .sidebar {
       position: fixed;
@@ -697,7 +695,7 @@
     }
 
     /* ============================================================
-       7. 计算方法弹窗
+       7. 弹窗
        ============================================================ */
     .modal-mask {
       position: fixed;
@@ -730,12 +728,12 @@
     @keyframes pop {
       from {
         transform: translateY(14px);
-        opacity: .6
+        opacity: .6;
       }
 
       to {
         transform: none;
-        opacity: 1
+        opacity: 1;
       }
     }
 
@@ -793,7 +791,7 @@
     }
 
     .modal-body p {
-      margin: 6px 0
+      margin: 6px 0;
     }
 
     .modal-body .lead {
@@ -832,7 +830,7 @@
     }
 
     .modal-body li {
-      margin: 4px 0
+      margin: 4px 0;
     }
 
     /* ============================================================
@@ -840,125 +838,126 @@
        ============================================================ */
     @media (max-width: 520px) {
       body {
-        padding: 10px 8px
+        padding: 10px 8px;
       }
 
       .app {
-        gap: 10px
+        gap: 10px;
       }
 
       .header {
         padding: 11px 13px;
-        gap: 10px
+        gap: 10px;
       }
 
       .logo {
         width: 36px;
         height: 36px;
         font-size: 18px;
-        border-radius: 10px
+        border-radius: 10px;
       }
 
       h1 {
-        font-size: 14.5px
+        font-size: 14.5px;
       }
 
       .header p {
         font-size: 10.5px;
-        line-height: 1.45
+        line-height: 1.45;
       }
 
       .lang-btn {
         padding: 2px 5px;
-        font-size: 11px
+        font-size: 11px;
       }
 
       .canvas-topbar {
         padding: 8px 10px;
         gap: 5px;
-        font-size: 11px
+        font-size: 11px;
       }
 
       .mode-toggle {
         padding: 4px 11px;
         font-size: 11.5px;
-        min-width: 42px
+        min-width: 42px;
       }
 
       .pill {
         font-size: 10px;
-        padding: 1px 7px
+        padding: 1px 7px;
       }
 
       .seg {
         font-size: 10px;
-        padding: 1px 7px
+        padding: 1px 7px;
       }
 
       .pill-sep {
         width: 3px;
         height: 3px;
-        margin: 0
+        margin: 0;
       }
 
       .tb-right {
-        gap: 5px
+        gap: 5px;
       }
 
       .sidebar-btn {
         width: 24px;
-        height: 24px
+        height: 24px;
       }
 
       .collapse-btn {
         width: 20px;
-        height: 20px
+        height: 20px;
       }
 
       .collapse-btn svg {
         width: 12px;
-        height: 12px
+        height: 12px;
       }
 
       .canvas-wrap {
-        padding: 7px 7px 6px
+        padding: 7px 6px 6px;
+        gap: 6px;
       }
 
       .info-line {
         font-size: 10px;
-        padding: 0 10px 8px
+        padding: 0 10px 8px;
       }
 
       .footer {
-        font-size: 11px
+        font-size: 11px;
       }
 
       .modal-mask {
-        padding: 8px 6px
+        padding: 8px 6px;
       }
 
       .modal {
-        border-radius: 13px
+        border-radius: 13px;
       }
 
       .modal-head {
-        padding: 12px 16px
+        padding: 12px 16px;
       }
 
       .modal-head h2 {
-        font-size: 15px
+        font-size: 15px;
       }
 
       .modal-body {
         padding: 14px 16px 20px;
         font-size: 13.5px;
         line-height: 1.72;
-        max-height: 84vh
+        max-height: 84vh;
       }
 
       .modal-body h3 {
         font-size: 14px;
-        margin: 18px 0 6px
+        margin: 18px 0 6px;
       }
     }
   </style>
@@ -1014,7 +1013,10 @@
         </div>
       </div>
 
-      <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+      <div class="canvas-wrap">
+        <canvas id="canvas"></canvas>
+        <canvas id="sideCanvas"></canvas>
+      </div>
       <div class="info-line" id="infoLine"></div>
     </div>
 
@@ -1106,7 +1108,7 @@
       </ul>
 
       <h3>二、三种球路的生成（均为多 v0 扫描）</h3>
-      <p><b>杀球</b>：v0 = <code>v0_smash × 高度因子</code>（默认 60 m/s），elev 粗扫 + 细扫，落点由方位核 × 距离核加权。</p>
+      <p><b>杀球</b>：v0 = <code>v0_smash × 高度因子</code>（默认 60 m/s）。elev 只扫拍子→球网上沿连线角到 +10° 这一段，始终平射或向下，略微向上不超过 10°；落点由方位核 × 距离核加权。</p>
       <p><b>吊球</b>：v0 从 <code>v0_drop_lo</code> 到 <code>v0_drop_hi</code>（默认 8–18 m/s）多初速三维扫描，接近上限的 v0 权重按 <code>exp(−2.5·u²)</code> 衰减，快吊/推球被压下去。</p>
       <p><b>高球</b>：目标是“<b>最快到达底线参考线</b>”。v0 从 <code>v0_clear_lo</code> 到 <code>v0_clear_hi</code>（默认 36–50 m/s）几何扫描（粗筛 5 档 + 几何插值加密），elev −10~60°、azim ±1.5σ 全扫，直接模拟到真实落地：</p>
       <ul>
@@ -1131,15 +1133,16 @@
       <h3>五、信息栏诊断</h3>
       <p>信息栏显示当前站位下<b>杀接 / 高接 / 吊接</b>三类球的实际平均 reach，以及高球最快落地时间（“高最快”）。如果看到杀接 0% 或两人都挤到前场，检查吊 v0 上限、底线参考线是否太远，或反应曲线是否被拖宽。</p>
 
-      <h3>六、热力图</h3>
-      <p>落点用方位核 × 距离核 × v0/高度权加权，做高斯 KDE。<b style="color:#c0392b">红=杀</b>、<b style="color:#2d5ac8">蓝=高</b>（落在底线参考线以远的真实落点）、<b style="color:#28aa50">绿=吊</b>。双击场地开关。</p>
+      <h3>六、热力图与侧视图</h3>
+      <p>落点用方位核 × 距离核 × v0/高度权加权，做高斯 KDE。<b style="color:#c0392b">红=杀</b>、<b style="color:#2d5ac8">蓝=高</b>、<b style="color:#28aa50">绿=吊</b>。双击场地开关。右侧侧视图把同一批轨迹按高度-场地长度投到剖面中，同样分红/蓝/绿三类，与主视图联动开关。</p>
+      <p>侧视图：地面竖线为地板，横线为球网高度（与主视图同色同粗）；地面刻度对应场地横线（端线用深色、中间线用细绿线）；三名球员身高在 1.6–1.85 m 间随机；球拍椭圆中心即击球高度，虚线从地面连到击球点。</p>
 
       <h3>七、交互与局限</h3>
       <ul>
         <li><b>拖动对手点</b> → 调整击球位置</li>
         <li><b>拖动“击球高”胶囊</b> → 调整击球高度（影响杀球速度、高球可用角度）</li>
         <li><b>拖动概率胶囊</b> → 调整杀/吊/高概率</li>
-        <li><b>双击场地空白</b> → 开关热力图</li>
+        <li><b>双击场地空白</b> → 开关热力图（主视图 + 侧视图）</li>
         <li><b>参数面板</b> → 球速、吊/高 v0 上下限、底线参考线、高过网最低、反应曲线、跑速、触及半径、过滤</li>
         <li>站位是概率意义上的最优，不是绝对最优；双打用独立 OR 合并，未建模让球/分工</li>
       </ul>
@@ -1194,7 +1197,7 @@
         <li>Speed-dependent drag: <code>CD(v)=0.50+0.30/(1+(v/8)²)</code>. Low speed ≈0.65–0.80, high speed ≈0.50–0.55.</li>
       </ul>
       <h3>2. Shot generation (all multi-v0)</h3>
-      <p><b>Smash</b>: v0 = <code>v0_smash × height factor</code> (default 60 m/s), elev coarse+fine scan.</p>
+      <p><b>Smash</b>: v0 = <code>v0_smash × height factor</code> (default 60 m/s). Elev scanned only between the racket→net-top line and +10° above horizon (flat or downward, slight upward &lt; 10°); landing weighted by azimuth kernel × distance kernel.</p>
       <p><b>Drop</b>: multi-v0 scan 8–18 m/s, high-v0 weighted by <code>exp(−2.5·u²)</code>.</p>
       <p><b>High</b>: goal is <b>fastest arrival at the baseline reference</b>. v0 scanned geometrically from <code>v0_clear_lo</code> to <code>v0_clear_hi</code> (default 36–50 m/s, 5 coarse + geometric interp), elev −10~60°, azim ±1.5σ, simulated to the real landing:</p>
       <ul>
@@ -1215,8 +1218,9 @@
       <p>Singles: grid + refinement. Doubles: enumerate pairs, proximity penalty &lt; 2 m.</p>
       <h3>5. Diagnostics</h3>
       <p>The info bar shows per-type average reach (smash/high/drop) and the fastest high landing time (“Hi min”). If smash reach is 0% or both crowd front, check drop v0 hi, baseline ref, or the reaction curve.</p>
-      <h3>6. Heatmap</h3>
-      <p><b style="color:#c0392b">red=smash</b>, <b style="color:#2d5ac8">blue=high</b> (real landings beyond the baseline ref), <b style="color:#28aa50">green=drop</b>. Double-tap court to toggle.</p>
+      <h3>6. Heatmap &amp; side view</h3>
+      <p><b style="color:#c0392b">red=smash</b>, <b style="color:#2d5ac8">blue=high</b>, <b style="color:#28aa50">green=drop</b>. Double-tap court to toggle. The side view projects the same trajectories into a height × length section, toggled together.</p>
+      <p>Side view: ground vertical line, net as a horizontal bar (same colour/width as main view), court-line ticks on the ground (end lines dark, middle lines thin green), three players with random heights 1.6–1.85 m, and a racket ellipse centred at the contact height with a dashed height indicator.</p>
       <h3>7. Interactions</h3>
       <ul>
         <li>Drag opponent dot → contact point</li>
@@ -1257,12 +1261,12 @@
 
       const PRM = {};
       SLIDER_DEFS.forEach(d => {PRM[d.key] = d.def;});
-      PRM.hh = 2.8;
+      const HH_DEFAULT = 2.8;  // ★ 修改：击球高默认值（与 SLIDER 初值保持一致）
+      PRM.hh = HH_DEFAULT;
 
       const PROB_KEYS = ['p_smash', 'p_clear', 'p_drop'];
       const SHOT_TYPES = ['smash', 'clear', 'drop'];
 
-      /* 高 / 吊 / 杀 三色（用于胶囊按概率着色） */
       const SHOT_RGB = {
         clear: '45,90,200',
         drop: '40,170,80',
@@ -1295,7 +1299,6 @@
       const HALO_W = 3.5;
 
       const C_PERSON = '#111';
-      /* 未完成精细化计算时的占位灰 */
       const C_PERSON_PENDING = '#b4bdb8';
       const C_PERSON_PENDING_LINE = 'rgba(120,132,126,.30)';
 
@@ -1313,7 +1316,6 @@
       const AERO = {dt: 0.005, tMax: 6.0, g: 9.81, RHO: 1.2, S_SHUTTLE: 0.003, M_SHUTTLE: 0.005};
       const AERO_K = 0.5 * AERO.RHO * AERO.S_SHUTTLE / AERO.M_SHUTTLE;
 
-      /* 速度相关阻力系数：低速冠部开口滞留空气 CD 高，高速 CD 低 */
       function cdOf(v) {
         const u = v / 8;
         return 0.50 + 0.30 / (1 + u * u);
@@ -1321,11 +1323,9 @@
 
       const SHOT_AZIM_SIG = {smash: 25, clear: 15, drop: 20};
 
-      /* 反应曲线：t_avail = t0 → p≈2%，t_avail = t1 → p≈88%，上限 92% */
       const REACH_P0 = 0.02, REACH_P1 = 0.88, REACH_PMAX = 0.92;
       const DROP_EXTRA_T = 0.04;
 
-      /* 方向速度系数 */
       const V_FWD_K = 1.15, V_SIDE_K = 0.95;
 
       /* ---- 运行时状态 ---- */
@@ -1343,6 +1343,12 @@
         reachStats: null,
         highTMin: null
       };
+
+      /* 三名球员身高在 1.6–1.85 m 之间随机 */
+      function randHeight() {
+        return 1.60 + Math.random() * 0.25;
+      }
+      const personHeights = [randHeight(), randHeight(), randHeight()];
 
       const DR_HIT = ('ontouchstart' in window) ? 1.0 : 0.55;
       const DOUBLE_TAP_MS = 300;
@@ -1462,6 +1468,373 @@
         ctx.restore();
       }
 
+      /* ============================================================
+         四、侧视图
+         ============================================================ */
+      const sideCanvas = $('sideCanvas');
+      const sctx = sideCanvas.getContext('2d');
+
+      /* 侧视图显示的高度范围：国际比赛场地净空 ≥12 m */
+      const SIDE_Z_MAX = 12.0;
+      const SIDE_GAP = 8;
+
+      /* 人物绘制常量（侧视图） */
+      const SIDE_HEAD_R = 5.2;    /* 脑袋半径 */
+      const SIDE_BODY_LW = 5.0;   /* 身体线宽 */
+
+      let sideW = 150, sideH = 400;
+      let sideGroundX = 12;
+      let sideScaleZ = 12;
+      let sideScaleY = 40;
+      let sideCourtTop = 0;
+
+      const sideHeatCanvas = document.createElement('canvas');
+      const sideHeatCtx = sideHeatCanvas.getContext('2d');
+      let sideHeatDirty = true;
+      let sideHeatReady = false;
+
+      function setupSide() {
+        sideCourtTop = PAD_T * sideH / LH;
+        sideScaleY = SCALE * sideH / LH;
+        sideScaleZ = (sideW - sideGroundX - 8) / SIDE_Z_MAX;
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        sideCanvas.style.width = sideW + 'px';
+        sideCanvas.style.height = sideH + 'px';
+        sideCanvas.width = Math.round(sideW * dpr);
+        sideCanvas.height = Math.round(sideH * dpr);
+        sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        sideHeatDirty = true;
+        sideHeatReady = false;
+      }
+
+      /* ---- 侧视图热力图 ---- */
+      function buildSideHeatGrid() {
+        const cell = 0.15;
+        const Y0 = -HL, Z0 = 0;
+        const GY = Math.ceil((2 * HL) / cell) + 1;
+        const GZ = Math.ceil(SIDE_Z_MAX / cell) + 1;
+
+        const smash = new Float32Array(GY * GZ);
+        const clear = new Float32Array(GY * GZ);
+        const drop = new Float32Array(GY * GZ);
+        const grids = {smash, clear, drop};
+
+        const sigma = 0.20;
+        const inv2s2 = 1 / (2 * sigma * sigma);
+        const R = 3;
+
+        const hitter = opponents[0];
+        const h0 = PRM.hh;
+
+        for (const Ld of cachedLandings) {
+          if (Ld.v0 == null) continue;
+
+          const trace = [];
+          const opts = {trace};
+          if (Ld.type === 'drop') opts.maxOverNet = PRM.dropMaxOverNet;
+          else if (Ld.type === 'clear') opts.minNetH = PRM.clearHeight;
+
+          simulate(Ld.v0, h0, Ld.elev, Ld.azim, hitter.x, hitter.y, opts);
+
+          const n = trace.length >> 1;
+          if (!n) continue;
+          const wPer = Ld.w / n;
+          const g = grids[Ld.type];
+
+          for (let k = 0; k < n; k++) {
+            const py = trace[k * 2];
+            const pz = trace[k * 2 + 1];
+            if (pz < 0 || pz > SIDE_Z_MAX) continue;
+
+            const ci = (py - Y0) / cell;
+            const cj = (pz - Z0) / cell;
+            const i0 = Math.max(0, Math.floor(ci) - R);
+            const i1 = Math.min(GY - 1, Math.ceil(ci) + R);
+            const j0 = Math.max(0, Math.floor(cj) - R);
+            const j1 = Math.min(GZ - 1, Math.ceil(cj) + R);
+            for (let j = j0; j <= j1; j++) {
+              const dz = Z0 + j * cell - pz;
+              const dz2 = dz * dz;
+              const rowBase = j * GY;
+              for (let i = i0; i <= i1; i++) {
+                const dy = Y0 + i * cell - py;
+                g[rowBase + i] += wPer * Math.exp(-(dy * dy + dz2) * inv2s2);
+              }
+            }
+          }
+        }
+
+        return {GY, GZ, cell, Y0, Z0, grids};
+      }
+
+      function computeSideHeat() {
+        sideHeatReady = false;
+        const grid = buildSideHeatGrid();
+        const GY = grid.GY, GZ = grid.GZ, cell = grid.cell, Y0 = grid.Y0, Z0 = grid.Z0;
+        const smash = grid.grids.smash, clear = grid.grids.clear, drop = grid.grids.drop;
+
+        let maxV = 0;
+        const total = GY * GZ;
+        for (let k = 0; k < total; k++) {
+          const tt = smash[k] + clear[k] + drop[k];
+          if (tt > maxV) maxV = tt;
+        }
+        if (maxV <= 1e-9) return;
+
+        const W = sideCanvas.width, H = sideCanvas.height;
+        if (sideHeatCanvas.width !== W || sideHeatCanvas.height !== H) {
+          sideHeatCanvas.width = W;
+          sideHeatCanvas.height = H;
+        }
+
+        const dpr = W / sideW;
+        const invMax = 1 / maxV;
+        const img = sideHeatCtx.createImageData(W, H);
+        const data = img.data;
+
+        for (let py = 0; py < H; py++) {
+          const cssY = py / dpr;
+          const wy = HL - (cssY - sideCourtTop) / sideScaleY;
+          if (wy > HL || wy < -HL) continue;
+
+          const fy = (wy - Y0) / cell;
+          let iA, iB, tX;
+          const i0raw = Math.floor(fy);
+          if (i0raw < 0) {iA = 0; iB = 0; tX = 0;}
+          else if (i0raw > GY - 2) {iA = GY - 1; iB = GY - 1; tX = 0;}
+          else {iA = i0raw; iB = i0raw + 1; tX = fy - i0raw;}
+
+          for (let px = 0; px < W; px++) {
+            const cssX = px / dpr;
+            const wz = (cssX - sideGroundX) / sideScaleZ;
+            if (wz < 0 || wz > SIDE_Z_MAX) continue;
+
+            const fz = (wz - Z0) / cell;
+            let jA, jB, tY;
+            const j0raw = Math.floor(fz);
+            if (j0raw < 0) {jA = 0; jB = 0; tY = 0;}
+            else if (j0raw > GZ - 2) {jA = GZ - 1; jB = GZ - 1; tY = 0;}
+            else {jA = j0raw; jB = j0raw + 1; tY = fz - j0raw;}
+
+            const r0 = jA * GY, r1 = jB * GY;
+            const w00 = (1 - tX) * (1 - tY), w10 = tX * (1 - tY);
+            const w01 = (1 - tX) * tY, w11 = tX * tY;
+            const i00 = r0 + iA, i10 = r0 + iB, i01 = r1 + iA, i11 = r1 + iB;
+
+            const s = smash[i00] * w00 + smash[i10] * w10 + smash[i01] * w01 + smash[i11] * w11;
+            const c = clear[i00] * w00 + clear[i10] * w10 + clear[i01] * w01 + clear[i11] * w11;
+            const d = drop[i00] * w00 + drop[i10] * w10 + drop[i01] * w01 + drop[i11] * w11;
+
+            const sum = s + c + d;
+            const o = (py * W + px) * 4;
+            if (sum < maxV * HEAT_CUT) continue;
+
+            const norm = Math.min(1, Math.sqrt(sum * invMax));
+            const inv = 1 / sum;
+            data[o] = (s * HEAT_RGB.smash[0] + c * HEAT_RGB.clear[0] + d * HEAT_RGB.drop[0]) * inv;
+            data[o + 1] = (s * HEAT_RGB.smash[1] + c * HEAT_RGB.clear[1] + d * HEAT_RGB.drop[1]) * inv;
+            data[o + 2] = (s * HEAT_RGB.smash[2] + c * HEAT_RGB.clear[2] + d * HEAT_RGB.drop[2]) * inv;
+            data[o + 3] = Math.min(230, norm * 220);
+          }
+        }
+
+        sideHeatCtx.putImageData(img, 0, 0);
+        sideHeatReady = true;
+      }
+
+      /* ---- 侧视图人物：粗身体线 + 大脑袋 ---- */
+      function drawSidePerson(y, color, heightM) {
+        const sy = sideCourtTop + (HL - y) * sideScaleY;
+        const headR = SIDE_HEAD_R;
+        const fullLen = Math.max(10, heightM * sideScaleZ);
+        const bodyLen = Math.max(2, fullLen - headR * 2);
+        const headX = sideGroundX + bodyLen + headR;
+
+        /* 身体（粗线） */
+        sctx.strokeStyle = color;
+        sctx.lineWidth = SIDE_BODY_LW;
+        sctx.lineCap = 'round';
+        sctx.beginPath();
+        sctx.moveTo(sideGroundX, sy);
+        sctx.lineTo(sideGroundX + bodyLen, sy);
+        sctx.stroke();
+        sctx.lineCap = 'butt';
+
+        /* 脑袋 */
+        sctx.beginPath();
+        sctx.fillStyle = color;
+        sctx.arc(headX, sy, headR, 0, Math.PI * 2);
+        sctx.fill();
+        sctx.strokeStyle = 'rgba(255,255,255,.9)';
+        sctx.lineWidth = 1.0;
+        sctx.stroke();
+      }
+
+      /* ---- 球拍：横向 3:2 椭圆，全黑色 ---- */
+      function drawRacketContact() {
+        const sy = sideCourtTop + (HL - opponents[0].y) * sideScaleY;
+        const hx = sideGroundX + PRM.hh * sideScaleZ;
+
+        // ★ 修改：删掉未使用的 headR 声明
+        const fullLen = Math.max(10, personHeights[0] * sideScaleZ);
+        const headRight = sideGroundX + fullLen;
+
+        /* 高度指示虚线：地面 → 击球点 */
+        sctx.save();
+        sctx.strokeStyle = 'rgba(31,111,139,0.35)';
+        sctx.lineWidth = 1;
+        sctx.setLineDash([2, 3]);
+        sctx.beginPath();
+        sctx.moveTo(sideGroundX + 2, sy);
+        sctx.lineTo(hx, sy);
+        sctx.stroke();
+        sctx.restore();
+
+        /* 拍框：横向椭圆 3:2（宽:高 = 3:2） */
+        const rx = 6.0, ry = 4.0;
+
+        /* 拍杆：从人物头部右侧到椭圆左边缘 */
+        const fromX = headRight + 1;
+        let toX = hx - rx;
+        if (toX < fromX) toX = fromX;
+        if (toX > fromX) {
+          sctx.strokeStyle = '#111';
+          sctx.lineWidth = 1.8;
+          sctx.lineCap = 'round';
+          sctx.beginPath();
+          sctx.moveTo(fromX, sy);
+          sctx.lineTo(toX, sy);
+          sctx.stroke();
+          sctx.lineCap = 'butt';
+        }
+
+        /* 拍面椭圆（黑色线） */
+        sctx.beginPath();
+        sctx.ellipse(hx, sy, rx, ry, 0, 0, Math.PI * 2);
+        sctx.fillStyle = 'rgba(0,0,0,0.04)';
+        sctx.fill();
+        sctx.strokeStyle = '#111';
+        sctx.lineWidth = 1.6;
+        sctx.stroke();
+
+        /* 击球点小球（黑色 + 白边，作为唯一亮点位置标记） */
+        sctx.beginPath();
+        sctx.fillStyle = '#111';
+        sctx.arc(hx, sy, 2.2, 0, Math.PI * 2);
+        sctx.fill();
+        sctx.strokeStyle = '#fff';
+        sctx.lineWidth = 0.9;
+        sctx.stroke();
+
+        /* 文字：黑色 */
+        const label = lang === 'zh' ? '击球点' : 'Contact';
+        const hLabel = PRM.hh.toFixed(1) + ' m';
+        sctx.font = 'bold 8px system-ui';
+        const tw1 = sctx.measureText(label).width;
+        sctx.font = '7px system-ui';
+        const tw2 = sctx.measureText(hLabel).width;
+        const tw = Math.max(tw1, tw2);
+
+        let lx = hx + rx + 3;
+        if (lx + tw > sideW - 1) lx = Math.max(1, sideW - 1 - tw);
+        let ly = sy + ry + 8;
+        if (ly > sideCourtTop + L * sideScaleY - 2) ly = sy - ry - 12;
+
+        sctx.textAlign = 'left';
+        sctx.textBaseline = 'middle';
+        sctx.lineWidth = 2.6;
+        sctx.strokeStyle = '#fff';
+
+        sctx.font = 'bold 8px system-ui';
+        sctx.strokeText(label, lx, ly - 4);
+        sctx.fillStyle = '#111';
+        sctx.fillText(label, lx, ly - 4);
+
+        sctx.font = '7px system-ui';
+        sctx.strokeText(hLabel, lx, ly + 5);
+        sctx.fillStyle = '#111';
+        sctx.fillText(hLabel, lx, ly + 5);
+      }
+
+      function drawSide() {
+        if (!sideCanvas.width || !sideCanvas.height) return;
+
+        sctx.clearRect(0, 0, sideW, sideH);
+        sctx.fillStyle = '#f7fbf9';
+        sctx.fillRect(0, 0, sideW, sideH);
+
+        /* ---- 轨迹热力图 ---- */
+        if (showHeat && result.valid && cachedLandings.length) {
+          if (sideHeatDirty && quality === 'full') {
+            try {computeSideHeat();} catch (e) {console.error('side heat error:', e);}
+            sideHeatDirty = false;
+          }
+          if (sideHeatReady) {
+            sctx.imageSmoothingEnabled = true;
+            sctx.drawImage(sideHeatCanvas, 0, 0, sideW, sideH);
+          }
+        }
+
+        const yTop = sideCourtTop - 2;
+        const yBot = sideCourtTop + L * sideScaleY + 2;
+
+        /* ---- 地面竖线（与主视图场边同色） ---- */
+        sctx.strokeStyle = C_COURT_FRAME;
+        sctx.lineWidth = 2.4;
+        sctx.lineCap = 'round';
+        sctx.beginPath();
+        sctx.moveTo(sideGroundX, yTop);
+        sctx.lineTo(sideGroundX, yBot);
+        sctx.stroke();
+        sctx.lineCap = 'butt';
+
+        /* ---- 地面刻度：端线深色，中间线细绿 ---- */
+        const ticks = [HL, HL - LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL - LONG_SVC), -HL];
+        for (const ty of ticks) {
+          const sy = sideCourtTop + (HL - ty) * sideScaleY;
+          const isEnd = Math.abs(Math.abs(ty) - HL) < 1e-6;
+          sctx.fillStyle = isEnd ? C_COURT_FRAME : C_COURT_LINE;
+          const tw = isEnd ? 6 : 4;
+          const th = isEnd ? 2.6 : 1.8;
+          sctx.fillRect(sideGroundX + 1, sy - th / 2, tw, th);
+        }
+
+        /* ---- 球网：与主视图同色同粗 ---- */
+        const netSy = sideCourtTop + HL * sideScaleY;
+        const netLen = NET_H * sideScaleZ;
+        const cssMainW = parseFloat(canvas.style.width) || LW;
+        const netLW = Math.max(3, 5 * cssMainW / LW);
+        sctx.strokeStyle = C_NET;
+        sctx.lineWidth = netLW;
+        sctx.lineCap = 'round';
+        sctx.beginPath();
+        sctx.moveTo(sideGroundX, netSy);
+        sctx.lineTo(sideGroundX + netLen, netSy);
+        sctx.stroke();
+        sctx.lineCap = 'butt';
+
+        /* ---- 人 ---- */
+        const ourColor = result.precise ? '#111' : '#b4bdb8';
+
+        drawSidePerson(opponents[0].y, '#111', personHeights[0]);
+
+        if (result.valid) {
+          if (mode === 'single') {
+            if (result.P1) drawSidePerson(result.P1.y, ourColor, personHeights[1]);
+          } else {
+            if (result.P1) drawSidePerson(result.P1.y, ourColor, personHeights[1]);
+            if (result.P2) drawSidePerson(result.P2.y, ourColor, personHeights[2]);
+          }
+        }
+
+        /* ---- 球拍 / 击球点 ---- */
+        if (result.valid) drawRacketContact();
+      }
+
+      /* ============================================================
+         五、主画布尺寸与布局
+         ============================================================ */
       function setup() {
         PAD_L = computePadL();
         LW = W * SCALE + PAD_L + PAD_R;
@@ -1469,22 +1842,41 @@
 
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const wrap = canvas.parentElement, cs = getComputedStyle(wrap);
-        const avail = wrap.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-        let cw = Math.min(avail, LW), ch = cw * LH / LW;
+        const availTotal = wrap.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
         const maxH = Math.min(window.innerHeight * 0.75, 720);
-        if (ch > maxH) {ch = maxH; cw = ch * LW / LH;}
-        cw = Math.max(150, cw);
+
+        /* 迭代求主画布尺寸与侧视图宽度（侧视图适当加宽，让高度比例更大） */
+        let sideWc = clamp(maxH * 0.36, 130, 200);
+        let cw = 300, ch = 400;
+        for (let it = 0; it < 4; it++) {
+          let availMain = availTotal - sideWc - SIDE_GAP;
+          if (availMain < 90) availMain = 90;
+
+          cw = Math.min(availMain, LW);
+          if (cw < 110) cw = 110;
+          ch = cw * LH / LW;
+          if (ch > maxH) {ch = maxH; cw = ch * LW / LH;}
+
+          const nw = clamp(ch * 0.36, 130, 200);
+          if (Math.abs(nw - sideWc) < 0.5) {sideWc = nw; break;}
+          sideWc = nw;
+        }
+
         canvas.style.width = cw + 'px';
         canvas.style.height = ch + 'px';
         canvas.width = Math.round(cw * dpr);
         canvas.height = Math.round(ch * dpr);
         const s = canvas.width / LW;
         ctx.setTransform(s, 0, 0, s, 0, 0);
+
+        sideW = sideWc;
+        sideH = ch;
+        setupSide();
       }
       setup();
 
       /* ============================================================
-         四、物理与可达性
+         六、物理与可达性
          ============================================================ */
       function touchScale(type) {
         if (type === 'smash') return 0.72;
@@ -1507,7 +1899,6 @@
         return REACH_PMAX / (1 + Math.exp(-k * (tAvail - tMid)));
       }
 
-      /* 得分系数：杀/吊随落点深度接近网/底线变化；高球随落点深度递增 */
       function cValue(type, y) {
         const d = -y;
         const ramp = (lo, hi) => {
@@ -1524,12 +1915,12 @@
         return 0.30 + 0.20 * (1 - ramp(1, 3));
       }
 
-      /* 落点距离核：只对杀球、吊球有意义（高球落点由模拟直接决定） */
       function landingKernel(type, y, oppDist) {
         const dn = -y;
         const baseCenter = type === 'smash' ? 5.8 : 1.9;
         const shiftK = type === 'drop' ? 0.8 : 0.5;
-        const hShift = Math.max(0, Math.min(1.2, (2.8 - PRM.hh) * 0.6));
+        // ★ 修改：2.8 → HH_DEFAULT
+        const hShift = Math.max(0, Math.min(1.2, (HH_DEFAULT - PRM.hh) * 0.6));
         const center = Math.max(0.5, baseCenter - (4.6 - oppDist) * shiftK - hShift);
         const sigma = type === 'smash' ? 1.2 : 1.1;
         return Math.exp(-Math.pow((dn - center) / sigma, 2));
@@ -1588,14 +1979,11 @@
         return {ps: ps / total, pc: pc / total, pd: pd / total};
       }
 
-      /* 模拟一球。
-         opts.maxOverNet：吊球过网最高点约束（高球不传 → Infinity）
-         opts.minNetH：过网最低高度（高球传 clearHeight）
-         返回落地 {x,y,z:0,t} 或 null */
       function simulate(v0, h0, elevDeg, azimDeg, x0, y0, opts) {
         opts = opts || {};
         const maxOverNet = opts.maxOverNet;
         const minNetH = opts.minNetH != null ? opts.minNetH : NET_H;
+        const trace = opts.trace || null;
 
         const elev = elevDeg * Math.PI / 180;
         const azim = azimDeg * Math.PI / 180;
@@ -1607,6 +1995,7 @@
         const dt = AERO.dt;
         const dropLimit = (maxOverNet != null) ? NET_H + maxOverNet : Infinity;
         let crossedNet = false;
+        let stepI = 0;
 
         while (t < AERO.tMax) {
           const sp = Math.hypot(vx, vy, vz);
@@ -1637,6 +2026,11 @@
 
           px = nx; py = ny; pz = nz;
           t += dt;
+
+          if (trace) {
+            stepI++;
+            if (stepI % 24 === 0) trace.push(ny, nz);
+          }
         }
         return null;
       }
@@ -1677,7 +2071,7 @@
       }
 
       /* ============================================================
-         五、球路落点生成
+         七、球路落点生成
          ============================================================ */
       const W_MIN_REL = 0.01;
 
@@ -1685,37 +2079,50 @@
         const v0 = PRM.v0_smash * smashSpeedFactor();
         const halfW = mode === 'single' ? SINGLES_HW : HW;
         const azimSig = SHOT_AZIM_SIG.smash;
-        const ranges = coarseElevRanges(v0, hitter, halfW, fast, null, false);
-        if (!ranges.length) return [];
 
-        const elevStep = fast ? 0.8 : 0.30;
-        const azimStep = fast ? 5 : 2.5;
-        const aLo = Math.max(-AZIM_MAX, -1.5 * azimSig);
-        const aHi = Math.min(AZIM_MAX, 1.5 * azimSig);
+        // ★ 1) 步长加密：边线杀在角度上很"窄"，太粗会漏
+        const azimStep = fast ? 3 : 1.5;
+        const elevStep = fast ? 1.5 : 0.5;
+        const elevMaxUp = 10;
+
+        // ★ 2) 范围放宽：直接扫满 AZIM_MAX（±55°），出界的会被 probe 里 |r.x| > halfW 自动剔掉
+        const aLo = -AZIM_MAX;
+        const aHi = AZIM_MAX;
 
         const landings = new Map();
         let maxW = 0;
 
-        for (const [lo, hi] of ranges) {
-          for (let elev = lo; elev <= hi + 1e-9; elev += elevStep) {
-            for (let azim = aLo; azim <= aHi + 1e-9; azim += azimStep) {
-              const r = probe(v0, hitter, elev, azim, halfW, null);
-              if (!r) continue;
-              const w = Math.exp(-Math.pow(azim / azimSig, 2))
-                * landingKernel('smash', r.y, hitter.y);
-              if (w <= 1e-12) continue;
-              if (w > maxW) maxW = w;
-              const key = elev.toFixed(2) + '_' + azim.toFixed(2);
-              if (!landings.has(key)) {
-                landings.set(key, {x: r.x, y: r.y, type: 'smash', w, t: r.t});
-              }
+        for (let azim = aLo; azim <= aHi + 1e-9; azim += azimStep) {
+          const azimRad = azim * Math.PI / 180;
+          const elevCrit = Math.atan2(
+            (NET_H - PRM.hh) * Math.cos(azimRad),
+            hitter.y
+          ) * 180 / Math.PI;
+
+          const elevLo = Math.max(ELEV_MIN, elevCrit);
+          const elevHi = Math.min(ELEV_MAX, elevMaxUp);
+          if (elevLo > elevHi) continue;
+
+          for (let elev = elevLo; elev <= elevHi + 1e-9; elev += elevStep) {
+            const r = probe(v0, hitter, elev, azim, halfW, null);
+            if (!r) continue;
+
+            const w = Math.exp(-Math.pow(azim / azimSig, 2))
+              * landingKernel('smash', r.y, hitter.y);
+            if (w <= 1e-12) continue;
+            if (w > maxW) maxW = w;
+
+            const key = elev.toFixed(2) + '_' + azim.toFixed(2);
+            if (!landings.has(key)) {
+              landings.set(key, {x: r.x, y: r.y, type: 'smash', w, t: r.t, v0, elev, azim});
             }
           }
         }
-        const th = maxW * W_MIN_REL;
-        return Array.from(landings.values()).filter(L => L.w >= th);
-      }
 
+        if (maxW <= 1e-9) return [];
+        const th = maxW * W_MIN_REL;
+        return Array.from(landings.values()).filter(Ld => Ld.w >= th);
+      }
       function genDropLandings(hitter, fast) {
         const halfW = mode === 'single' ? SINGLES_HW : HW;
         const azimSig = SHOT_AZIM_SIG.drop;
@@ -1730,7 +2137,8 @@
         const validV0 = [];
         for (let k = 0; k < nCoarse; k++) {
           const v0 = vLo * Math.pow(vHi / vLo, k / (nCoarse - 1));
-          const ranges = coarseElevRanges(v0, hitter, halfW, true, maxOverNet, true);
+          // ★ 修改：coarseMode=true 时 fast 被忽略，这里改成 false 更清晰
+          const ranges = coarseElevRanges(v0, hitter, halfW, false, maxOverNet, true);
           if (ranges.length) validV0.push(v0);
         }
         if (!validV0.length) return [];
@@ -1763,19 +2171,16 @@
                 if (w > maxW) maxW = w;
                 const key = v0.toFixed(1) + '_' + elev.toFixed(2) + '_' + azim.toFixed(2);
                 if (!landings.has(key)) {
-                  landings.set(key, {x: r.x, y: r.y, type: 'drop', w, t: r.t});
+                  landings.set(key, {x: r.x, y: r.y, type: 'drop', w, t: r.t, v0, elev, azim});
                 }
               }
             }
           }
         }
         const th = maxW * W_MIN_REL;
-        return Array.from(landings.values()).filter(L => L.w >= th);
+        return Array.from(landings.values()).filter(Ld => Ld.w >= th);
       }
 
-      /* 高球：最快到达底线参考线。多 v0 扫描，直接模拟到真实落地；
-         只卡过网最低高度（clearHeight），无上限；落点必须 ≤ −clearLineY；
-         一轮扫描无合格路径则整体提高 v0 重试。 */
       function genClearLandings(hitter, fast) {
         const halfW = mode === 'single' ? SINGLES_HW : HW;
         const azimSig = SHOT_AZIM_SIG.clear;
@@ -1818,7 +2223,7 @@
                 });
                 if (!r) continue;
                 if (r.y >= 0 || r.y < -HL || Math.abs(r.x) > halfW) continue;
-                if (r.y > lineY) continue;          // 未到底线参考线，丢弃
+                if (r.y > lineY) continue;
 
                 const w = Math.exp(-Math.pow(azim / azimSig, 2)) * vw;
                 if (w <= 1e-12) continue;
@@ -1826,7 +2231,7 @@
 
                 const key = v0.toFixed(1) + '_' + elev.toFixed(1) + '_' + azim.toFixed(1);
                 if (!landings.has(key)) {
-                  landings.set(key, {x: r.x, y: r.y, type: 'clear', w, t: r.t});
+                  landings.set(key, {x: r.x, y: r.y, type: 'clear', w, t: r.t, v0, elev, azim});
                 }
               }
             }
@@ -1834,7 +2239,7 @@
 
           if (landings.size > 0) {
             const th = maxW * W_MIN_REL;
-            return Array.from(landings.values()).filter(L => L.w >= th);
+            return Array.from(landings.values()).filter(Ld => Ld.w >= th);
           }
 
           vLo *= 1.12;
@@ -1868,7 +2273,10 @@
           const scale = targetW / sumW;
 
           for (const Ld of arr) {
-            out.push({x: Ld.x, y: Ld.y, type, w: Ld.w * scale, t: Ld.t});
+            out.push({
+              x: Ld.x, y: Ld.y, type, w: Ld.w * scale, t: Ld.t,
+              v0: Ld.v0, elev: Ld.elev, azim: Ld.azim
+            });
           }
         }
         cachedLandings = out;
@@ -1926,7 +2334,7 @@
       }
 
       /* ============================================================
-         六、站位优化
+         八、站位优化
          ============================================================ */
       function itemV(pos1, pos2, item) {
         const pa = pDef(pos1, item.L, item.t, item.type) * qRun(pos1, item);
@@ -2107,7 +2515,7 @@
       }
 
       /* ============================================================
-         七、绘图
+         九、主视图绘制
          ============================================================ */
       function drawCourtBase() {
         const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
@@ -2163,7 +2571,7 @@
         drawCourtTag(t('net'), null, tagRightX, w2c({x: 0, y: 0}).y, C_NET, 'right');
       }
 
-      /* ---- 热力图 ---- */
+      /* ---- 主视图热力图 ---- */
       const heatCanvas = document.createElement('canvas');
       const heatCtx = heatCanvas.getContext('2d');
       let heatDirty = true;
@@ -2296,7 +2704,6 @@
         drawLabelWithHalo(lang === 'zh' ? '对手' : 'Opp', c.x, c.y - 11, C_PERSON, FONT_PLAYER, 'center', 'bottom');
       }
 
-      /* 我方站位点：精细化计算完成前用灰色，完成后用黑色 */
       function drawOurPoint(p, label) {
         const c = w2c(p);
         const col = result.precise ? C_PERSON : C_PERSON_PENDING;
@@ -2355,7 +2762,7 @@
       }
 
       /* ============================================================
-         八、DOM 引用与 UI 更新
+         十、DOM 引用与 UI
          ============================================================ */
       const infoLine = $('infoLine');
       const pageSub = $('pageSub');
@@ -2372,7 +2779,6 @@
       const collapseBtn = $('collapseBtn');
       const langBtnEl = $('langBtn');
 
-      /* 按概率给分段胶囊上色：p 越高，背景越深；超过 42% 文字转白 */
       function updatePill(el, p, rgb) {
         const pct = Math.round(p * 100);
         el.textContent = el.dataset.label + ' ' + pct + '%';
@@ -2441,7 +2847,6 @@
         return val.toFixed(digits);
       }
 
-      /* ---- 反应曲线小图 ---- */
       let reachCurveCanvas = null;
       let reachCurveCaption = null;
 
@@ -2534,7 +2939,7 @@
       }
 
       /* ============================================================
-         九、参数面板
+         十一、参数面板
          ============================================================ */
       const sliderInputs = {};
       const sliderVals = {};
@@ -2621,6 +3026,7 @@
               quality = 'fast';
               needsSolve = true;
               heatDirty = true;
+              sideHeatDirty = true;
             });
 
             item.appendChild(label);
@@ -2651,7 +3057,7 @@
       }
 
       /* ============================================================
-         十、胶囊拖拽
+         十二、胶囊拖拽
          ============================================================ */
       function setupPillDrag(el, key) {
         let drag = null;
@@ -2674,14 +3080,14 @@
           PRM[key] = newVal;
           syncProbs(key);
           refreshProbSliders();
-          quality = 'fast'; needsSolve = true; heatDirty = true;
+          quality = 'fast'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
           updateStats();
         });
 
         const finish = () => {
           if (!drag) return;
           drag = null;
-          quality = 'full'; needsSolve = true; heatDirty = true;
+          quality = 'full'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
         };
         el.addEventListener('pointerup', finish);
         el.addEventListener('pointercancel', finish);
@@ -2707,21 +3113,21 @@
           if (Math.abs(newH - PRM.hh) < 0.01) return;
           PRM.hh = Math.round(newH * 10) / 10;
           updateHeightPill();
-          quality = 'fast'; needsSolve = true; heatDirty = true;
+          quality = 'fast'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
           updateStats();
         });
 
         const finish = () => {
           if (!drag) return;
           drag = null;
-          quality = 'full'; needsSolve = true; heatDirty = true;
+          quality = 'full'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
         };
         el.addEventListener('pointerup', finish);
         el.addEventListener('pointercancel', finish);
       }
 
       /* ============================================================
-         十一、侧边栏开关
+         十三、侧边栏
          ============================================================ */
       const sidebar = $('sidebar');
       const sidebarMask = $('sidebarMask');
@@ -2750,10 +3156,11 @@
         quality = 'full';
         needsSolve = true;
         heatDirty = true;
+        sideHeatDirty = true;
       });
 
       /* ============================================================
-         十二、静态文案刷新
+         十四、静态文案刷新
          ============================================================ */
       function refreshStaticText() {
         document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
@@ -2789,16 +3196,17 @@
         refreshStaticText();
         setup();
         heatDirty = true;
+        sideHeatDirty = true;
       });
 
       collapseBtn.addEventListener('click', () => {
         const collapsed = appEl.classList.toggle('collapsed');
         collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
-        requestAnimationFrame(() => {setup(); heatDirty = true;});
+        requestAnimationFrame(() => {setup(); heatDirty = true; sideHeatDirty = true;});
       });
 
       /* ============================================================
-         十三、画布交互
+         十五、画布交互
          ============================================================ */
       function getW(ev) {
         const r = canvas.getBoundingClientRect();
@@ -2812,7 +3220,7 @@
 
       modeToggle.addEventListener('click', () => {
         mode = (mode === 'double') ? 'single' : 'double';
-        quality = 'full'; needsSolve = true; heatDirty = true;
+        quality = 'full'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
         refreshStaticText();
       });
 
@@ -2828,6 +3236,7 @@
             lastTap = {time: 0, x: 0, y: 0};
             showHeat = !showHeat;
             heatDirty = true;
+            sideHeatDirty = true;
             updateStats();
             ev.preventDefault();
             return;
@@ -2857,7 +3266,7 @@
           if (dragStarted) {
             opponents[dragIdx].x = clamp(w.x, -HW + .15, HW - .15);
             opponents[dragIdx].y = clamp(w.y, 0.25, HL - .15);
-            needsSolve = true; quality = 'fast'; heatDirty = true;
+            needsSolve = true; quality = 'fast'; heatDirty = true; sideHeatDirty = true;
             ev.preventDefault();
           }
           return;
@@ -2868,7 +3277,9 @@
       });
 
       function endDrag(ev) {
-        if (dragIdx >= 0 && dragStarted) {quality = 'full'; needsSolve = true; heatDirty = true;}
+        if (dragIdx >= 0 && dragStarted) {
+          quality = 'full'; needsSolve = true; heatDirty = true; sideHeatDirty = true;
+        }
         dragIdx = -1; dragStarted = false; dragStartPos = null;
         canvas.style.cursor = 'default';
         if (ev && ev.pointerId !== undefined && canvas.hasPointerCapture(ev.pointerId)) {
@@ -2880,7 +3291,7 @@
       canvas.addEventListener('pointerleave', () => {if (dragIdx < 0) canvas.style.cursor = 'default';});
 
       /* ============================================================
-         十四、计算方法弹窗
+         十六、计算方法弹窗
          ============================================================ */
       (function () {
         const mask = $('principleModal');
@@ -2903,7 +3314,7 @@
       })();
 
       /* ============================================================
-         十五、主循环
+         十七、主循环
          ============================================================ */
       let last = 0;
       function loop(ts) {
@@ -2911,6 +3322,7 @@
           try {
             result = solve(quality === 'fast');
             heatDirty = true;
+            sideHeatDirty = true;
           } catch (err) {
             console.error('solve error:', err);
           }
@@ -2920,13 +3332,15 @@
         }
         try {draw();}
         catch (err) {console.error('draw error:', err);}
+        try {drawSide();}
+        catch (err) {console.error('side draw error:', err);}
         requestAnimationFrame(loop);
       }
 
-      /* ---- 初始化 ---- */
       try {
         result = solve('full');
         heatDirty = true;
+        sideHeatDirty = true;
       } catch (e) {console.error('init error:', e);}
 
       buildSliders();
@@ -2937,8 +3351,10 @@
       setupHeightDrag(pillHeight);
       requestAnimationFrame(loop);
 
-      window.addEventListener('resize', () => {setup(); heatDirty = true;});
-      window.addEventListener('orientationchange', () => setTimeout(() => {setup(); heatDirty = true;}, 250));
+      window.addEventListener('resize', () => {setup(); heatDirty = true; sideHeatDirty = true;});
+      window.addEventListener('orientationchange', () => setTimeout(() => {
+        setup(); heatDirty = true; sideHeatDirty = true;
+      }, 250));
 
     })();
   </script>
