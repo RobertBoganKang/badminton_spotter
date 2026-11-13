@@ -1102,6 +1102,8 @@
             data-i18n="chkBody">躯干碰撞</span></label>
         <label class="chip" data-i18n-title="chkShotTitle"><input type="checkbox" id="shotChk" checked><span
             data-i18n="chkShot">出球限位</span></label>
+        <label class="chip" data-i18n-title="chkNetTitle"><input type="checkbox" id="netChk" checked><span
+            data-i18n="chkNet">过网高度</span></label>
         <button id="flipBtn" class="btn" data-i18n="btnMirror">左右镜像</button>
         <button class="collapse-btn" id="headerCollapse" data-i18n-title="headerCollapseTitle"
           aria-label="Toggle header">
@@ -1213,6 +1215,16 @@
         <p class="note" data-i18n="wristNote">沿「肘→腕」方向看：右手顺时针 ≤90°、逆时针 ≤30°（左手镜像）。另可绕「手掌平面横轴」屈 / 伸（拜拜状）。三轴全部填 0 则关闭腕自由度。
         </p>
       </div>
+
+      <div class="group">
+        <div class="group-title" data-i18n="grpNet">过网高度过滤（必下网剔除）</div>
+        <label class="field">
+          <span data-i18n="netLabel">网高 ≥</span>
+          <input type="range" id="netSlider" min="1.00" max="1.80" step="0.01" value="1.55">
+          <b class="val" id="netVal">1.55m</b>
+        </label>
+        <p class="note" data-i18n="netNote">击球点离地高度（= 肩高 + y）低于网高，且拍面法线（出球方向）仰角为负（朝下）-> 球必下网，该 case 直接剔除。</p>
+      </div>
     </div>
   </aside>
 
@@ -1262,14 +1274,19 @@
             里逐一尝试，只要存在一个组合把拍面扭进合法锥内，该点即视为可达。三轴全 0 则关闭腕自由度。</p>
           <p class="muted">腕角度只微调拍面朝向，不改变拍端位置（简化模型）。关闭腕时拍面严格锁定在手臂平面内。</p>
 
-          <h3>五、出球锥可视化</h3>
+          <h3>五、过网高度过滤（默认开启）</h3>
+          <p>击球点<b>离地高度</b> = 肩高 + y（坐标原点在肩、y 向上）。若<b>离地高度 &lt; 网高</b>（默认 1.55 m，参数面板可调）<b>且</b>实际采用的拍面法线（出球方向）仰角 &lt;
+            0°（朝下），该回合一击必下网，<b>此点的所有解全部剔除</b>，热力图不再计为可达。</p>
+          <p class="muted">两条须同时成立才剔除：击球点低于网高但出球朝上（可撩 / 挑高球）→ 保留；击球点高于网高且出球朝下（高点杀球）→ 保留。</p>
+
+          <h3>六、出球锥可视化</h3>
           <ul>
             <li><b>侧视图</b>画绿色<b>仰角锥</b>与出球箭头 → 看朝上 / 朝下是否越界</li>
             <li><b>俯视图</b>画绿色<b>左右锥</b>与出球箭头 → 看拍面水平朝向是否朝前</li>
             <li>箭头方向 = 经过腕调整后<b>实际采用的拍面法线</b>；腕有参与时会明显偏出原手臂平面</li>
           </ul>
 
-          <h3>六、视图与交互</h3>
+          <h3>七、视图与交互</h3>
           <ul>
             <li><b>主视图</b>（左右 x–高度 y）：热力图 + 人体 + 当前手臂姿势</li>
             <li><b>侧视图</b>（深度 z–高度 y）：上下拖动圆点改高度 y 与深度 z</li>
@@ -1277,7 +1294,7 @@
             <li><b>双击主视图</b>显示 / 隐藏侧视图与俯视图；左上角滑块图标打开「参数调节」抽屉</li>
           </ul>
 
-          <h3>七、身高与镜像</h3>
+          <h3>八、身高与镜像</h3>
           <ul>
             <li><b>身高滑块</b>（140–200cm）：按比例缩放全部骨骼长度并重算可达视野</li>
             <li><b>左右镜像</b>：三个视图同步翻转显示。求解不变，但形状标签 L↔反 L 互换</li>
@@ -1325,13 +1342,22 @@
           <p class="muted">The wrist only reorients the face — the racket-end position is unchanged. With the wrist
             disabled, the face is locked to the arm plane.</p>
 
-          <h3>5. Cone visualization</h3>
+          <h3>5. Net-height filter (on by default)</h3>
+          <p>Contact height above ground = shoulder height + y (origin at the shoulder, y up). If the contact is
+            <b>below the net</b> (default 1.55 m, adjustable) <b>and</b> the adopted face normal (shot direction) has a
+            negative elevation (downward), the return cannot clear the net, so <b>every solution at that point is
+              removed</b> and the heatmap no longer marks it reachable.
+          </p>
+          <p class="muted">Both conditions must hold: below the net but shooting upward (lift / clear) is kept; above
+            the net and shooting downward (smash) is kept.</p>
+
+          <h3>6. Cone visualization</h3>
           <ul>
             <li><b>Side view</b>: green <b>elevation cone</b> + shot arrow (using the wrist-adjusted normal)</li>
             <li><b>Top view</b>: green <b>azimuth cone</b> + shot arrow; mirrors with the main view</li>
           </ul>
 
-          <h3>6. Views and interaction</h3>
+          <h3>7. Views and interaction</h3>
           <ul>
             <li><b>Main view</b>: heatmap + body + current arm pose</li>
             <li><b>Side view</b>: drag Ready / Target dots up/down to change y and z</li>
@@ -1339,7 +1365,7 @@
             <li><b>Double-click the main view</b> to show / hide the side and top views</li>
           </ul>
 
-          <h3>7. Height & mirror</h3>
+          <h3>8. Height & mirror</h3>
           <ul>
             <li><b>Height slider</b> (140–200cm) scales all bones proportionally</li>
             <li><b>Mirror</b>: visual only; labels swap L↔anti-L</li>
@@ -1459,6 +1485,8 @@
         chkRomTitle: '人体关节活动范围限制',
         chkBodyTitle: '躯干碰撞：手臂不得穿入身体',
         chkShotTitle: '出球方向必须向前且在仰角 / 方位带内',
+        chkNet: '过网高度',
+        chkNetTitle: '击球点低于网高且出球方向朝下 -> 必下网，剔除该 case',
         btnMirror: '左右镜像',
         panelTitle: '参数调节',
         dragHint: '提示：目标点 / 准备点的深度（z）与高度（y），请直接在「侧视图」上下拖动圆点调整；左右（x）在「主视图」拖动。',
@@ -1472,6 +1500,8 @@
         shotUp: '向上 ≤', shotDown: '向下 ≤', shotAzim: '左右 ≤',
         shotNote: '法线 = 肩肘 · 肘腕平面法向量（可被手腕旋前/旋后与屈/伸微调）。须向前 (+z)，仰角 ∈ [−下, +上]，左右偏角 ∈ [−左右, +左右]。',
         grpWrist: '腕关节容差（拍面朝向微调）',
+        grpNet: '过网高度过滤（必下网剔除）', netLabel: '网高 ≥',
+        netNote: '击球点离地高度（= 肩高 + y）低于网高，且拍面法线（出球方向）仰角为负（朝下）-> 球必下网，该 case 直接剔除。',
         wristCw: '顺时针 ≤', wristCcw: '逆时针 ≤', wristFlex: '屈 / 伸 ±',
         wristNote: '沿「肘→腕」方向看：右手顺时针 ≤90°、逆时针 ≤30°（左手镜像）。另可绕「手掌平面横轴」屈 / 伸（拜拜状）。三轴全部填 0 则关闭腕自由度。',
         footerCredit: '创作 · 保留所有权利',
@@ -1491,10 +1521,12 @@
         ibTarget: '目标', ibReady: '准备', ibFh: '正手', ibBh: '反手', ibAdopted: '采用',
         ibOkT: (t, s) => `${t}s · ${s}`,
         reasonRom: '超ROM', reasonBody: '穿躯干', reasonShot: '出球限位',
-        reasonShape: '属对侧', reasonNone: '无解',
+        reasonNet: '必下网', reasonShape: '属对侧', reasonNone: '无解',
         fhRom: (tags) => '正手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
         fhBody: '正手：有几何解，但手臂会穿入躯干（跨过身体）被剔除',
         fhShot: '正手：拍面朝向超限(向前/仰角/左右)，腕也扭不回来被剔除',
+        fhNet: (h, hh, e) => `正手：击球点离地 ${hh} m < 网高 ${h} m，且出球方向朝下（仰角 ${e}°）-> 必下网，被剔除`,
+        bhNet: (h, hh, e) => `反手：击球点离地 ${hh} m < 网高 ${h} m，且出球方向朝下（仰角 ${e}°）-> 必下网，被剔除`,
         fhShape: '正手：够得到、关节也够，但该姿势是反 L 形（属反手）',
         fhNone: '正手：无可用解',
         bhRom: (tags) => '反手：有几何解，但关节超ROM → ' + (tags || '超ROM'),
@@ -1513,6 +1545,8 @@
         chkRomTitle: 'Joint range-of-motion limits',
         chkBodyTitle: 'Trunk collision: arm cannot enter the body',
         chkShotTitle: 'Shot must go forward and stay within the elevation / azimuth band',
+        chkNet: 'Net height',
+        chkNetTitle: 'Contact below net height with a downward face normal => certain net, case removed',
         btnMirror: 'Mirror',
         panelTitle: 'Parameters',
         dragHint: 'Hint: drag the Ready / Target dots in the Side View up/down to change depth (z) and height (y); drag in the Main View to change left/right (x).',
@@ -1526,6 +1560,8 @@
         shotUp: 'Up ≤', shotDown: 'Down ≤', shotAzim: 'Lateral ≤',
         shotNote: 'Normal = normal of the shoulder-elbow · elbow-wrist plane (wrist may adjust via pronation/supination and flex/ext). Must point forward (+z), elevation ∈ [−down, +up], azimuth ∈ [−lateral, +lateral].',
         grpWrist: 'Wrist tolerance (face reorientation)',
+        grpNet: 'Net-height filter (certain net removed)', netLabel: 'Net height >=',
+        netNote: 'If the contact height above ground (= shoulder height + y) is below the net and the face-normal elevation is negative (downward), the shuttle must hit the net and the case is removed.',
         wristCw: 'CW ≤', wristCcw: 'CCW ≤', wristFlex: 'Flex / ext ±',
         wristNote: 'Viewing along elbow→wrist: right hand CW ≤90°, CCW ≤30° (left hand mirrored). The palm-plane lateral axis provides flex/ext ("bye-bye"). Set all three to 0 to disable wrist.',
         footerCredit: 'Created · All Rights Reserved',
@@ -1545,10 +1581,12 @@
         ibTarget: 'Target', ibReady: 'Ready', ibFh: 'FH', ibBh: 'BH', ibAdopted: 'adopted',
         ibOkT: (t, s) => `${t}s · ${s}`,
         reasonRom: 'ROM exceeded', reasonBody: 'hits trunk', reasonShot: 'shot limit',
-        reasonShape: 'other side', reasonNone: 'no sol.',
+        reasonNet: 'into net', reasonShape: 'other side', reasonNone: 'no sol.',
         fhRom: (tags) => 'FH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
         fhBody: 'FH: IK solved but arm would enter the trunk (cross-body)',
         fhShot: 'FH: shot direction out of limits even with wrist reorientation',
+        fhNet: (h, hh, e) => `FH: contact ${hh} m is below net height ${h} m and the shot goes downward (elev ${e} deg) => certain net`,
+        bhNet: (h, hh, e) => `BH: contact ${hh} m is below net height ${h} m and the shot goes downward (elev ${e} deg) => certain net`,
         fhShape: 'FH: reachable and within ROM, but the pose is anti-L (belongs to backhand)',
         fhNone: 'FH: no solution',
         bhRom: (tags) => 'BH: IK solved but joint ROM exceeded → ' + (tags || 'ROM'),
@@ -1573,6 +1611,8 @@
     let useRomLimit = true;
     let useTrunkCollision = true;
     let useShotLimit = true;
+    let useNetFilter = true;      // 过网高度过滤：击球点低于网高且出球向下 -> 必下网，剔除
+    let netHeight = 1.55;         // 网高 (m，离地，可调)
     let flip = false;
 
     let currentZ = 0;
@@ -1875,8 +1915,8 @@
       flexAxis = V3.scale(flexAxis, 1 / fl);
 
       // 非对称网格：{−CW, −CW/2, 0, +CCW/2, +CCW} × {−Flex, 0, +Flex}
-      let pPos = wristCwMax * DEG;   // 顺时针 → 正 θ
-      let pNeg = wristCcwMax * DEG;  // 逆时针 → 负 θ
+      let pNeg = wristCwMax * DEG;   // 顺时针 → 负 θ
+      let pPos = wristCcwMax * DEG;  // 逆时针 → 正 θ
       // ===== 镜像flip时，左右手手腕限位互换 BUG3修复 =====
       if (flip) {
         [pNeg, pPos] = [pPos, pNeg];
@@ -1960,9 +2000,12 @@
       let best = null, bestT = Infinity, bestShape = null, bestCls = null, bestShot = null;
       let furthest = 0;
       let rejectTags = [];
+      let netReject = null;
 
       const S2D = [0, 0];
       const P2D = project2D(P3);
+      // 击球点离地高度（坐标原点在肩，y 向上）
+      const hitHeight = SHOULDER_H + P3[1];
 
       for (let i = 0; i < ALPHA_N; i++) {
         const alpha = i * 2 * Math.PI / ALPHA_N;
@@ -1990,7 +2033,22 @@
           if (furthest <= 3) {furthest = 3; rejectTags = ['拍面朝向超限（含腕）'];}
           continue;
         }
-        furthest = 4;
+
+        // ---- 过网高度过滤：击球点低于网高，且出球方向（拍面法线）朝下 => 必下网 ----
+        if (useNetFilter && sc.normal && hitHeight < netHeight - 1e-9 && sc.normal[1] < -1e-9) {
+          if (furthest <= 4) {
+            furthest = 4;
+            if (!netReject) {
+              netReject = {
+                h: hitHeight,
+                elev: Math.asin(Math.max(-1, Math.min(1, sc.normal[1]))) / DEG
+              };
+            }
+          }
+          continue;
+        }
+
+        if (furthest < 5) {furthest = 5; rejectTags = [];}
 
         const E2D = project2D(ik.E);
         const cls = classify2D(S2D, E2D, P2D);
@@ -2009,12 +2067,13 @@
       }
 
       if (!best) {
-        const st = furthest >= 4 ? 'shape'
-          : furthest === 3 ? 'shot'
-            : furthest === 2 ? 'body'
-              : furthest === 1 ? 'rom'
-                : 'unreach';
-        return {status: st, rejectTags};
+        const st = furthest >= 5 ? 'shape'
+          : furthest === 4 ? 'net'
+            : furthest === 3 ? 'shot'
+              : furthest === 2 ? 'body'
+                : furthest === 1 ? 'rom'
+                  : 'unreach';
+        return {status: st, rejectTags, net: netReject, hitHeight};
       }
       return {status: 'ok', ik: best, time: bestT, side, shape: bestShape, cls: bestCls, shot: bestShot};
     }
@@ -2396,16 +2455,6 @@
 
       for (const lb of layoutLabels(labels)) drawLabelBox(lb.box, lb.text, lb.color);
 
-      // perp 小标签
-      ctx.save();
-      ctx.font = '11px ui-monospace,monospace';
-      const perpTxt = `perpY=${cls.perp.toFixed(3)}`;
-      const tw = ctx.measureText(perpTxt).width;
-      ctx.fillStyle = 'rgba(255,255,255,0.92)';
-      ctx.fillRect(projX2 + 6, projY2 - 14, tw + 4, 15);
-      ctx.fillStyle = cls.perp < 0 ? '#b91c1c' : cls.perp > 0 ? '#1e40af' : '#475569';
-      ctx.fillText(perpTxt, projX2 + 8, projY2 - 3);
-      ctx.restore();
 
       ctx.restore();
     }
@@ -2578,6 +2627,7 @@
       if (res.status === 'rom') return t('reasonRom');
       if (res.status === 'body') return t('reasonBody');
       if (res.status === 'shot') return t('reasonShot');
+      if (res.status === 'net') return t('reasonNet');
       if (res.status === 'shape') return t('reasonShape');
       return t('reasonNone');
     }
@@ -2587,6 +2637,10 @@
       if (res.status === 'rom') return t(isFh ? 'fhRom' : 'bhRom', tags);
       if (res.status === 'body') return t(isFh ? 'fhBody' : 'bhBody');
       if (res.status === 'shot') return t(isFh ? 'fhShot' : 'bhShot');
+      if (res.status === 'net') {
+        const nt = res.net || {h: NaN, elev: NaN};
+        return t(isFh ? 'fhNet' : 'bhNet', netHeight.toFixed(2), nt.h.toFixed(2), nt.elev.toFixed(1));
+      }
       if (res.status === 'shape') return t(isFh ? 'fhShape' : 'bhShape');
       return t(isFh ? 'fhNone' : 'bhNone');
     }
@@ -3093,6 +3147,10 @@
       useShotLimit = this.checked;
       refresh();
     };
+    document.getElementById('netChk').onchange = function () {
+      useNetFilter = this.checked;
+      refresh();
+    };
 
     function bindSlider(id, valId, onChange, suffix) {
       const s = document.getElementById(id);
@@ -3112,6 +3170,7 @@
     bindSlider('wristCwSlider', 'wristCwVal', v => {wristCwMax = v; refresh();}, '°');
     bindSlider('wristCcwSlider', 'wristCcwVal', v => {wristCcwMax = v; refresh();}, '°');
     bindSlider('wristFlexSlider', 'wristFlexVal', v => {wristFlexMax = v; refresh();}, '°');
+    bindSlider('netSlider', 'netVal', v => {netHeight = v; refresh();}, 'm');
 
     bindSlider('heightSlider', 'heightVal', v => {
       userHeight = v / 100;
