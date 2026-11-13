@@ -1184,14 +1184,14 @@
 
       /* 反应曲线：t_avail = t0 → p≈2%，t_avail = t1 → p≈88%，上限 92% */
       const REACH_P0 = 0.02, REACH_P1 = 0.88, REACH_PMAX = 0.92;
-      const DROP_EXTRA_T = 0.08;
+      const DROP_EXTRA_T = 0.04;
 
       /* 方向速度系数 */
       const V_FWD_K = 1.15, V_SIDE_K = 0.95;
 
       function touchScale(type) {
         if (type === 'smash') return 0.72;
-        if (type === 'drop') return 1.15;
+        if (type === 'drop') return 0.95;
         return 1.0;
       }
 
@@ -1230,11 +1230,11 @@
       /* 落点距离核：只对杀球、吊球有意义（高球落点由模拟直接决定） */
       function landingKernel(type, y, oppDist) {
         const dn = -y;
-        const baseCenter = type === 'smash' ? 5.8 : 2.8;
+        const baseCenter = type === 'smash' ? 5.8 : 1.9;
         const shiftK = type === 'drop' ? 0.8 : 0.5;
         const hShift = Math.max(0, Math.min(1.2, (2.8 - PRM.hh) * 0.6));
         const center = Math.max(0.5, baseCenter - (4.6 - oppDist) * shiftK - hShift);
-        const sigma = type === 'smash' ? 1.2 : 1.6;
+        const sigma = type === 'smash' ? 1.2 : 1.1;
         return Math.exp(-Math.pow((dn - center) / sigma, 2));
       }
 
@@ -1268,6 +1268,13 @@
         let tAvail = t - tau;
         if (type === 'drop') tAvail += DROP_EXTRA_T;
         return reachProb(tAvail);
+      }
+
+      const LAMBDA_RUN = 0.6;
+
+      function qRun(pos, item) {
+        const tau = runTime(pos, item.L, item.type);
+        return Math.exp(-LAMBDA_RUN * tau);
       }
 
       function smashSpeedFactor() {
@@ -1769,10 +1776,10 @@
       setup();
 
       function itemV(pos1, pos2, item) {
-        const pa = pDef(pos1, item.L, item.t, item.type);
+        const pa = pDef(pos1, item.L, item.t, item.type) * qRun(pos1, item);
         let r = pa;
         if (pos2) {
-          const pb = pDef(pos2, item.L, item.t, item.type);
+          const pb = pDef(pos2, item.L, item.t, item.type) * qRun(pos2, item);
           r = 1 - (1 - pa) * (1 - pb);
         }
         const c = cValue(item.type, item.L.y);
@@ -1847,7 +1854,10 @@
         const P = new Array(M);
         for (let p = 0; p < M; p++) {
           const arr = new Float64Array(N);
-          for (let i = 0; i < N; i++) arr[i] = pDef(pos[p], items[i].L, items[i].t, items[i].type);
+          for (let i = 0; i < N; i++) {
+            const it = items[i];
+            arr[i] = pDef(pos[p], it.L, it.t, it.type) * qRun(pos[p], it);
+          }
           P[p] = arr;
         }
 
@@ -1874,8 +1884,9 @@
         const scoreAt = (a, b) => {
           let s = 0;
           for (let k = 0; k < N; k++) {
-            const pa = pDef(a, items[k].L, items[k].t, items[k].type);
-            const pb = pDef(b, items[k].L, items[k].t, items[k].type);
+            const it = items[k];
+            const pa = pDef(a, it.L, it.t, it.type) * qRun(a, it);
+            const pb = pDef(b, it.L, it.t, it.type) * qRun(b, it);
             const r = 1 - (1 - pa) * (1 - pb);
             s += aArr[k] * r;
           }
