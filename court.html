@@ -12,7 +12,7 @@
     --shadow:0 1px 2px rgba(20,50,35,.04), 0 8px 24px rgba(20,50,35,.05);
     --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
     margin:0; padding:24px 16px;
@@ -23,23 +23,22 @@
     font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
     color:var(--text); -webkit-font-smoothing:antialiased;
     min-height:100vh; -webkit-text-size-adjust:100%;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
   }
+  button{font-family:inherit}
+  button:focus{outline:none}
+  button:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+
   .app{max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
   .card{background:var(--card); border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow)}
 
   /* Header */
   .header{
-    padding:16px 20px;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    flex-wrap:wrap;
-    position:relative;
-    overflow:hidden;
+    padding:16px 20px; display:flex; align-items:center; gap:16px;
+    flex-wrap:wrap; position:relative; overflow:hidden;
   }
   .header::before{
-    content:''; position:absolute; top:-80px; right:-80px;
-    width:240px; height:240px;
+    content:''; position:absolute; top:-80px; right:-80px; width:240px; height:240px;
     background:radial-gradient(circle, rgba(31,138,91,.1) 0%, transparent 65%);
     pointer-events:none;
   }
@@ -52,96 +51,54 @@
     box-shadow:0 4px 12px rgba(22,107,70,.28), inset 0 1px 0 rgba(255,255,255,.2);
   }
   h1{margin:0 0 3px; font-size:17px; font-weight:700; letter-spacing:.2px; line-height:1.4}
-  .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5; white-space:normal; word-break:break-word}
+  .header p{margin:0; font-size:13px; color:var(--text-2); line-height:1.5; word-break:break-word}
   .header-actions{display:flex; gap:8px; align-items:center; flex-shrink:0; position:relative}
 
-  /* 语言按钮（独立样式，不依赖 tool-btn） */
   .lang-btn{
-    appearance:none;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:3px 7px;
-    background:transparent;
-    border:none;
-    border-radius:5px;
-    box-shadow:none;
-    color:var(--text-3);
-    font-size:11.5px;
-    font-weight:700;
-    font-family:inherit;
-    line-height:1;
-    letter-spacing:.3px;
-    opacity:.85;
-    transition:color .15s, opacity .15s, transform .12s;
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    padding:3px 7px; background:transparent; border:none; border-radius:5px; box-shadow:none;
+    color:var(--text-3); font-size:11.5px; font-weight:700; line-height:1; letter-spacing:.3px;
+    opacity:.85; transition:color .15s, opacity .15s, transform .12s;
+    touch-action:manipulation;
   }
   .lang-btn:hover{color:var(--primary); opacity:1}
   .lang-btn:active{transform:scale(.92)}
 
-  .app.collapsed .header{ display:none }
+  .app.collapsed .header{display:none}
 
   /* 画布卡片 */
   .canvas-card{padding:0; overflow:hidden}
-
   .canvas-topbar{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 14px 8px;
-    flex-wrap:wrap;
-    border-bottom:1px solid #f0f4f1;
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px 8px; flex-wrap:wrap; border-bottom:1px solid #f0f4f1;
   }
-
-  /* 单/双 切换按钮 */
   .mode-toggle{
-    appearance:none;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:5px 14px;
-    background:#e8eee9;
-    border:1px solid transparent;
-    border-radius:7px;
-    color:var(--primary);
-    font-weight:700;
-    font-size:12px;
-    font-family:inherit;
-    line-height:1;
-    letter-spacing:.3px;
-    min-width:46px;
-    transition:background .15s, color .15s, box-shadow .15s, transform .12s;
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    padding:5px 14px; background:#e8eee9; border:1px solid transparent; border-radius:7px;
+    color:var(--primary); font-weight:700; font-size:12px; line-height:1; letter-spacing:.3px;
+    min-width:46px; transition:background .15s, color .15s, transform .12s;
+    touch-action:manipulation;
   }
   .mode-toggle:hover{background:#dde6e0}
   .mode-toggle:active{transform:scale(.96)}
-  .mode-toggle[data-mode="single"]{
-    background:#e8f0f7;
-    color:#1e6bb8;
-  }
+  .mode-toggle[data-mode="single"]{background:#e8f0f7; color:#1e6bb8}
   .mode-toggle[data-mode="single"]:hover{background:#dbe7f3}
 
   .legend{
-    display:flex; align-items:center; gap:10px;
-    flex-wrap:wrap; font-size:11.5px; color:var(--text-3);
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    font-size:11.5px; color:var(--text-3);
   }
   .legend span{display:inline-flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500}
   .dot{width:8px; height:8px; border-radius:50%; display:inline-block}
-  .ring{
-    width:10px; height:10px; border-radius:50%;
-    border:1.6px dashed #757575; display:inline-block;
-  }
+  .ring{width:10px; height:10px; border-radius:50%; border:1.6px dashed #757575; display:inline-block}
   .num{
     display:inline-flex; align-items:center; justify-content:center;
-    width:15px; height:15px; border-radius:50%;
-    background:#f3e8fa; color:#8e44ad;
+    width:15px; height:15px; border-radius:50%; background:#f3e8fa; color:#8e44ad;
     font-size:10px; font-weight:700; font-style:normal;
   }
   .arrow-legend{
     display:inline-block; width:0; height:0;
-    border-left:11px solid #1e88e5;
-    border-top:4px solid transparent;
-    border-bottom:4px solid transparent;
+    border-left:11px solid #1e88e5; border-top:4px solid transparent; border-bottom:4px solid transparent;
     vertical-align:middle; margin:0 1px;
   }
   .heat-legend{
@@ -151,28 +108,15 @@
   }
 
   .collapse-btn{
-    margin-left:auto;
-    width:18px; height:18px;
+    margin-left:auto; width:18px; height:18px;
     display:inline-flex; align-items:center; justify-content:center;
-    background:transparent;
-    border:none;
-    border-radius:0;
-    color:var(--text-3);
-    cursor:pointer;
-    padding:0;
-    flex-shrink:0;
-    box-shadow:none;
-    transition:color .15s, transform .12s;
-    font-family:inherit;
-    opacity:.75;
+    background:transparent; border:none; border-radius:0; color:var(--text-3);
+    cursor:pointer; padding:0; flex-shrink:0; box-shadow:none;
+    transition:color .15s, transform .12s; opacity:.75; touch-action:manipulation;
   }
   .collapse-btn:hover{color:var(--primary); opacity:1}
   .collapse-btn:active{transform:scale(.9)}
-  .collapse-btn svg{
-    width:12px; height:12px;
-    stroke-width:2.2; fill:none; stroke:currentColor;
-    stroke-linecap:round; stroke-linejoin:round;
-  }
+  .collapse-btn svg{width:12px; height:12px; stroke-width:2.2; fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round}
   .collapse-btn .chev-down{display:none}
   .app.collapsed .collapse-btn .chev-up{display:none}
   .app.collapsed .collapse-btn .chev-down{display:inline}
@@ -182,6 +126,7 @@
     display:block; border-radius:10px; touch-action:none; cursor:default;
     background:#f7fbf9; max-width:100%;
     box-shadow:0 1px 3px rgba(20,50,35,.06), 0 4px 14px rgba(20,50,35,.05);
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
   }
 
   /* Footer */
@@ -216,10 +161,12 @@
   .modal-close{
     background:transparent!important; box-shadow:none!important; color:#fff;
     font-size:24px; line-height:1; padding:0 6px; border:none; cursor:pointer;
+    touch-action:manipulation;
   }
   .modal-body{
     padding:18px 22px 24px; font-size:14px; line-height:1.78; color:var(--text);
     max-height:76vh; overflow:auto; -webkit-overflow-scrolling:touch;
+    -webkit-user-select:text; user-select:text; -webkit-touch-callout:default;
   }
   .modal-body h3{
     font-size:15px; margin:22px 0 8px; color:var(--primary); font-weight:650;
@@ -252,45 +199,25 @@
   @media (max-width: 520px){
     body{padding:12px 10px}
     .app{gap:10px}
-
-    /* Header：logo+标题 左，EN 右，强制一行 */
     .header{padding:12px 14px; gap:10px; flex-wrap:nowrap}
     .header-left{gap:10px; flex:1; min-width:0}
     .logo{width:36px; height:36px; font-size:18px; border-radius:10px; flex-shrink:0}
     h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .header p{font-size:12px; line-height:1.35; white-space:normal; word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+    .header p{font-size:12px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
     .header-actions{width:auto; gap:6px; flex-shrink:0}
     .lang-btn{flex:0 0 auto; padding:2px 5px; font-size:11px}
 
-    /* Topbar：mode 左，collapse 右；legend 单独换到第二行 */
     .canvas-topbar{padding:8px 12px 6px; gap:6px 8px}
-    .mode-toggle{
-      padding:4px 12px;
-      font-size:11.5px;
-      min-width:42px;
-      flex-shrink:0;
-      order:1;
-    }
-    .collapse-btn{
-      width:16px;
-      height:16px;
-      flex-shrink:0;
-      margin-left:auto;
-      order:2;
-    }
+    .mode-toggle{padding:4px 12px; font-size:11.5px; min-width:42px; flex-shrink:0; order:1}
+    .collapse-btn{width:16px; height:16px; flex-shrink:0; margin-left:auto; order:2}
     .collapse-btn svg{width:10px; height:10px; stroke-width:2.2}
     .legend{
-      font-size:11px;
-      gap:8px;
-      order:3;
-      flex-basis:100%;
-      padding-top:6px;
-      border-top:1px solid #f0f4f1;
+      font-size:11px; gap:8px; order:3; flex-basis:100%;
+      padding-top:6px; border-top:1px solid #f0f4f1;
     }
     .legend span{gap:3px}
 
     .canvas-wrap{padding:8px}
-
     .footer{font-size:11px}
     .modal-mask{padding:8px 6px}
     .modal{border-radius:13px}
@@ -313,7 +240,7 @@
       <div class="logo">🏸</div>
       <div>
         <h1 data-i18n="title">羽毛球远身场地落点</h1>
-        <p id="pageSub">双打模式 · 拖动 A / B 调整位置</p>
+        <p id="pageSub"></p>
       </div>
     </div>
     <div class="header-actions">
@@ -326,15 +253,10 @@
       <button class="mode-toggle" id="modeToggle" data-mode="double" data-i18n="doubles">双打</button>
       <div class="legend" id="legendBar"></div>
       <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
-        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 10l4-4 4 4"/>
-        </svg>
-        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 6l4 4 4-4"/>
-        </svg>
+        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>
+        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
       </button>
     </div>
-
     <div class="canvas-wrap">
       <canvas id="canvas"></canvas>
     </div>
@@ -343,13 +265,15 @@
   <footer class="footer" id="credit">
     © <b>Robert Bogan Kang</b> <span data-i18n="footer">创作 · 保留所有权利</span>
   </footer>
-
 </div>
+
 <script>
 (() => {
   'use strict';
 
-  // ================= 国际化 =================
+  /* =========================================================
+   * 1. 国际化
+   * ========================================================= */
   const I18N = {
     zh: {
       title: '羽毛球远身场地落点',
@@ -357,21 +281,12 @@
       subSingle: '单打模式 · 拖动对手调整位置',
       subHint: ' · 长按球员调速度，双击空白调热力图',
       subVelActive: ' · 拖动蓝色手柄调速度，双击空白调热力图',
-      doubles: '双打',
-      singles: '单打',
-      player: '球员',
-      opponent: '对手',
-      initialVel: '初速度',
-      best: '最优',
-      gap: '结合',
-      corner: '四角次优',
-      arrival: '到达时间',
-      net: '球网',
-      speed: '速度',
-      footer: '创作 · 保留所有权利',
-      langBtn: 'EN',
-      collapseHide: '隐藏顶部',
-      collapseShow: '展开顶部',
+      doubles: '双打', singles: '单打',
+      player: '球员', opponent: '对手',
+      initialVel: '初速度', best: '最优', gap: '结合', corner: '四角次优',
+      arrival: '到达时间', net: '球网', speed: '速度',
+      footer: '创作 · 保留所有权利', langBtn: 'EN',
+      collapseHide: '隐藏顶部', collapseShow: '展开顶部',
       principleTitle: '羽毛球远身场地落点 · 计算原理',
       principleHTML: `
       <p class="lead"><b>一句话：</b>在对方半场所有合法落点里，找一个让<b>对手最难接到</b>的点。<b>单打</b>额外扣掉"我方打完能不能回中场"的代价；<b>双打</b>只算对手难度。对手可以静止，也可以带初速度。</p>
@@ -386,11 +301,10 @@
       <ul>
         <li><b>长按球员 A 点（500ms）</b> → 打开/关闭 A 的速度手柄；关闭时速度归零</li>
         <li><b>长按球员 B 点（500ms）</b> → 打开/关闭 B 的速度手柄；关闭时速度归零</li>
-        <li><b>双击球员点附近</b> → 忽略（手柄由长按控制）</li>
-        <li><b>双击手柄附近</b> → 忽略（防止拖动时误触）</li>
+        <li><b>双击球员点 / 手柄附近</b> → 忽略（手柄由长按控制，防止拖动误触）</li>
         <li><b>双击其余场地空白处</b> → 打开/关闭热力图</li>
       </ul>
-      <p>A、B 手柄独立控制，互不影响。拖动蓝色手柄：拖在死区内速度 0，拖出死区出现蓝色箭头，速度曲线为前慢后快（低速区拖行更精细），上限 6 m/s。</p>
+      <p>A、B 手柄独立控制。拖动蓝色手柄：死区内速度 0，拖出出现箭头；速度曲线前慢后快（低速更精细），上限 6 m/s。</p>
 
       <h3>三、三方向速度权重</h3>
       <table>
@@ -421,23 +335,20 @@
         <li><b>单打</b>：<code>J = 对手难度 − 0.3 × 到 (0, 3.35) 的距离</code></li>
         <li><b>双打</b>：<code>J = min(难度A, 难度B)</code></li>
       </ul>
-      <p class="muted">红点标签旁用方括号显示 J 值，如「最优[12.3]」，四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上保证不超过红点分数。</p>
+      <p class="muted">红点标签旁方括号显示 J 值，如「最优[12.3]」；四角次优同理标「2[11.8]」。四角分数从全局网格筛选，数学上不超过红点分数。</p>
 
       <h3>八、等难度线与结合部</h3>
-      <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。两人距离 &lt; 1.0m 时该线不绘制（无意义）。</p>
+      <p>「到 A 和到 B 难度相等」的分界线用 marching squares 数值追踪。结合部 = 沿垂直两人连线分两侧，每侧取 <code>min(难度A, 难度B)</code> 最大的点。两人距离 &lt; 1.0m 时该线不绘制。</p>
 
       <h3>九、红点与四角次优</h3>
-      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤（① 被红点占用）。</p>
+      <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤。</p>
 
       <h3>十、可调参数</h3>
       <ul>
         <li><code>W_BACK / W_FWD</code>：1.7 / 1.15</li>
         <li><code>K_REV / K_ADV</code>：1.8 / 0.7</li>
-        <li><code>S0_DIST</code>：1.5m（平滑过渡宽度）</li>
-        <li><code>K_BODY</code>：1.6，<code>K_EDGE</code>：1.2</li>
-        <li><code>W_ME_SINGLE</code>：0.3</li>
-        <li><code>V_GAMMA</code>：3.0（手柄曲线，越大低速越精细）</li>
-        <li><code>LONG_PRESS_MS</code>：500ms（长按球员点触发速度手柄）</li>
+        <li><code>S0_DIST</code>：1.5m；<code>K_BODY</code>：1.6；<code>K_EDGE</code>：1.2</li>
+        <li><code>W_ME_SINGLE</code>：0.3；<code>V_GAMMA</code>：3.0；<code>LONG_PRESS_MS</code>：500ms</li>
       </ul>
 
       <h3>十一、局限</h3>
@@ -454,21 +365,12 @@
       subSingle: 'Singles · Drag opponent to adjust',
       subHint: ' · Long-press player: velocity, double-click blank: heatmap',
       subVelActive: ' · Drag handle: velocity, blank: heatmap',
-      doubles: 'Doubles',
-      singles: 'Singles',
-      player: 'Players',
-      opponent: 'Opponent',
-      initialVel: 'Velocity',
-      best: 'Best',
-      gap: 'Middle',
-      corner: 'Suboptimal',
-      arrival: 'Arrival',
-      net: 'Net',
-      speed: 'Speed',
-      footer: 'Created · All Rights Reserved',
-      langBtn: '中',
-      collapseHide: 'Hide header',
-      collapseShow: 'Show header',
+      doubles: 'Doubles', singles: 'Singles',
+      player: 'Players', opponent: 'Opponent',
+      initialVel: 'Velocity', best: 'Best', gap: 'Middle', corner: 'Suboptimal',
+      arrival: 'Arrival', net: 'Net', speed: 'Speed',
+      footer: 'Created · All Rights Reserved', langBtn: '中',
+      collapseHide: 'Hide header', collapseShow: 'Show header',
       principleTitle: 'Badminton Court Landing Spot · Methodology',
       principleHTML: `
       <p class="lead"><b>In short:</b> Among all legal landing spots in the opponent's half, find the one that is <b>hardest for the opponent to reach</b>. <b>Singles</b> additionally deducts the cost of "can I recover to the centre after my shot"; <b>doubles</b> only considers opponent difficulty. Opponents may be stationary or have an initial velocity.</p>
@@ -483,11 +385,10 @@
       <ul>
         <li><b>Long-press player A (500 ms)</b> → toggle A's velocity handle; velocity resets to 0 when hidden</li>
         <li><b>Long-press player B (500 ms)</b> → toggle B's velocity handle; velocity resets to 0 when hidden</li>
-        <li><b>Double-tap near a player dot</b> → ignored (handle is controlled by long-press)</li>
-        <li><b>Double-tap near a handle</b> → ignored (prevents accidental taps while dragging)</li>
+        <li><b>Double-tap near a player dot / handle</b> → ignored</li>
         <li><b>Double-tap anywhere else on the court</b> → toggle the heatmap</li>
       </ul>
-      <p>A and B handles are independent. Drag the blue handle: inside the deadzone the velocity is 0; outside it a blue arrow appears. The speed curve is slow-first / fast-later (finer control at low speed), capped at 6 m/s.</p>
+      <p>A and B handles are independent. Drag the blue handle: inside the deadzone velocity is 0; outside it an arrow appears. Speed curve is slow-first / fast-later (finer at low speed), capped at 6 m/s.</p>
 
       <h3>3. Three-direction velocity weights</h3>
       <table>
@@ -501,7 +402,7 @@
 
       <h3>4. Startup correction (smooth)</h3>
       <div class="formula">k = K<sub>ADV</sub> + (K<sub>REV</sub> − K<sub>ADV</sub>)·(1 − sigmoid(projDist / S0))</div>
-      <p>The sigmoid makes k take its mid value at projection distance 0, blending smoothly to 0.7 / 1.8 on either side. k = 1 when v = 0.</p>
+      <p>The sigmoid makes k take its mid value at projection distance 0, blending smoothly to 0.7 / 1.8. k = 1 when v = 0.</p>
 
       <h3>5. Opponent difficulty</h3>
       <ol>
@@ -518,23 +419,20 @@
         <li><b>Singles</b>: <code>J = opponent difficulty − 0.3 × distance to (0, 3.35)</code></li>
         <li><b>Doubles</b>: <code>J = min(difficulty A, difficulty B)</code></li>
       </ul>
-      <p class="muted">The J value is shown in brackets next to the red dot label, e.g. "Best [12.3]"; corner suboptimals likewise "2 [11.8]". Corner scores are filtered from the global grid, so they are mathematically guaranteed not to exceed the red-dot score.</p>
+      <p class="muted">J is shown in brackets next to the red dot label, e.g. "Best [12.3]". Corner scores are filtered from the global grid, so they never exceed the red-dot score.</p>
 
       <h3>8. Equal-difficulty line and the gap</h3>
-      <p>The boundary where "difficulty to A equals difficulty to B" is traced numerically with marching squares. Gap points = on each side of the perpendicular to the line joining the two players, take the point that maximises <code>min(difficulty A, difficulty B)</code>. The line is not drawn when the two players are &lt; 1.0 m apart (meaningless).</p>
+      <p>The boundary where "difficulty to A equals difficulty to B" is traced numerically with marching squares. Gap points = on each side of the perpendicular, take the point that maximises <code>min(difficulty A, difficulty B)</code>. The line is not drawn when players are &lt; 1.0 m apart.</p>
 
       <h3>9. Red dot and corner suboptimals</h3>
-      <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid, same source as the red dot), sorted by J and labeled ②③④⑤ (① is taken by the red dot).</p>
+      <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid), sorted by J and labeled ②③④⑤.</p>
 
       <h3>10. Tunable parameters</h3>
       <ul>
         <li><code>W_BACK / W_FWD</code>: 1.7 / 1.15</li>
         <li><code>K_REV / K_ADV</code>: 1.8 / 0.7</li>
-        <li><code>S0_DIST</code>: 1.5 m (smooth transition width)</li>
-        <li><code>K_BODY</code>: 1.6, <code>K_EDGE</code>: 1.2</li>
-        <li><code>W_ME_SINGLE</code>: 0.3</li>
-        <li><code>V_GAMMA</code>: 3.0 (handle curve; larger = finer control at low speed)</li>
-        <li><code>LONG_PRESS_MS</code>: 500 ms (long-press a player dot to toggle velocity)</li>
+        <li><code>S0_DIST</code>: 1.5 m; <code>K_BODY</code>: 1.6; <code>K_EDGE</code>: 1.2</li>
+        <li><code>W_ME_SINGLE</code>: 0.3; <code>V_GAMMA</code>: 3.0; <code>LONG_PRESS_MS</code>: 500 ms</li>
       </ul>
 
       <h3>11. Limitations</h3>
@@ -548,34 +446,31 @@
   };
 
   let lang = 'zh';
-  function t(key){
-    return (I18N[lang] && I18N[lang][key]) || (I18N.zh[key] || key);
-  }
+  const t = (key) => (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;
 
-  // ================= 参数 =================
+  /* =========================================================
+   * 2. 常量
+   * ========================================================= */
   const L = 13.40, W = 5.18;
   const HALF_W = W / 2, NET_Y = L / 2;
   const SAFE_DELTA = 0.20;
   const OPP_SIDE_Y_MIN = NET_Y, OPP_SIDE_Y_MAX = L;
 
-  const W_X = 1.0;
-  const W_BACK = 1.7, W_FWD = 1.15;
+  const W_X = 1.0, W_BACK = 1.7, W_FWD = 1.15;
   const K_REV = 1.8, K_ADV = 0.7;
   const B0 = 0.30, K_EDGE = 1.2;
   const BODY_R = 0.45, K_BODY = 1.6;
   const MIN_GAP_DIST = 1.0;
 
-  const SINGLE_RETURN = {x: 0, y: 3.35};
+  const SINGLE_RETURN = { x: 0, y: 3.35 };
   const W_ME_SINGLE = 0.3;
 
   const GRID_STEP_FAST = 0.25, GRID_STEP_FINE = 0.10;
-  const MOVE_THRESHOLD = 0.01, THROTTLE_MS = 60;
-
+  const THROTTLE_MS = 60;
   const CORNER_R = 2.0, CORNER_SHOW_R = 1.0;
 
   const SCALE = 90, PAD = 50;
   const EXPOSE_M = 0.8, VIEW_Y_MIN = NET_Y - EXPOSE_M;
-
   const LOGICAL_W = W * SCALE + PAD * 2;
   const LOGICAL_H = (L - VIEW_Y_MIN) * SCALE + PAD * 2;
 
@@ -604,7 +499,6 @@
   const COLOR_VEL_GLOW = 'rgba(30,136,229,0.20)';
   const COLOR_VEL_TRI = 'rgba(30,136,229,0.65)';
   const COLOR_VEL_TXT = 'rgba(30,136,229,0.95)';
-
   const COLOR_BEST   = '#d32f2f';
   const COLOR_GAP    = '#757575';
   const COLOR_RANK   = '#8e44ad';
@@ -614,32 +508,47 @@
   const C_FRAME  = '#1e4d38';
   const C_NET    = '#1e4d38';
 
-  const ZERO_V = {x: 0, y: 0};
+  const ZERO_V = { x: 0, y: 0 };
+  const TARGET = { A_POS: 1, B_POS: 2, A_VEL: 3, B_VEL: 4 };
 
-  // ================= 状态 =================
-  let mode = 'double';
-  let opp1_velVisible = false;
-  let opp2_velVisible = false;
+  /* =========================================================
+   * 3. 状态
+   * ========================================================= */
+  const state = {
+    mode: 'double',
+    showHeat: false,
+    hover: null,
+    players: {
+      a: { pos: { x: -1.2, y: 9.2 }, vel: { x: 0, y: 0 }, velVisible: false },
+      b: { pos: { x:  1.2, y: 9.2 }, vel: { x: 0, y: 0 }, velVisible: false },
+    },
+    // 计算结果
+    best: { pt: null, J: 0 },
+    heat: [],
+    heatStep: GRID_STEP_FINE,
+    heatCanvas: null,
+    heatMeta: null,
+    corners: [],
+    locus: [],
+    gaps: [null, null],
+  };
 
-  const opp1 = {x: -1.2, y: 9.2};
-  const opp2 = {x:  1.2, y: 9.2};
-  const opp1_v = {x: 0, y: 0};
-  const opp2_v = {x: 0, y: 0};
+  const pointer = {
+    id: null,
+    startClient: null,
+    dragTarget: null,
+    dragActive: false,
+    dragHandlePos: null,
+    longPressTimer: null,
+    longPressFired: false,
+  };
 
-  let dragTarget = null;
-  let hoverTarget = null;
-  let dragHandlePos = null;
-  let showHeat = false;
-  let lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-  let working = false, pendingFine = false;
-  let lastCalcTime = 0;
-  let cacheBest = {pt: null, J: 0};
-  let cacheHeat = [], cacheStep = GRID_STEP_FINE, cacheCorners = [];
+  const dirty = { locus: true, grid: true };
+  const markDirty = () => { dirty.locus = true; dirty.grid = true; };
 
-  let lastTouchTap = {t: 0, x: 0, y: 0};
-  let dragStartPos = null;
-  let dragActive = false;
-  let longPressTimer = null;
+  let lastGridCompute = 0;
+  let lastTap = { time: 0, x: 0, y: 0 };
+  let heatCanvas = null, heatCtx = null;
 
   const appEl = document.getElementById('app');
   const collapseBtn = document.getElementById('collapseBtn');
@@ -650,182 +559,45 @@
   const legendBar = document.getElementById('legendBar');
   const modeToggleEl = document.getElementById('modeToggle');
 
-  // ================= 工具函数 =================
-  function forceRecalc(){
-    pendingFine = true;
-    lastSent = {o1: {x: -99, y: -99}, o2: {x: -99, y: -99}, v1: {x: -99, y: -99}, v2: {x: -99, y: -99}};
-  }
+  /* =========================================================
+   * 4. 工具
+   * ========================================================= */
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  function clearLongPress(){
-    if (longPressTimer){
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-  }
-
-  function isAnyVelocityVisible(){
-    return opp1_velVisible || (mode === 'double' && opp2_velVisible);
-  }
-
-  function getClientXY(e){
-    if (e.touches && e.touches.length) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
-    if (e.changedTouches && e.changedTouches.length) return {x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY};
-    return {x: e.clientX, y: e.clientY};
-  }
-
-  // ================= 语言切换 =================
-  function applyLanguage(){
-    document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
-    document.title = t('title');
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      el.textContent = t(el.dataset.i18n);
-    });
-
-    langBtnEl.textContent = t('langBtn');
-    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
-
-    updateUIForMode();
-
-    const pBody = document.getElementById('principleBody');
-    if (pBody) pBody.innerHTML = t('principleHTML');
-
-    const collapsed = appEl.classList.contains('collapsed');
-    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
-  }
-
-  // 供页面底部脚本在 Modal 解析后再次调用
-  window.__applyLang = applyLanguage;
-
-  langBtnEl.addEventListener('click', () => {
-    lang = (lang === 'zh') ? 'en' : 'zh';
-    applyLanguage();
+  const w2c = (pt) => ({
+    x: (HALF_W + pt.x) * SCALE + PAD,
+    y: (L - pt.y) * SCALE + PAD,
   });
-
-  // ================= 折叠 =================
-  collapseBtn.addEventListener('click', () => {
-    const collapsed = appEl.classList.toggle('collapsed');
-    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
-    requestAnimationFrame(setupCanvas);
+  const c2w = (cx, cy) => ({
+    x: (cx - PAD) / SCALE - HALF_W,
+    y: L - (cy - PAD) / SCALE,
   });
-
-  // ================= Canvas 自适应 =================
-  function setupCanvas(){
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const wrap = canvas.parentElement;
-    const cs = getComputedStyle(wrap);
-    const padL = parseFloat(cs.paddingLeft) || 0;
-    const padR = parseFloat(cs.paddingRight) || 0;
-    const availW = wrap.clientWidth - padL - padR;
-
-    let cssW = Math.min(availW, LOGICAL_W);
-    let cssH = cssW * LOGICAL_H / LOGICAL_W;
-
-    const maxH = Math.min(window.innerHeight * 0.72, 640);
-    if (cssH > maxH){
-      cssH = maxH;
-      cssW = cssH * LOGICAL_W / LOGICAL_H;
-    }
-    cssW = Math.max(180, cssW);
-
-    canvas.style.width = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    const s = canvas.width / LOGICAL_W;
-    ctx.setTransform(s, 0, 0, s, 0, 0);
-  }
-  setupCanvas();
-  if (window.ResizeObserver){
-    const ro = new ResizeObserver(() => setupCanvas());
-    ro.observe(canvas.parentElement);
-  }
-  window.addEventListener('resize', setupCanvas);
-  window.addEventListener('orientationchange', () => setTimeout(setupCanvas, 250));
-
-  // ================= 坐标 =================
-  function w2c(pt){
-    return {x: (HALF_W + pt.x) * SCALE + PAD, y: (L - pt.y) * SCALE + PAD};
-  }
-  function c2w(cx, cy){
-    return {x: (cx - PAD) / SCALE - HALF_W, y: L - (cy - PAD) / SCALE};
-  }
-  function clientToWorld(clientX, clientY){
+  function clientToWorld(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return c2w(
       (clientX - rect.left) / rect.width * LOGICAL_W,
       (clientY - rect.top) / rect.height * LOGICAL_H
     );
   }
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // ================= 单/双 切换 =================
-  modeToggleEl.addEventListener('click', () => {
-    mode = (mode === 'double') ? 'single' : 'double';
+  const getEffectiveVel = (key) => {
+    const p = state.players[key];
+    if (!p.velVisible) return ZERO_V;
+    if (key === 'b' && state.mode === 'single') return ZERO_V;
+    return p.vel;
+  };
 
-    modeToggleEl.textContent = (mode === 'single') ? t('singles') : t('doubles');
-    modeToggleEl.dataset.mode = mode;
+  const isAnyVelocityVisible = () =>
+    state.players.a.velVisible ||
+    (state.mode === 'double' && state.players.b.velVisible);
 
-    if (mode === 'single' && dragTarget === 2){
-      dragTarget = null;
-      dragActive = false;
-      canvas.style.cursor = 'default';
-    }
+  const isHot = (target) =>
+    pointer.dragTarget === target || state.hover === target;
 
-    updateUIForMode();
-    forceRecalc();
-  });
-
-  function updateSubtitle(){
-    const single = mode === 'single';
-    const hint = isAnyVelocityVisible() ? t('subVelActive') : t('subHint');
-    pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + hint;
-  }
-
-  function updateLegend(){
-    const single = mode === 'single';
-    let html = '';
-    html += single
-      ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
-      : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
-    if (isAnyVelocityVisible()){
-      html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
-    }
-    html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
-    if (!single){
-      html += `<span><i class="ring"></i>${t('gap')}</span>`;
-    }
-    html += `<span><i class="num">2</i>${t('corner')}</span>`;
-    if (showHeat){
-      html += `<span><i class="heat-legend"></i>${t('arrival')}</span>`;
-    }
-    legendBar.innerHTML = html;
-  }
-
-  function updateUIForMode(){
-    updateSubtitle();
-    updateLegend();
-  }
-  updateUIForMode();
-
-  // ================= 双击：切换热力图 =================
-  function handleDoubleTap(clientX, clientY){
-    const w = clientToWorld(clientX, clientY);
-    // 命中球员点或手柄 → 忽略
-    if (hitTest(w) !== null) return;
-    // 其余场地空白 → 切换热力图
-    showHeat = !showHeat;
-    updateLegend();
-  }
-
-  canvas.addEventListener('dblclick', (e) => {
-    if (dragTarget !== null) return;
-    handleDoubleTap(e.clientX, e.clientY);
-    e.preventDefault();
-  });
-
-  // ================= 难度 / 到达时间 =================
-  function startFactor(s, vmag){
+  /* =========================================================
+   * 5. 计算：难度 / 栅格 / 等难度线
+   * ========================================================= */
+  function startFactor(s, vmag) {
     if (vmag < 0.01) return 1.0;
     const projDist = s / vmag;
     const sig = 1 / (1 + Math.exp(-projDist / S0_DIST));
@@ -834,36 +606,30 @@
     return 1 + (kFull - 1) * blend;
   }
 
-  // 加权跑动距离 × 启动修正（不含追身/贴边加成）
-  function evalAt(x, y, opp, v){
+  function evalAt(x, y, opp, v) {
     const dx = x - opp.x, dy = y - opp.y;
     const wy = dy >= 0 ? W_BACK : W_FWD;
-    let base = Math.sqrt((W_X*dx)*(W_X*dx) + (wy*dy)*(wy*dy));
-    base *= startFactor(dx*v.x + dy*v.y, Math.hypot(v.x, v.y));
+    let base = Math.sqrt((W_X * dx) ** 2 + (wy * dy) ** 2);
+    base *= startFactor(dx * v.x + dy * v.y, Math.hypot(v.x, v.y));
     return base;
   }
 
-  // 追身 + 贴边加成系数
-  function bodyEdgeFactor(x, y, opp){
+  function bodyEdgeFactor(x, y, opp) {
     const dx = x - opp.x, dy = y - opp.y;
     let f = 1;
-    const dBody = Math.sqrt(dx*dx + dy*dy);
-    if (dBody < BODY_R) f *= K_BODY;
+    if (Math.hypot(dx, dy) < BODY_R) f *= K_BODY;
     const dEdge = Math.min(
       HALF_W - SAFE_DELTA - Math.abs(x),
       y - OPP_SIDE_Y_MIN,
       OPP_SIDE_Y_MAX - y
     );
-    const g = Math.exp(-Math.max(0, dEdge) / B0);
-    return f * (1 + K_EDGE * g);
+    return f * (1 + K_EDGE * Math.exp(-Math.max(0, dEdge) / B0));
   }
 
-  function difficulty(pt, opp, v){
-    return evalAt(pt.x, pt.y, opp, v) * bodyEdgeFactor(pt.x, pt.y, opp);
-  }
+  const difficulty = (pt, opp, v) =>
+    evalAt(pt.x, pt.y, opp, v) * bodyEdgeFactor(pt.x, pt.y, opp);
 
-  // ================= 栅格搜索 =================
-  function computeGrid(o1, o2, v1, v2, step, m){
+  function computeGrid(o1, o2, v1, v2, step, mode) {
     const xMin = -HALF_W + SAFE_DELTA;
     const xMax =  HALF_W - SAFE_DELTA;
     const yMin =  OPP_SIDE_Y_MIN + SAFE_DELTA;
@@ -875,108 +641,99 @@
     let bestPt = null, bestJ = -Infinity;
     let minTime = Infinity, maxTime = -Infinity;
 
-    for (let i = 0; i <= nX; i++){
+    for (let i = 0; i <= nX; i++) {
       const x = xMin + (xMax - xMin) * i / nX;
-      for (let j = 0; j <= nY; j++){
+      for (let j = 0; j <= nY; j++) {
         const y = yMin + (yMax - yMin) * j / nY;
-
-        // 每个格点对每个对手只算一次 evalAt（双打 ≤2 次，单打 1 次）
         const base1 = evalAt(x, y, o1, v1);
 
-        let jv, t;
-        if (m === 'single'){
+        let jv, time;
+        if (mode === 'single') {
           const oppScore = base1 * bodyEdgeFactor(x, y, o1);
           const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
-          jv = oppScore - W_ME_SINGLE * Math.sqrt(dx*dx + dy*dy);
-          t = base1;
+          jv = oppScore - W_ME_SINGLE * Math.sqrt(dx * dx + dy * dy);
+          time = base1;
         } else {
           const base2 = evalAt(x, y, o2, v2);
           jv = Math.min(
             base1 * bodyEdgeFactor(x, y, o1),
             base2 * bodyEdgeFactor(x, y, o2)
           );
-          t = Math.min(base1, base2);
+          time = Math.min(base1, base2);
         }
 
-        heat.push({x, y, val: jv, time: t});
-        if (jv > bestJ){ bestJ = jv; bestPt = {x, y}; }
-        if (t < minTime) minTime = t;
-        if (t > maxTime) maxTime = t;
+        heat.push({ x, y, val: jv, time });
+        if (jv > bestJ) { bestJ = jv; bestPt = { x, y }; }
+        if (time < minTime) minTime = time;
+        if (time > maxTime) maxTime = time;
       }
     }
 
     const seeds = [
-      {x: -HALF_W + SAFE_DELTA, y: L - SAFE_DELTA},
-      {x:  HALF_W - SAFE_DELTA, y: L - SAFE_DELTA},
-      {x: -HALF_W + SAFE_DELTA, y: NET_Y + SAFE_DELTA},
-      {x:  HALF_W - SAFE_DELTA, y: NET_Y + SAFE_DELTA}
+      { x: -HALF_W + SAFE_DELTA, y: L - SAFE_DELTA },
+      { x:  HALF_W - SAFE_DELTA, y: L - SAFE_DELTA },
+      { x: -HALF_W + SAFE_DELTA, y: NET_Y + SAFE_DELTA },
+      { x:  HALF_W - SAFE_DELTA, y: NET_Y + SAFE_DELTA },
     ];
-
-    const raw = seeds.map(s => {
+    const raw = seeds.map((s) => {
       let bx = s.x, by = s.y, bj = -Infinity;
-      for (let k = 0; k < heat.length; k++){
-        const h = heat[k];
+      for (const h of heat) {
         if (Math.abs(h.x - s.x) <= CORNER_R + 1e-9 &&
-            Math.abs(h.y - s.y) <= CORNER_R + 1e-9){
-          if (h.val > bj){ bj = h.val; bx = h.x; by = h.y; }
-        }
+            Math.abs(h.y - s.y) <= CORNER_R + 1e-9 &&
+            h.val > bj) { bj = h.val; bx = h.x; by = h.y; }
       }
-      return {
-        x: bx, y: by, val: bj, rank: null,
-        distToSeed: Math.hypot(bx - s.x, by - s.y)
-      };
+      return { x: bx, y: by, val: bj, rank: null, distToSeed: Math.hypot(bx - s.x, by - s.y) };
     });
 
-    const visible = raw.filter(c => c.distToSeed <= CORNER_SHOW_R);
-    visible.sort((a, b) => b.val - a.val);
-
+    const visible = raw.filter((c) => c.distToSeed <= CORNER_SHOW_R).sort((a, b) => b.val - a.val);
     const ALREADY_BEST = 0.15;
     let cursor = 2;
-    for (const cb of visible){
-      const d = Math.hypot(cb.x - bestPt.x, cb.y - bestPt.y);
-      if (d < ALREADY_BEST){ cb.rank = null; }
-      else { cb.rank = cursor++; }
+    for (const cb of visible) {
+      cb.rank = Math.hypot(cb.x - bestPt.x, cb.y - bestPt.y) < ALREADY_BEST ? null : cursor++;
     }
 
     const span = (maxTime - minTime) || 1;
-    for (let i = 0; i < heat.length; i++){
-      heat[i].norm = (heat[i].time - minTime) / span;
-    }
-    return {best: {pt: bestPt, J: bestJ}, heat, step, cornerBests: visible};
+    for (const h of heat) h.norm = (h.time - minTime) / span;
+
+    return { best: { pt: bestPt, J: bestJ }, heat, step, corners: visible };
   }
 
-  // ================= 等难度线 =================
-  function equiLocus(o1, o2, v1, v2){
+  function equiLocus(o1, o2, v1, v2) {
     if (Math.hypot(o2.x - o1.x, o2.y - o1.y) < MIN_GAP_DIST) return [];
-    const F = (x, y) => difficulty({x, y}, o1, v1) - difficulty({x, y}, o2, v2);
+    const F = (x, y) => difficulty({ x, y }, o1, v1) - difficulty({ x, y }, o2, v2);
     const xMin = -HALF_W - 0.5, xMax = HALF_W + 0.5;
     const yMin = OPP_SIDE_Y_MIN - 0.5, yMax = OPP_SIDE_Y_MAX + 0.5;
     const step = 0.15;
-    const nx = Math.ceil((xMax - xMin)/step), ny = Math.ceil((yMax - yMin)/step);
-    const gx = (i) => xMin + i*step, gy = (j) => yMin + j*step;
+    const nx = Math.ceil((xMax - xMin) / step), ny = Math.ceil((yMax - yMin) / step);
+    const gx = (i) => xMin + i * step, gy = (j) => yMin + j * step;
+
     const Fg = [];
-    for (let j = 0; j <= ny; j++){
+    for (let j = 0; j <= ny; j++) {
       const row = new Array(nx + 1);
       for (let i = 0; i <= nx; i++) row[i] = F(gx(i), gy(j));
       Fg.push(row);
     }
+
     const lerp = (ax, ay, bx, by, fa, fb) => {
       const denom = fa - fb;
       if (Math.abs(denom) < 1e-9) return [ax, ay];
       const u = fa / denom;
-      return [ax + (bx - ax)*u, ay + (by - ay)*u];
+      return [ax + (bx - ax) * u, ay + (by - ay) * u];
     };
+
     const segs = [];
-    for (let j = 0; j < ny; j++){
-      for (let i = 0; i < nx; i++){
-        const tl = Fg[j][i], tr = Fg[j][i+1], br = Fg[j+1][i+1], bl = Fg[j+1][i];
-        const c = (tl>0?8:0)|(tr>0?4:0)|(br>0?2:0)|(bl>0?1:0);
+    for (let j = 0; j < ny; j++) {
+      for (let i = 0; i < nx; i++) {
+        const tl = Fg[j][i], tr = Fg[j][i + 1], br = Fg[j + 1][i + 1], bl = Fg[j + 1][i];
+        const c = (tl > 0 ? 8 : 0) | (tr > 0 ? 4 : 0) | (br > 0 ? 2 : 0) | (bl > 0 ? 1 : 0);
         if (c === 0 || c === 15) continue;
-        const xL = gx(i), xR = gx(i+1), yT = gy(j), yB = gy(j+1);
-        const top = () => lerp(xL,yT,xR,yT,tl,tr), right = () => lerp(xR,yT,xR,yB,tr,br);
-        const bot = () => lerp(xL,yB,xR,yB,bl,br), left = () => lerp(xL,yT,xL,yB,tl,bl);
+        const xL = gx(i), xR = gx(i + 1), yT = gy(j), yB = gy(j + 1);
+        const top = () => lerp(xL, yT, xR, yT, tl, tr);
+        const right = () => lerp(xR, yT, xR, yB, tr, br);
+        const bot = () => lerp(xL, yB, xR, yB, bl, br);
+        const left = () => lerp(xL, yT, xL, yB, tl, bl);
         let P = [];
-        switch(c){
+        switch (c) {
           case 1: case 14: P = [left(), bot()]; break;
           case 2: case 13: P = [bot(), right()]; break;
           case 3: case 12: P = [left(), right()]; break;
@@ -986,229 +743,157 @@
           case 5:  P = [top(), right(), bot(), left()]; break;
           case 10: P = [top(), left(), bot(), right()]; break;
         }
-        for (let k = 0; k + 1 < P.length; k += 2) segs.push([P[k], P[k+1]]);
+        for (let k = 0; k + 1 < P.length; k += 2) segs.push([P[k], P[k + 1]]);
       }
     }
     return segs;
   }
 
-  function computeGapPointsFromLocus(segs, o1, o2, v1, v2){
+  function computeGapPoints(segs, o1, o2, v1, v2) {
     if (!segs.length) return [null, null];
 
     const cands = [];
     const push = (x, y) => {
       if (Math.abs(x) > HALF_W - SAFE_DELTA) return;
       if (y < OPP_SIDE_Y_MIN + SAFE_DELTA || y > OPP_SIDE_Y_MAX - SAFE_DELTA) return;
-      const s = Math.min(
-        difficulty({x, y}, o1, v1),
-        difficulty({x, y}, o2, v2)
-      );
-      cands.push({x, y, s});
+      cands.push({ x, y, s: Math.min(difficulty({ x, y }, o1, v1), difficulty({ x, y }, o2, v2)) });
     };
-    for (const [a, b] of segs){
-      for (let k = 0; k <= 4; k++){
+    for (const [a, b] of segs) {
+      for (let k = 0; k <= 4; k++) {
         const u = k / 4;
-        push(a[0] + (b[0]-a[0])*u, a[1] + (b[1]-a[1])*u);
+        push(a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u);
       }
     }
     if (!cands.length) return [null, null];
 
-    const midX = (o1.x + o2.x) / 2;
-    const midY = (o1.y + o2.y) / 2;
+    const midX = (o1.x + o2.x) / 2, midY = (o1.y + o2.y) / 2;
     const dx = o2.x - o1.x, dy = o2.y - o1.y;
     const len = Math.hypot(dx, dy) || 1;
     const perpX = -dy / len, perpY = dx / len;
 
     let bestPos = null, bestNeg = null;
-    for (const c of cands){
+    for (const c of cands) {
       const s = (c.x - midX) * perpX + (c.y - midY) * perpY;
-      if (s >= 0){
-        if (!bestPos || c.s > bestPos.s) bestPos = c;
-      } else {
-        if (!bestNeg || c.s > bestNeg.s) bestNeg = c;
-      }
+      if (s >= 0) { if (!bestPos || c.s > bestPos.s) bestPos = c; }
+      else       { if (!bestNeg || c.s > bestNeg.s) bestNeg = c; }
     }
     return [
-      bestPos ? {x: bestPos.x, y: bestPos.y} : null,
-      bestNeg ? {x: bestNeg.x, y: bestNeg.y} : null
+      bestPos ? { x: bestPos.x, y: bestPos.y } : null,
+      bestNeg ? { x: bestNeg.x, y: bestNeg.y } : null,
     ];
   }
 
-  // ================= Worker =================
-  const workerCode = `
-    const L=${L}, W=${W}, HALF_W=${HALF_W}, NET_Y=${NET_Y};
-    const SAFE_DELTA=${SAFE_DELTA}, OPP_SIDE_Y_MIN=${OPP_SIDE_Y_MIN}, OPP_SIDE_Y_MAX=${OPP_SIDE_Y_MAX};
-    const W_X=${W_X}, W_BACK=${W_BACK}, W_FWD=${W_FWD}, K_REV=${K_REV}, K_ADV=${K_ADV}, B0=${B0}, K_EDGE=${K_EDGE}, BODY_R=${BODY_R}, K_BODY=${K_BODY};
-    const S0_DIST=${S0_DIST}, VMAG_BLEND=${VMAG_BLEND};
-    const SINGLE_RETURN=${JSON.stringify(SINGLE_RETURN)};
-    const W_ME_SINGLE=${W_ME_SINGLE};
-    const CORNER_R=${CORNER_R}, CORNER_SHOW_R=${CORNER_SHOW_R};
-    ${startFactor.toString()}
-    ${evalAt.toString()}
-    ${bodyEdgeFactor.toString()}
-    ${computeGrid.toString()}
-    self.onmessage = function(e){
-      const d = e.data;
-      self.postMessage(computeGrid(d.o1, d.o2, d.v1, d.v2, d.step, d.mode));
-    };
-  `;
-
-  let worker = null;
-  try {
-    const blob = new Blob([workerCode], {type: 'application/javascript'});
-    worker = new Worker(URL.createObjectURL(blob));
-    worker.onmessage = (e) => handleResult(e.data);
-    worker.onerror = (err) => {
-      console.warn('[Worker] 异常，改用主线程：', (err && err.message) || err);
-      if (worker){ worker.terminate(); worker = null; }
-      working = false;
-      pendingFine = true;
-    };
-  } catch (err) {
-    console.warn('[Worker] 无法创建，改用主线程：', err);
-    worker = null;
-  }
-
-  function handleResult(data){
-    working = false;
-    if (data && data.best)        cacheBest = data.best;
-    if (data && data.heat)        cacheHeat = data.heat;
-    if (data && data.step)        cacheStep = data.step;
-    if (data && data.cornerBests) cacheCorners = data.cornerBests;
-  }
-
-  function runCalc(payload){
-    if (worker){ worker.postMessage(payload); }
-    else {
-      setTimeout(() => {
-        handleResult(computeGrid(payload.o1, payload.o2, payload.v1, payload.v2, payload.step, payload.mode));
-      }, 0);
+  function recomputeLocus() {
+    if (state.mode === 'double') {
+      const v1 = getEffectiveVel('a');
+      const v2 = getEffectiveVel('b');
+      state.locus = equiLocus(state.players.a.pos, state.players.b.pos, v1, v2);
+      state.gaps = computeGapPoints(state.locus, state.players.a.pos, state.players.b.pos, v1, v2);
+    } else {
+      state.locus = [];
+      state.gaps = [null, null];
     }
+    dirty.locus = false;
   }
 
-  function submitCalc(){
-    if (working) return;
-    const now = performance.now();
-    if (dragActive && now - lastCalcTime < THROTTLE_MS) return;
-
-    const moved =
-      Math.hypot(opp1.x - lastSent.o1.x, opp1.y - lastSent.o1.y)
-    + (mode === 'double' ? Math.hypot(opp2.x - lastSent.o2.x, opp2.y - lastSent.o2.y) : 0)
-    + Math.hypot(opp1_v.x - lastSent.v1.x, opp1_v.y - lastSent.v1.y) * 0.1
-    + (mode === 'double' ? Math.hypot(opp2_v.x - lastSent.v2.x, opp2_v.y - lastSent.v2.y) * 0.1 : 0);
-
-    if (moved < MOVE_THRESHOLD && !pendingFine) return;
-
-    const step = (dragActive && !pendingFine) ? GRID_STEP_FAST : GRID_STEP_FINE;
-    lastSent = {o1: {...opp1}, o2: {...opp2}, v1: {...opp1_v}, v2: {...opp2_v}};
-    pendingFine = false;
-    lastCalcTime = now;
-    working = true;
-
-    const eV1 = opp1_velVisible ? opp1_v : ZERO_V;
-    const eV2 = (mode === 'double' && opp2_velVisible) ? opp2_v : ZERO_V;
-
-    runCalc({
-      o1: {...opp1}, o2: {...opp2},
-      v1: eV1, v2: eV2,
-      step, mode
-    });
-  }
-
-  // ================= 色阶 =================
-  function rampColor(t){
-    if (t < 0) t = 0; else if (t > 1) t = 1;
+  /* =========================================================
+   * 6. 色阶 / 热力图离屏缓存
+   * ========================================================= */
+  function rampColor(tv) {
+    if (tv < 0) tv = 0; else if (tv > 1) tv = 1;
     const stops = [
       [0.00,  69, 117, 180],
       [0.25, 145, 191, 219],
       [0.50, 255, 255, 191],
       [0.75, 252, 141,  89],
-      [1.00, 215,  48,  39]
+      [1.00, 215,  48,  39],
     ];
     let a = stops[0], b = stops[stops.length - 1];
-    for (let i = 0; i < stops.length - 1; i++){
-      if (t >= stops[i][0] && t <= stops[i+1][0]){
-        a = stops[i]; b = stops[i+1]; break;
-      }
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (tv >= stops[i][0] && tv <= stops[i + 1][0]) { a = stops[i]; b = stops[i + 1]; break; }
     }
     const span = b[0] - a[0];
-    const f = span > 0 ? (t - a[0]) / span : 0;
+    const f = span > 0 ? (tv - a[0]) / span : 0;
     return [
       Math.round(a[1] + (b[1] - a[1]) * f),
       Math.round(a[2] + (b[2] - a[2]) * f),
-      Math.round(a[3] + (b[3] - a[3]) * f)
+      Math.round(a[3] + (b[3] - a[3]) * f),
     ];
   }
 
-  let heatCanvas = null, heatCtx = null;
-
-  function drawHeat(heat, step){
-    if (!heat.length) return;
+  function buildHeatCanvas() {
+    if (!state.heat.length) { state.heatCanvas = null; state.heatMeta = null; return; }
+    const step = state.heatStep;
     const xMin = -HALF_W + SAFE_DELTA;
     const xMax =  HALF_W - SAFE_DELTA;
-    const yMin = OPP_SIDE_Y_MIN + SAFE_DELTA;
-    const yMax = OPP_SIDE_Y_MAX - SAFE_DELTA;
-
+    const yMin =  OPP_SIDE_Y_MIN + SAFE_DELTA;
+    const yMax =  OPP_SIDE_Y_MAX - SAFE_DELTA;
     const cols = Math.round((xMax - xMin) / step) + 1;
     const rows = Math.round((yMax - yMin) / step) + 1;
 
-    if (!heatCanvas){
+    if (!heatCanvas) {
       heatCanvas = document.createElement('canvas');
       heatCtx = heatCanvas.getContext('2d');
     }
-    if (heatCanvas.width !== cols || heatCanvas.height !== rows){
-      heatCanvas.width = cols;
-      heatCanvas.height = rows;
-    }
+    heatCanvas.width = cols;
+    heatCanvas.height = rows;
 
     const img = heatCtx.createImageData(cols, rows);
     const data = img.data;
-
-    for (let i = 0; i < heat.length; i++){
-      const h = heat[i];
+    for (const h of state.heat) {
       const ix = Math.round((h.x - xMin) / (xMax - xMin) * (cols - 1));
       const iy = Math.round((h.y - yMin) / (yMax - yMin) * (rows - 1));
       if (ix < 0 || ix >= cols || iy < 0 || iy >= rows) continue;
       const [r, g, b] = rampColor(h.norm);
-      const row = rows - 1 - iy;
-      const idx = (row * cols + ix) * 4;
-      data[idx]     = r;
-      data[idx + 1] = g;
-      data[idx + 2] = b;
-      data[idx + 3] = 255;
+      const idx = ((rows - 1 - iy) * cols + ix) * 4;
+      data[idx] = r; data[idx + 1] = g; data[idx + 2] = b; data[idx + 3] = 255;
     }
     heatCtx.putImageData(img, 0, 0);
 
-    const xMinCell = xMin - step / 2;
-    const xMaxCell = xMin + (cols - 1) * step + step / 2;
-    const yMinCell = yMin - step / 2;
-    const yMaxCell = yMin + (rows - 1) * step + step / 2;
+    state.heatCanvas = heatCanvas;
+    state.heatMeta = { xMin, xMax, yMin, yMax, step };
+  }
 
-    const tl = w2c({x: xMinCell, y: yMaxCell});
-    const br = w2c({x: xMaxCell, y: yMinCell});
+  /* =========================================================
+   * 7. 计算调度
+   * ========================================================= */
+  function computeGridNow() {
+    const step = pointer.dragActive ? GRID_STEP_FAST : GRID_STEP_FINE;
+    const v1 = getEffectiveVel('a');
+    const v2 = getEffectiveVel('b');
+    const result = computeGrid(state.players.a.pos, state.players.b.pos, v1, v2, step, state.mode);
+    state.best = result.best;
+    state.heat = result.heat;
+    state.heatStep = result.step;
+    state.corners = result.corners;
+    buildHeatCanvas();
+  }
 
+  /* =========================================================
+   * 8. 渲染
+   * ========================================================= */
+  function getHandlePos(pt, vel) {
+    const mag = Math.hypot(vel.x, vel.y);
+    if (mag < 0.01) return { x: pt.x, y: pt.y + V_DEADZONE };
+    const norm = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
+    const dist = V_DEADZONE + norm * V_MAX * V_SCALE;
+    return { x: pt.x + vel.x / mag * dist, y: pt.y + vel.y / mag * dist };
+  }
+
+  function drawHeat() {
+    const m = state.heatMeta;
+    if (!m || !state.heatCanvas) return;
+    const tl = w2c({ x: m.xMin - m.step / 2, y: m.yMax + m.step / 2 });
+    const br = w2c({ x: m.xMax + m.step / 2, y: m.yMin - m.step / 2 });
     ctx.save();
     ctx.globalAlpha = 0.55;
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(heatCanvas, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+    ctx.drawImage(state.heatCanvas, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
     ctx.restore();
   }
 
-  // ================= 速度手柄 =================
-  function getHandlePos(pt, vel){
-    const mag = Math.hypot(vel.x, vel.y);
-    if (mag < 0.01){
-      return {x: pt.x, y: pt.y + V_DEADZONE};
-    }
-    const norm = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
-    const extra = norm * V_MAX * V_SCALE;
-    const dist = V_DEADZONE + extra;
-    const ux = vel.x / mag, uy = vel.y / mag;
-    return {x: pt.x + ux * dist, y: pt.y + uy * dist};
-  }
-
-  function drawDeadzone(pt){
+  function drawDeadzone(pt) {
     const p = w2c(pt);
     const r = V_DEADZONE * SCALE;
     ctx.save();
@@ -1224,15 +909,14 @@
     ctx.restore();
   }
 
-  function drawVelocityHandle(pt, vel, handlePos, isActive){
+  function drawVelocityHandle(pt, vel, handlePos, isActive) {
     const mag = Math.hypot(vel.x, vel.y);
     const p = w2c(pt);
     const h = w2c(handlePos);
-
     ctx.save();
 
-    if (mag < 0.01){
-      if (isActive){
+    if (mag < 0.01) {
+      if (isActive) {
         ctx.beginPath();
         ctx.fillStyle = COLOR_VEL_GLOW;
         ctx.arc(h.x, h.y, V_HANDLE_DOT + 8, 0, Math.PI * 2);
@@ -1260,7 +944,6 @@
       ctx.textBaseline = 'top';
       ctx.fillStyle = COLOR_VEL_TXT;
       ctx.fillText(t('speed'), h.x, h.y + V_HANDLE_DOT + 4);
-
       ctx.restore();
       return;
     }
@@ -1290,7 +973,7 @@
     ctx.closePath();
     ctx.fill();
 
-    if (isActive){
+    if (isActive) {
       ctx.beginPath();
       ctx.fillStyle = COLOR_VEL_GLOW;
       ctx.arc(h.x, h.y, V_HANDLE_TIP + 9, 0, Math.PI * 2);
@@ -1305,7 +988,7 @@
     ctx.lineWidth = isTouch ? 2.4 : 2;
     ctx.stroke();
 
-    if (mag >= 0.1){
+    if (mag >= 0.1) {
       ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
@@ -1316,22 +999,20 @@
       ctx.strokeText(txt, h.x, h.y + V_HANDLE_TIP + 5);
       ctx.fillText(txt, h.x, h.y + V_HANDLE_TIP + 5);
     }
-
     ctx.restore();
   }
 
-  // ================= 点 / 线 / 标签 =================
-  function drawDot(pt, color, label, radius, labelDy, isShrunk){
+  function drawDot(pt, color, label, radius, labelDy, shrunk) {
     const p = w2c(pt);
-    const r = (radius || 10) * (isShrunk ? 0.8 : 1);
+    const r = (radius || 10) * (shrunk ? 0.8 : 1);
     ctx.beginPath();
     ctx.fillStyle = color;
-    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.stroke();
-    if (label){
+    if (label) {
       ctx.save();
       ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
       ctx.fillStyle = color;
@@ -1343,27 +1024,30 @@
     }
   }
 
-  function drawEquiLocusFromSegs(segs){
+  function drawEquiLocus(segs) {
     if (!segs.length) return;
     ctx.save();
     ctx.strokeStyle = 'rgba(120,120,120,0.5)';
     ctx.lineWidth = 1.4;
     ctx.setLineDash([6, 6]);
-    for (const [a, b] of segs){
-      const ca = w2c({x: a[0], y: a[1]}), cb = w2c({x: b[0], y: b[1]});
-      ctx.beginPath(); ctx.moveTo(ca.x, ca.y); ctx.lineTo(cb.x, cb.y); ctx.stroke();
+    for (const [a, b] of segs) {
+      const ca = w2c({ x: a[0], y: a[1] }), cb = w2c({ x: b[0], y: b[1] });
+      ctx.beginPath();
+      ctx.moveTo(ca.x, ca.y);
+      ctx.lineTo(cb.x, cb.y);
+      ctx.stroke();
     }
     ctx.restore();
   }
 
-  function drawGapRing(pt){
+  function drawGapRing(pt) {
     const p = w2c(pt);
     ctx.save();
     ctx.beginPath();
     ctx.strokeStyle = COLOR_GAP;
     ctx.lineWidth = 2.4;
     ctx.setLineDash([4, 4]);
-    ctx.arc(p.x, p.y, 9, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -1379,26 +1063,26 @@
     ctx.restore();
   }
 
-  function drawBestHalo(pt){
+  function drawBestHalo(pt) {
     const p = w2c(pt);
     ctx.beginPath();
     ctx.fillStyle = 'rgba(211,47,47,0.16)';
-    ctx.arc(p.x, p.y, 16, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  function drawBestPoint(pt, J){
+  function drawBestPoint(pt, J) {
     const p = w2c(pt);
     ctx.beginPath();
     ctx.fillStyle = COLOR_BEST;
-    ctx.arc(p.x, p.y, 6.5, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1.8;
     ctx.stroke();
 
     const labelY = p.y - 10;
-    const hasJ = (typeof J === 'number' && isFinite(J));
+    const hasJ = typeof J === 'number' && isFinite(J);
 
     ctx.save();
     ctx.textBaseline = 'bottom';
@@ -1411,7 +1095,7 @@
     ctx.strokeText(t('best'), p.x - 2, labelY);
     ctx.fillText(t('best'), p.x - 2, labelY);
 
-    if (hasJ){
+    if (hasJ) {
       ctx.font = `bold ${isTouch ? 13 : 12}px system-ui`;
       ctx.textAlign = 'left';
       ctx.lineWidth = 3;
@@ -1423,14 +1107,13 @@
     ctx.restore();
   }
 
-  function drawCornerRanks(list){
+  function drawCornerRanks(list) {
     ctx.save();
     ctx.textBaseline = 'middle';
-
-    for (const cb of list){
+    for (const cb of list) {
       if (cb.rank == null) continue;
       const p = w2c(cb);
-      const hasV = (typeof cb.val === 'number' && isFinite(cb.val));
+      const hasV = typeof cb.val === 'number' && isFinite(cb.val);
       const text = String(cb.rank);
 
       ctx.font = 'bold 22px system-ui';
@@ -1438,7 +1121,7 @@
       ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = COLOR_RANK;
 
-      if (!hasV){
+      if (!hasV) {
         ctx.textAlign = 'center';
         ctx.strokeText(text, p.x, p.y);
         ctx.fillText(text, p.x, p.y);
@@ -1459,38 +1142,36 @@
     ctx.restore();
   }
 
-  // ================= 主绘制 =================
-  function draw(gaps, locusSegs){
+  function render() {
     ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-    const tl = w2c({x: -HALF_W, y: L});
-    const br = w2c({x:  HALF_W, y: VIEW_Y_MIN});
-    const cw = br.x - tl.x;
-    const ch = br.y - tl.y;
+    const tl = w2c({ x: -HALF_W, y: L });
+    const br = w2c({ x:  HALF_W, y: VIEW_Y_MIN });
 
+    // 地面
     ctx.fillStyle = C_GROUND;
-    ctx.fillRect(tl.x, tl.y, cw, ch);
+    ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
 
-    if (showHeat && cacheHeat.length) drawHeat(cacheHeat, cacheStep);
+    // 热力图
+    if (state.showHeat && state.heatCanvas) drawHeat();
 
+    // 场内线
     ctx.strokeStyle = C_LINE;
     ctx.lineWidth = 1.8;
     ctx.setLineDash([]);
-
-    // 单打边线 + 中线 + 发球线
-    for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]){
-      const a = w2c({x: sx, y: VIEW_Y_MIN});
-      const b = w2c({x: sx, y: L});
+    for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]) {
+      const a = w2c({ x: sx, y: VIEW_Y_MIN });
+      const b = w2c({ x: sx, y: L });
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
-    for (const yy of [NET_Y + 1.98, L - 0.76]){
-      const a = w2c({x: -HALF_W, y: yy});
-      const b = w2c({x:  HALF_W, y: yy});
+    for (const yy of [NET_Y + 1.98, L - 0.76]) {
+      const a = w2c({ x: -HALF_W, y: yy });
+      const b = w2c({ x:  HALF_W, y: yy });
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
     {
-      const a = w2c({x: 0, y: VIEW_Y_MIN});
-      const b = w2c({x: 0, y: L});
+      const a = w2c({ x: 0, y: VIEW_Y_MIN });
+      const b = w2c({ x: 0, y: L });
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
 
@@ -1505,8 +1186,8 @@
     ctx.stroke();
 
     // 球网
-    const n1 = w2c({x: -HALF_W, y: NET_Y});
-    const n2 = w2c({x:  HALF_W, y: NET_Y});
+    const n1 = w2c({ x: -HALF_W, y: NET_Y });
+    const n2 = w2c({ x:  HALF_W, y: NET_Y });
     ctx.beginPath();
     ctx.strokeStyle = C_NET;
     ctx.lineWidth = 7;
@@ -1524,205 +1205,351 @@
     ctx.fillText(t('net'), n1.x + 8, n1.y + 9);
     ctx.restore();
 
-    if (mode === 'double' && (gaps[0] || gaps[1])) drawEquiLocusFromSegs(locusSegs);
+    // 等难度线
+    if (state.mode === 'double' && (state.gaps[0] || state.gaps[1])) drawEquiLocus(state.locus);
 
-    if (cacheBest.pt) drawBestHalo(cacheBest.pt);
-    if (mode === 'double'){
-      if (gaps[0]) drawGapRing(gaps[0]);
-      if (gaps[1]) drawGapRing(gaps[1]);
+    // 最优 / 结合部 / 角点
+    if (state.best.pt) drawBestHalo(state.best.pt);
+    if (state.mode === 'double') {
+      if (state.gaps[0]) drawGapRing(state.gaps[0]);
+      if (state.gaps[1]) drawGapRing(state.gaps[1]);
     }
-    if (cacheBest.pt) drawBestPoint(cacheBest.pt, cacheBest.J);
+    if (state.best.pt) drawBestPoint(state.best.pt, state.best.J);
 
-    const isA3 = (dragTarget === 3 || hoverTarget === 3);
-    const isA4 = (dragTarget === 4 || hoverTarget === 4);
+    // 速度手柄
+    const aHot = isHot(TARGET.A_POS) || isHot(TARGET.A_VEL);
+    const bHot = isHot(TARGET.B_POS) || isHot(TARGET.B_VEL);
+    const { a, b } = state.players;
 
-    if (opp1_velVisible){
-      drawDeadzone(opp1);
-      const h1 = (dragTarget === 3 && dragHandlePos) ? dragHandlePos : getHandlePos(opp1, opp1_v);
-      drawVelocityHandle(opp1, opp1_v, h1, isA3);
+    if (a.velVisible) {
+      drawDeadzone(a.pos);
+      const h = pointer.dragTarget === TARGET.A_VEL && pointer.dragHandlePos
+        ? pointer.dragHandlePos
+        : getHandlePos(a.pos, a.vel);
+      drawVelocityHandle(a.pos, a.vel, h, isHot(TARGET.A_VEL));
+    }
+    if (state.mode === 'double' && b.velVisible) {
+      drawDeadzone(b.pos);
+      const h = pointer.dragTarget === TARGET.B_VEL && pointer.dragHandlePos
+        ? pointer.dragHandlePos
+        : getHandlePos(b.pos, b.vel);
+      drawVelocityHandle(b.pos, b.vel, h, isHot(TARGET.B_VEL));
     }
 
-    if (mode === 'double' && opp2_velVisible){
-      drawDeadzone(opp2);
-      const h2 = (dragTarget === 4 && dragHandlePos) ? dragHandlePos : getHandlePos(opp2, opp2_v);
-      drawVelocityHandle(opp2, opp2_v, h2, isA4);
-    }
-
-    if (mode === 'single'){
-      drawDot(opp1, COLOR_PLAYER, t('opponent'), 10, -16, isA3);
+    // 球员点
+    if (state.mode === 'single') {
+      drawDot(a.pos, COLOR_PLAYER, t('opponent'), 10, -16, aHot);
     } else {
-      drawDot(opp1, COLOR_PLAYER, 'A', 10, -16, isA3);
-      drawDot(opp2, COLOR_PLAYER, 'B', 10, -16, isA4);
+      drawDot(a.pos, COLOR_PLAYER, 'A', 10, -16, aHot);
+      drawDot(b.pos, COLOR_PLAYER, 'B', 10, -16, bHot);
     }
 
-    if (cacheCorners.length) drawCornerRanks(cacheCorners);
+    // 四角次优
+    if (state.corners.length) drawCornerRanks(state.corners);
   }
 
-  // ================= 主循环 =================
-  function loop(){
-    const eV1 = opp1_velVisible ? opp1_v : ZERO_V;
-    const eV2 = (mode === 'double' && opp2_velVisible) ? opp2_v : ZERO_V;
+  /* =========================================================
+   * 9. 主循环
+   * ========================================================= */
+  function frame() {
+    if (dirty.locus) recomputeLocus();
 
-    let gaps = [null, null];
-    let locusSegs = [];
-    if (mode === 'double'){
-      locusSegs = equiLocus(opp1, opp2, eV1, eV2);
-      gaps = computeGapPointsFromLocus(locusSegs, opp1, opp2, eV1, eV2);
-    }
-
-    draw(gaps, locusSegs);
-    submitCalc();
-    requestAnimationFrame(loop);
-  }
-
-  // ================= 交互 =================
-  function getWorldPos(e){
-    const p = getClientXY(e);
-    return clientToWorld(p.x, p.y);
-  }
-
-  function hitTest(w){
-    if (opp1_velVisible){
-      const h1 = getHandlePos(opp1, opp1_v);
-      if (Math.hypot(w.x - h1.x, w.y - h1.y) < V_HANDLE_HIT) return 3;
-    }
-    if (mode === 'double' && opp2_velVisible){
-      const h2 = getHandlePos(opp2, opp2_v);
-      if (Math.hypot(w.x - h2.x, w.y - h2.y) < V_HANDLE_HIT) return 4;
-    }
-    if (Math.hypot(w.x - opp1.x, w.y - opp1.y) < DRAG_R) return 1;
-    if (mode === 'double' && Math.hypot(w.x - opp2.x, w.y - opp2.y) < DRAG_R) return 2;
-    return null;
-  }
-
-  function startDrag(e){
-    const w = getWorldPos(e);
-    const t = hitTest(w);
-    if (!t) return;
-    dragTarget = t;
-    dragActive = false;
-    dragStartPos = getClientXY(e);
-    canvas.style.cursor = 'grabbing';
-
-    // 命中球员点 → 启动长按计时器
-    if (t === 1 || t === 2){
-      clearLongPress();
-      longPressTimer = setTimeout(() => {
-        if (dragTarget === 1){
-          opp1_velVisible = !opp1_velVisible;
-          if (!opp1_velVisible){ opp1_v.x = 0; opp1_v.y = 0; }
-        } else if (dragTarget === 2){
-          opp2_velVisible = !opp2_velVisible;
-          if (!opp2_velVisible){ opp2_v.x = 0; opp2_v.y = 0; }
-        }
-        forceRecalc();
-        updateSubtitle();
-        updateLegend();
-
-        // 取消拖动状态
-        dragTarget = null;
-        dragActive = false;
-        dragStartPos = null;
-        lastTouchTap = {t: 0, x: 0, y: 0};
-      }, LONG_PRESS_MS);
-    }
-
-    e.preventDefault();
-  }
-
-  function moveDrag(e){
-    const w = getWorldPos(e);
-    if (!dragTarget){
-      const t = hitTest(w);
-      hoverTarget = t;
-      canvas.style.cursor = t ? 'grab' : 'default';
-      return;
-    }
-
-    // 未超过拖动阈值 → 不改坐标
-    if (!dragActive && dragStartPos){
-      const p = getClientXY(e);
-      if (Math.hypot(p.x - dragStartPos.x, p.y - dragStartPos.y) < DRAG_START_THRESHOLD) return;
-      dragActive = true;
-      clearLongPress();
-    }
-
-    if (dragTarget === 1 || dragTarget === 2){
-      const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
-      const ny = clamp(w.y, NET_Y + 0.1, L - 0.1);
-      const target = dragTarget === 1 ? opp1 : opp2;
-      target.x = nx;
-      target.y = ny;
-    } else {
-      const pt = dragTarget === 3 ? opp1 : opp2;
-      const vel = dragTarget === 3 ? opp1_v : opp2_v;
-
-      const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
-      const ny = clamp(w.y, VIEW_Y_MIN, L - 0.1);
-      dragHandlePos = {x: nx, y: ny};
-
-      const dx = nx - pt.x, dy = ny - pt.y;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist < V_DEADZONE){
-        vel.x = 0; vel.y = 0;
-      } else {
-        const extra = dist - V_DEADZONE;
-        const maxExtra = V_MAX * V_SCALE;
-        const norm = Math.min(extra / maxExtra, 1);
-        const speed = V_MAX * Math.pow(norm, V_GAMMA);
-        vel.x = dx / dist * speed;
-        vel.y = dy / dist * speed;
+    if (dirty.grid) {
+      const now = performance.now();
+      const throttle = pointer.dragActive ? THROTTLE_MS : 0;
+      if (now - lastGridCompute >= throttle) {
+        computeGridNow();
+        dirty.grid = false;
+        lastGridCompute = now;
       }
     }
 
-    if (e.cancelable) e.preventDefault();
+    render();
+    requestAnimationFrame(frame);
   }
 
-  function endDrag(){
-    clearLongPress();
-    if (dragTarget === null) return;
-    dragTarget = null;
-    dragHandlePos = null;
-    dragActive = false;
-    dragStartPos = null;
-    pendingFine = true;
-    canvas.style.cursor = 'default';
+  /* =========================================================
+   * 10. 画布自适应
+   * ========================================================= */
+  function setupCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const wrap = canvas.parentElement;
+    const cs = getComputedStyle(wrap);
+    const padL = parseFloat(cs.paddingLeft) || 0;
+    const padR = parseFloat(cs.paddingRight) || 0;
+    const availW = wrap.clientWidth - padL - padR;
+
+    let cssW = Math.min(availW, LOGICAL_W);
+    let cssH = cssW * LOGICAL_H / LOGICAL_W;
+    const maxH = Math.min(window.innerHeight * 0.72, 640);
+    if (cssH > maxH) {
+      cssH = maxH;
+      cssW = cssH * LOGICAL_W / LOGICAL_H;
+    }
+    cssW = Math.max(180, cssW);
+
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    const s = canvas.width / LOGICAL_W;
+    ctx.setTransform(s, 0, 0, s, 0, 0);
   }
 
-  canvas.addEventListener('mousedown', startDrag);
-  canvas.addEventListener('mousemove', moveDrag);
-  canvas.addEventListener('mouseup', endDrag);
-  canvas.addEventListener('mouseleave', endDrag);
+  window.addEventListener('resize', setupCanvas);
+  window.addEventListener('orientationchange', () => setTimeout(setupCanvas, 250));
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => setupCanvas()).observe(canvas.parentElement);
+  }
 
-  // 触摸：在 touchstart 里做双击检测
-  canvas.addEventListener('touchstart', (e) => {
-    const p = getClientXY(e);
-    const now = Date.now();
-    const dt = now - lastTouchTap.t;
-    const distPx = Math.hypot(p.x - lastTouchTap.x, p.y - lastTouchTap.y);
+  /* =========================================================
+   * 11. 交互（Pointer Events 统一鼠标/触摸）
+   * ========================================================= */
+  function hitTest(w) {
+    const { a, b } = state.players;
+    if (a.velVisible) {
+      const h = getHandlePos(a.pos, a.vel);
+      if (Math.hypot(w.x - h.x, w.y - h.y) < V_HANDLE_HIT) return TARGET.A_VEL;
+    }
+    if (state.mode === 'double' && b.velVisible) {
+      const h = getHandlePos(b.pos, b.vel);
+      if (Math.hypot(w.x - h.x, w.y - h.y) < V_HANDLE_HIT) return TARGET.B_VEL;
+    }
+    if (Math.hypot(w.x - a.pos.x, w.y - a.pos.y) < DRAG_R) return TARGET.A_POS;
+    if (state.mode === 'double' && Math.hypot(w.x - b.pos.x, w.y - b.pos.y) < DRAG_R) return TARGET.B_POS;
+    return null;
+  }
 
-    if (lastTouchTap.t > 0 && dt < DBLCLICK_MS && distPx < DBLCLICK_DIST){
-      lastTouchTap = {t: 0, x: 0, y: 0};
-      handleDoubleTap(p.x, p.y);
-      e.preventDefault();
-      return;
+  function clearLongPress() {
+    if (pointer.longPressTimer) {
+      clearTimeout(pointer.longPressTimer);
+      pointer.longPressTimer = null;
+    }
+  }
+
+  function toggleVelocity(target) {
+    const key = target === TARGET.A_POS ? 'a' : 'b';
+    const p = state.players[key];
+    p.velVisible = !p.velVisible;
+    if (!p.velVisible) { p.vel.x = 0; p.vel.y = 0; }
+    markDirty();
+    updateSubtitle();
+    updateLegend();
+  }
+
+  function movePlayer(target, w) {
+    const key = target === TARGET.A_POS ? 'a' : 'b';
+    const p = state.players[key];
+    p.pos.x = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
+    p.pos.y = clamp(w.y, NET_Y + 0.1, L - 0.1);
+    markDirty();
+  }
+
+  function moveHandle(target, w) {
+    const key = target === TARGET.A_VEL ? 'a' : 'b';
+    const p = state.players[key];
+    const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
+    const ny = clamp(w.y, VIEW_Y_MIN, L - 0.1);
+    pointer.dragHandlePos = { x: nx, y: ny };
+
+    const dx = nx - p.pos.x, dy = ny - p.pos.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < V_DEADZONE) {
+      p.vel.x = 0; p.vel.y = 0;
+    } else {
+      const norm = Math.min((dist - V_DEADZONE) / (V_MAX * V_SCALE), 1);
+      const speed = V_MAX * Math.pow(norm, V_GAMMA);
+      p.vel.x = dx / dist * speed;
+      p.vel.y = dy / dist * speed;
+    }
+    markDirty();
+  }
+
+  function handleTap(clientX, clientY) {
+    const now = performance.now();
+    const dx = clientX - lastTap.x, dy = clientY - lastTap.y;
+    if (now - lastTap.time < DBLCLICK_MS && Math.hypot(dx, dy) < DBLCLICK_DIST) {
+      lastTap.time = 0;
+      const w = clientToWorld(clientX, clientY);
+      if (hitTest(w) !== null) return;
+      state.showHeat = !state.showHeat;
+      updateLegend();
+    } else {
+      lastTap = { time: now, x: clientX, y: clientY };
+    }
+  }
+
+  function onPointerDown(e) {
+    if (pointer.id !== null) return;
+    e.preventDefault();
+
+    const w = clientToWorld(e.clientX, e.clientY);
+    const target = hitTest(w);
+
+    pointer.id = e.pointerId;
+    pointer.startClient = { x: e.clientX, y: e.clientY };
+    pointer.dragTarget = target;
+    pointer.dragActive = false;
+    pointer.dragHandlePos = null;
+    pointer.longPressFired = false;
+
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+
+    if (target === TARGET.A_POS || target === TARGET.B_POS) {
+      pointer.longPressTimer = setTimeout(() => {
+        pointer.longPressTimer = null;
+        pointer.longPressFired = true;
+        toggleVelocity(target);
+        pointer.dragTarget = null;
+      }, LONG_PRESS_MS);
     }
 
-    lastTouchTap = {t: now, x: p.x, y: p.y};
-    startDrag(e);
-  }, {passive:false});
+    canvas.style.cursor = target ? 'grabbing' : 'default';
+  }
 
-  canvas.addEventListener('touchmove', moveDrag, {passive:false});
-  canvas.addEventListener('touchend', endDrag);
-  canvas.addEventListener('touchcancel', (e) => {
-    endDrag();
-    lastTouchTap = {t: 0, x: 0, y: 0};
+  function onPointerMove(e) {
+    if (pointer.id === null) {
+      const w = clientToWorld(e.clientX, e.clientY);
+      state.hover = hitTest(w);
+      canvas.style.cursor = state.hover ? 'grab' : 'default';
+      return;
+    }
+    if (e.pointerId !== pointer.id) return;
+
+    if (!pointer.dragActive) {
+      const dx = e.clientX - pointer.startClient.x;
+      const dy = e.clientY - pointer.startClient.y;
+      if (Math.hypot(dx, dy) < DRAG_START_THRESHOLD) return;
+      pointer.dragActive = true;
+      clearLongPress();
+    }
+
+    if (!pointer.dragTarget) return;
+
+    const w = clientToWorld(e.clientX, e.clientY);
+    if (pointer.dragTarget === TARGET.A_POS || pointer.dragTarget === TARGET.B_POS) {
+      movePlayer(pointer.dragTarget, w);
+    } else {
+      moveHandle(pointer.dragTarget, w);
+    }
+    e.preventDefault();
+  }
+
+  function onPointerUp(e) {
+    if (e.pointerId !== pointer.id) return;
+    clearLongPress();
+
+    const wasActive = pointer.dragActive;
+    const longPressFired = pointer.longPressFired;
+
+    if (!wasActive && !longPressFired) handleTap(e.clientX, e.clientY);
+    if (wasActive) markDirty();
+
+    pointer.id = null;
+    pointer.dragTarget = null;
+    pointer.dragActive = false;
+    pointer.dragHandlePos = null;
+    pointer.startClient = null;
+    pointer.longPressFired = false;
+
+    if (e.pointerType === 'mouse') {
+      state.hover = hitTest(clientToWorld(e.clientX, e.clientY));
+      canvas.style.cursor = state.hover ? 'grab' : 'default';
+    } else {
+      state.hover = null;
+      canvas.style.cursor = 'default';
+    }
+  }
+
+  canvas.addEventListener('pointerdown', onPointerDown);
+  canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerup', onPointerUp);
+  canvas.addEventListener('pointercancel', onPointerUp);
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  window.addEventListener('blur', () => {
+    clearLongPress();
+    pointer.id = null;
+    pointer.dragTarget = null;
+    pointer.dragActive = false;
+    pointer.dragHandlePos = null;
+    pointer.startClient = null;
+    pointer.longPressFired = false;
   });
-  window.addEventListener('blur', endDrag);
 
+  /* =========================================================
+   * 12. 界面文案 / 语言 / 折叠 / 模式
+   * ========================================================= */
+  function updateSubtitle() {
+    const single = state.mode === 'single';
+    const hint = isAnyVelocityVisible() ? t('subVelActive') : t('subHint');
+    pageSub.textContent = (single ? t('subSingle') : t('subDouble')) + hint;
+  }
+
+  function updateLegend() {
+    const single = state.mode === 'single';
+    let html = '';
+    html += single
+      ? `<span><i class="dot" style="background:#111"></i>${t('opponent')}</span>`
+      : `<span><i class="dot" style="background:#111"></i>${t('player')}</span>`;
+    if (isAnyVelocityVisible()) html += `<span><i class="arrow-legend"></i>${t('initialVel')}</span>`;
+    html += `<span><i class="dot" style="background:#d32f2f"></i>${t('best')}</span>`;
+    if (!single) html += `<span><i class="ring"></i>${t('gap')}</span>`;
+    html += `<span><i class="num">2</i>${t('corner')}</span>`;
+    if (state.showHeat) html += `<span><i class="heat-legend"></i>${t('arrival')}</span>`;
+    legendBar.innerHTML = html;
+  }
+
+  function updateUIForMode() {
+    modeToggleEl.textContent = state.mode === 'single' ? t('singles') : t('doubles');
+    modeToggleEl.dataset.mode = state.mode;
+    updateSubtitle();
+    updateLegend();
+  }
+
+  function applyLanguage() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = t('title');
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.dataset.i18n);
+    });
+    langBtnEl.textContent = t('langBtn');
+    updateUIForMode();
+
+    const pBody = document.getElementById('principleBody');
+    if (pBody) pBody.innerHTML = t('principleHTML');
+
+    const collapsed = appEl.classList.contains('collapsed');
+    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+  }
+  window.__applyLang = applyLanguage;
+
+  langBtnEl.addEventListener('click', () => {
+    lang = lang === 'zh' ? 'en' : 'zh';
+    applyLanguage();
+  });
+
+  collapseBtn.addEventListener('click', () => {
+    const collapsed = appEl.classList.toggle('collapsed');
+    collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+    requestAnimationFrame(setupCanvas);
+  });
+
+  modeToggleEl.addEventListener('click', () => {
+    state.mode = state.mode === 'double' ? 'single' : 'double';
+    if (state.mode === 'single') {
+      pointer.dragTarget = null;
+      pointer.dragActive = false;
+    }
+    updateUIForMode();
+    markDirty();
+  });
+
+  /* =========================================================
+   * 13. 启动
+   * ========================================================= */
+  setupCanvas();
   applyLanguage();
-  loop();
+  requestAnimationFrame(frame);
 })();
 </script>
 
@@ -1738,29 +1565,28 @@
 </div>
 
 <script>
-(function(){
+(function () {
   var mask = document.getElementById('principleModal');
   var credit = document.getElementById('credit');
 
-  // Modal 已解析完成，重新应用一次语言以填充原理说明
   if (typeof window.__applyLang === 'function') window.__applyLang();
 
-  function openM(){ mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeM(){ mask.classList.remove('open'); document.body.style.overflow = ''; }
+  function openM() { mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeM() { mask.classList.remove('open'); document.body.style.overflow = ''; }
 
-  if (credit){
+  if (credit) {
     credit.addEventListener('dblclick', openM);
     var lastTap = 0;
-    credit.addEventListener('touchend', function(e){
+    credit.addEventListener('touchend', function (e) {
       var now = Date.now();
-      if (now - lastTap < 350){ e.preventDefault(); openM(); lastTap = 0; }
+      if (now - lastTap < 350) { e.preventDefault(); openM(); lastTap = 0; }
       else { lastTap = now; }
-    }, {passive:false});
+    }, { passive: false });
   }
 
   document.getElementById('principleClose').addEventListener('click', closeM);
-  mask.addEventListener('click', function(e){ if (e.target === mask) closeM(); });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeM(); });
+  mask.addEventListener('click', function (e) { if (e.target === mask) closeM(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
 })();
 </script>
 </body>

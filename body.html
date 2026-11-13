@@ -13,8 +13,20 @@
     --primary:#166b46; --primary-2:#1f8a5b; --primary-bright:#22a06b;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  /* 只在键盘导航时显示焦点轮廓，点击/触摸不显示 */
+  *:focus:not(:focus-visible){ outline:none; }
+  *:focus-visible{ outline:2px solid var(--primary-bright); outline-offset:2px; }
+
+  /* 交互控件：不选中文本、不弹 iOS 长按菜单、点击即触发 */
+  button, select, label,
+  .chip, .lang-btn, .icon-btn, .collapse-btn, .drawer-close, .modal-close{
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+    touch-action: manipulation;
+  }
+  canvas{ touch-action: none; }
+
+  html,body{ height:100% }
   body{
     margin:0; padding:20px 16px 24px;
     background:
@@ -48,7 +60,7 @@
   .select{appearance:none; -webkit-appearance:none; padding:6px 28px 6px 12px; font-size:12.5px; font-family:inherit; font-weight:700; color:var(--primary); background:#eef5f1 url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23166b46' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center; border:1px solid transparent; border-radius:8px; cursor:pointer; transition:background-color .15s}
   .select:hover{background-color:#e2efe8}
   .select option{color:#1a2b22; background:#fff; font-weight:500}
-  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:8px; background:#f4f7f5; border:1px solid var(--border); font-size:12.5px; color:var(--text-2); font-weight:600; cursor:pointer; user-select:none; -webkit-user-select:none; transition:background .15s, border-color .15s, color .15s}
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:8px; background:#f4f7f5; border:1px solid var(--border); font-size:12.5px; color:var(--text-2); font-weight:600; cursor:pointer; transition:background .15s, border-color .15s, color .15s}
   .chip:hover{background:#eef5f1; border-color:#d5e3db}
   .chip input{appearance:none; -webkit-appearance:none; width:13px; height:13px; margin:0; flex-shrink:0; border:1.5px solid #b9c9c0; border-radius:4px; background:#fff; cursor:pointer; position:relative; transition:background .15s, border-color .15s}
   .chip input:checked{background:var(--primary-2); border-color:var(--primary-2)}
@@ -92,7 +104,7 @@
   .drawer-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; flex-shrink:0; background:linear-gradient(135deg, var(--primary-2), var(--primary)); color:#fff}
   .drawer-head h3{margin:0; font-size:15px; font-weight:650}
   .drawer-close,.modal-close{background:transparent; border:none; box-shadow:none; color:#fff; font-size:24px; line-height:1; padding:0 6px; cursor:pointer}
-  .drawer-body{padding:16px 18px 24px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch}
+  .drawer-body{padding:16px 18px 24px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; overscroll-behavior: contain}
   .group + .group{margin-top:16px; padding-top:14px; border-top:1px dashed #e8efeb}
   .group-title{font-size:11px; font-weight:800; letter-spacing:.7px; color:var(--text-3); text-transform:uppercase; margin:0 0 10px}
   .field{display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--text-2); font-weight:600; cursor:pointer; margin-bottom:10px}
@@ -953,16 +965,16 @@ function baseFaceNormal(ik) {
   return p;
 }
 
-// 单点评估：只做锥体判断
+// 单点评估：只做锥体判断（去掉未使用的 forward 字段）
 function evalFaceNormal(n) {
   if (n[2] <= 1e-6) {
-    return { ok: false, forward: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false };
+    return { ok: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false };
   }
   const elev = Math.asin(Math.max(-1, Math.min(1, n[1]))) / DEG;
   const azim = Math.atan2(n[0], n[2]) / DEG;
   const elevOk = (elev <= shotUpMax && elev >= -shotDownMax);
   const azimOk = (Math.abs(azim) <= shotAzimuthMax);
-  return { ok: elevOk && azimOk, forward: true, elev, azim, elevOk, azimOk };
+  return { ok: elevOk && azimOk, elev, azim, elevOk, azimOk };
 }
 
 function failDistance(r) {
@@ -972,25 +984,21 @@ function failDistance(r) {
   return dE + dA;
 }
 
-// 返回：{ ok, forward, elev, azim, elevOk, azimOk, normal, wristUsed }
-// normal 是实际采用的拍面法线（供锥视图绘制使用）；null 表示退化情况
+// 返回：{ ok, elev, azim, elevOk, azimOk, normal }
+// normal = 实际采用的拍面法线（供锥视图绘制）；null = 退化情况
 function shotCheck(ik) {
   const n0 = baseFaceNormal(ik);
-  if (!n0) return { ok: false, forward: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false, normal: null, wristUsed: false };
+  if (!n0) return { ok: false, elev: NaN, azim: NaN, elevOk: false, azimOk: false, normal: null };
 
-  // 1) 腕不动的基准
   const base = evalFaceNormal(n0);
-  if (base.ok || wristPronMax <= 0 && wristFlexMax <= 0) {
-    return { ...base, normal: n0, wristUsed: false };
+  if (base.ok || (wristPronMax <= 0 && wristFlexMax <= 0)) {
+    return { ...base, normal: n0 };
   }
 
-  // 2) 建立两个旋转轴
   const foreAxis = V3.norm(ik.foreDir);
   let flexAxis = V3.cross(foreAxis, n0);
   const fl = V3.len(flexAxis);
-  if (fl < 1e-6) {
-    return { ...base, normal: n0, wristUsed: false };
-  }
+  if (fl < 1e-6) return { ...base, normal: n0 };
   flexAxis = V3.scale(flexAxis, 1 / fl);
 
   const P_MAX = wristPronMax * DEG;
@@ -1007,15 +1015,14 @@ function shotCheck(ik) {
     for (let j = 0; j < N; j++) {
       const p = (N === 1) ? 0 : -P_MAX + (2 * P_MAX) * j / (N - 1);
       let n = rotateAroundAxis(n1, foreAxis, p);
-      if (n[2] < 0) n = V3.scale(n, -1);           // 拍面正反面都可用
+      if (n[2] < 0) n = V3.scale(n, -1);
       const nl = V3.len(n);
       if (nl < 1e-6) continue;
       n = V3.scale(n, 1 / nl);
 
       const r = evalFaceNormal(n);
-      if (r.ok) {
-        return { ...r, normal: n, wristUsed: (Math.abs(f) > 1e-6 || Math.abs(p) > 1e-6) };
-      }
+      if (r.ok) return { ...r, normal: n };
+
       const d = failDistance(r);
       if (d < bestFailDist) {
         bestFailDist = d;
@@ -1025,7 +1032,7 @@ function shotCheck(ik) {
     }
   }
 
-  return { ...bestFail, normal: bestFailNormal, wristUsed: false };
+  return { ...bestFail, normal: bestFailNormal };
 }
 
 // ======================= 2D 投影与形状 =======================
@@ -1035,7 +1042,7 @@ function classify2D(S2D, E2D, P2D) {
   const dx = P2D[0] - S2D[0];
   const dy = P2D[1] - S2D[1];
   const d2 = dx*dx + dy*dy;
-  if (d2 < 1e-6) return { shape: 'neutral', perpY: 0 };
+  if (d2 < 1e-6) return { shape: 'neutral', perp: 0 };
   const tt = ((E2D[0]-S2D[0])*dx + (E2D[1]-S2D[1])*dy) / d2;
   const projX = S2D[0] + tt*dx;
   const projY = S2D[1] + tt*dy;
@@ -1044,7 +1051,7 @@ function classify2D(S2D, E2D, P2D) {
   if (perp < -PERP_TOL) shape = 'L';
   else if (perp >  PERP_TOL) shape = 'antiL';
   else shape = 'neutral';
-  return { shape, perp, perpY: perp, projX, projY };
+  return { shape, perp, projX, projY };
 }
 
 function displayShape(shape){
@@ -1066,7 +1073,7 @@ function poseTime(ik) {
 
 // ======================= 单侧求解 =======================
 function solveAt(P3, side) {
-  let best = null, bestT = Infinity, bestShape = null, bestCls = null;
+  let best = null, bestT = Infinity, bestShape = null, bestCls = null, bestShot = null;
   let furthest = 0;
   let rejectTags = [];
 
@@ -1094,7 +1101,9 @@ function solveAt(P3, side) {
     }
     if (furthest < 3) { furthest = 3; rejectTags = []; }
 
-    if (useShotLimit && !shotCheck(ik).ok) {
+    // shotCheck 只算一次，结果向下游（drawSide / drawTop）传递
+    const sc = shotCheck(ik);
+    if (useShotLimit && !sc.ok) {
       if (furthest <= 3) { furthest = 3; rejectTags = ['拍面朝向超限（含腕）']; }
       continue;
     }
@@ -1112,6 +1121,7 @@ function solveAt(P3, side) {
       best = ik;
       bestShape = cls.shape;
       bestCls = cls;
+      bestShot = sc;
     }
   }
 
@@ -1119,7 +1129,7 @@ function solveAt(P3, side) {
     const st = furthest >= 4 ? 'shape' : furthest === 3 ? 'shot' : furthest === 2 ? 'body' : furthest === 1 ? 'rom' : 'unreach';
     return { status: st, rejectTags };
   }
-  return { status: 'ok', ik: best, time: bestT, side, shape: bestShape, cls: bestCls };
+  return { status: 'ok', ik: best, time: bestT, side, shape: bestShape, cls: bestCls, shot: bestShot };
 }
 
 function solveBoth(P) { return { fh: solveAt(P, 'fh'), bh: solveAt(P, 'bh') }; }
@@ -1503,14 +1513,14 @@ function drawArm3D(ik, side, cls) {
 
   for (const lb of layoutLabels(labels)) drawLabelBox(lb.box, lb.text, lb.color);
 
-  // perpY 小标签
+  // perp 小标签
   ctx.save();
   ctx.font = '11px ui-monospace,monospace';
-  const perpTxt = `perpY=${cls.perpY.toFixed(3)}`;
+  const perpTxt = `perpY=${cls.perp.toFixed(3)}`;
   const tw = ctx.measureText(perpTxt).width;
   ctx.fillStyle = 'rgba(255,255,255,0.92)';
   ctx.fillRect(projX2 + 6, projY2 - 14, tw + 4, 15);
-  ctx.fillStyle = cls.perpY < 0 ? '#b91c1c' : cls.perpY > 0 ? '#1e40af' : '#475569';
+  ctx.fillStyle = cls.perp < 0 ? '#b91c1c' : cls.perp > 0 ? '#1e40af' : '#475569';
   ctx.fillText(perpTxt, projX2 + 8, projY2 - 3);
   ctx.restore();
 
@@ -1823,7 +1833,8 @@ function drawSideArm(ik, color, dashed) {
   ctx2.restore();
 }
 
-function drawShotCone(ik) {
+// 传入上游已经算好的 sc（避免重复 shotCheck）
+function drawShotCone(ik, sc) {
   const P = ik.P;
   const [px, py] = s2p(P[2], P[1]);
   const R = 78;
@@ -1838,7 +1849,6 @@ function drawShotCone(ik) {
     ctx2.fillStyle = '#15803d'; ctx2.font = '10px system-ui';
     ctx2.fillText(t('allowCone'), px + R*0.5, py - R*0.18);
   }
-  const sc = shotCheck(ik);
   const n = sc.normal;
   if (n) {
     const col2 = (!useShotLimit) ? '#2563eb' : (sc.elevOk ? '#16a34a' : '#dc2626');
@@ -1884,7 +1894,7 @@ function drawSide(r) {
   if (r.status === 'ok') {
     const col = r.side === 'bh' ? '#2563eb' : '#dc2626';
     drawSideArm(r.ik, col, false);
-    drawShotCone(r.ik);
+    drawShotCone(r.ik, r.shot);
   }
 
   drawSideHandles(r);
@@ -1929,7 +1939,8 @@ function drawTopArm(ik, color, dashed) {
   ctx3.restore();
 }
 
-function drawAzimuthCone(ik) {
+// 传入上游已经算好的 sc
+function drawAzimuthCone(ik, sc) {
   const P = ik.P;
   const [px,py] = t2p(P[0], P[2]);
   const R = 70;
@@ -1947,12 +1958,10 @@ function drawAzimuthCone(ik) {
     ctx3.fillStyle = '#15803d'; ctx3.font = '10px system-ui';
     ctx3.fillText(t('allowAzim') + shotAzimuthMax + '°', px-28, py-R-6);
   }
-  const sc = shotCheck(ik);
   const n = sc.normal;
   if (n) {
     const col = (!useShotLimit) ? '#2563eb' : (sc.azimOk ? '#16a34a' : '#dc2626');
     const hl = Math.hypot(n[0], n[2]) || 1e-6;
-    // flip 时 x 分量反向，与 t2p 保持同步
     const ex = px + flipSx() * n[0] / hl * R, ey = py - n[2] / hl * R;
     ctx3.strokeStyle = col; ctx3.lineWidth = 2.5;
     ctx3.beginPath(); ctx3.moveTo(px,py); ctx3.lineTo(ex,ey); ctx3.stroke();
@@ -1991,7 +2000,7 @@ function drawTop(r) {
   if (r.status === 'ok') {
     const col = r.side === 'bh' ? '#2563eb' : '#dc2626';
     drawTopArm(r.ik, col, false);
-    drawAzimuthCone(r.ik);
+    drawAzimuthCone(r.ik, r.shot);
   }
 }
 
