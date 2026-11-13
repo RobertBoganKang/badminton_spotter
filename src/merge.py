@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-merge_html.py
-把文件夹里的多个 HTML 文件合并成一个单文件 HTML。
-左上角一个固定的圆形 emoji 按钮，点击循环切换页面，不占布局空间。
-修改：放大按钮、去掉边框、悬浮效果更强
-"""
-
 from __future__ import annotations
-
 import argparse
 import base64
 import html
@@ -18,11 +10,9 @@ import sys
 from pathlib import Path
 from string import Template
 
-
 TITLE_RE = re.compile(r"<title\b[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
 TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
-
 
 # ---------------------------------------------------------------- 模板
 TEMPLATE = r"""<!DOCTYPE html>
@@ -31,6 +21,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${HTML_TITLE}</title>
+<!-- 蜗牛 favicon 内联SVG，标签页图标 -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='90' font-size='90'>🐌</text></svg>">
 <style>
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -72,7 +64,6 @@ TEMPLATE = r"""<!DOCTYPE html>
     backdrop-filter: blur(6px);
     transition: background .18s, transform .15s, box-shadow .18s;
   }
-  touch-action: none;
   #switcher:hover {
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 6px 18px rgba(0, 0, 0, .24);
@@ -84,142 +75,142 @@ TEMPLATE = r"""<!DOCTYPE html>
 <body>
 <iframe id="frame" title="内容"></iframe>
 <button id="switcher" type="button" title="切换页面">🐌</button>
-
 <script>
 (function () {
   'use strict';
-
-  var PAGES     = ${PAGES_JSON};
-  var PAGE_TITLE = ${JS_TITLE};
-
-  var frame    = document.getElementById('frame');
-  var switcher = document.getElementById('switcher');
-
-  var cache   = [];
-  var current = 0;
+  var pageList     = ${PAGES_JSON};
+  var documentMainTitle = ${JS_TITLE};
+  var frameElement    = document.getElementById('frame');
+  var switchButton = document.getElementById('switcher');
+  var pageContentCache   = [];
+  var currentPageIndex = 0;
 
   // ========== 拖拽相关 ==========
-  let dragging = false;
-  let startX, startY, btnStartLeft, btnStartTop;
-  const dragThreshold = 8; // 移动超过8px才算拖拽，否则判定为点击
-  let isDragAction = false;
+  let isDragging = false;
+  let pointerStartX, pointerStartY, buttonStartLeft, buttonStartTop;
+  const dragThresholdPx = 8; // 移动超过8px才算拖拽，否则判定为点击
+  let hasPerformedDrag = false;
 
-  function decodeBase64(b64) {
-    var bin = atob(b64);
-    var bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder('utf-8').decode(bytes);
+  function decodeBase64String(base64Text) {
+    var binaryRaw = atob(base64Text);
+    var byteArray = new Uint8Array(binaryRaw.length);
+    for (var i = 0; i < binaryRaw.length; i++) {
+        byteArray[i] = binaryRaw.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(byteArray);
   }
 
-  function render(index) {
-    if (cache[index] === undefined) {
-      cache[index] = decodeBase64(PAGES[index].data);
+  function renderPage(pageIndex) {
+    if (pageContentCache[pageIndex] === undefined) {
+      pageContentCache[pageIndex] = decodeBase64String(pageList[pageIndex].data);
     }
-    if ('srcdoc' in frame) {
-      frame.srcdoc = cache[index];
+    if ('srcdoc' in frameElement) {
+      frameElement.srcdoc = pageContentCache[pageIndex];
     } else {
-      if (frame.dataset.blobUrl) URL.revokeObjectURL(frame.dataset.blobUrl);
-      var url = URL.createObjectURL(new Blob([cache[index]], { type: 'text/html' }));
-      frame.dataset.blobUrl = url;
-      frame.src = url;
+      if (frameElement.dataset.blobUrl) {
+          URL.revokeObjectURL(frameElement.dataset.blobUrl);
+      }
+      var blobUrl = URL.createObjectURL(
+          new Blob([pageContentCache[pageIndex]], { type: 'text/html' })
+      );
+      frameElement.dataset.blobUrl = blobUrl;
+      frameElement.src = blobUrl;
     }
   }
 
-  function updateLabel() {
-    switcher.title = '当前：' + PAGES[current].title + '（点击切换到下一页，长按拖动）';
-    document.title = PAGES[current].title + ' · ' + PAGE_TITLE;
+  function updateUiTooltip() {
+    switchButton.title = '当前：' + pageList[currentPageIndex].title + '（点击切换到下一页，长按拖动）';
+    document.title = pageList[currentPageIndex].title + ' · ' + documentMainTitle;
   }
 
-  function show(index) {
-    if (index < 0 || index >= PAGES.length) return;
-    current = index;
-    render(index);
-    updateLabel();
-    try {
-      history.replaceState(null, '', '#' + encodeURIComponent(PAGES[current].slug));
-    } catch (e) { /* file:// 下可能被限制 */ }
+  function showPage(pageIndex) {
+    if (pageIndex < 0 || pageIndex >= pageList.length) return;
+    currentPageIndex = pageIndex;
+    renderPage(pageIndex);
+    updateUiTooltip();
   }
 
-  function next() {
-    show((current + 1) % PAGES.length);
+  function goNextPage() {
+    showPage((currentPageIndex + 1) % pageList.length);
+  }
+
+  function goPrevPage() {
+    showPage((currentPageIndex - 1 + pageList.length) % pageList.length);
   }
 
   // 统一获取坐标
-  function getPointerPos(e) {
-    if(e.touches) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
-    return {x: e.clientX, y: e.clientY};
+  function getPointerPosition(event) {
+    if(event.touches) {
+        return {x: event.touches[0].clientX, y: event.touches[0].clientY};
+    }
+    return {x: event.clientX, y: event.clientY};
   }
 
-  function onPointerDown(e) {
-    const p = getPointerPos(e);
-    startX = p.x;
-    startY = p.y;
-    const rect = switcher.getBoundingClientRect();
-    btnStartLeft = rect.left;
-    btnStartTop = rect.top;
-    isDragAction = false;
-    dragging = true;
+  function onPointerDownHandler(event) {
+    const pos = getPointerPosition(event);
+    pointerStartX = pos.x;
+    pointerStartY = pos.y;
+    const rect = switchButton.getBoundingClientRect();
+    buttonStartLeft = rect.left;
+    buttonStartTop = rect.top;
+    hasPerformedDrag = false;
+    isDragging = true;
     // 拖拽开始，让iframe不抢事件
-    frame.style.pointerEvents = 'none';
-    document.addEventListener('touchmove', onPointerMove, {passive:false});
-    document.addEventListener('mousemove', onPointerMove);
-    document.addEventListener('touchend', onPointerUp);
-    document.addEventListener('mouseup', onPointerUp);
+    frameElement.style.pointerEvents = 'none';
+    document.addEventListener('touchmove', onPointerMoveHandler, {passive:false});
+    document.addEventListener('mousemove', onPointerMoveHandler);
+    document.addEventListener('touchend', onPointerUpHandler);
+    document.addEventListener('mouseup', onPointerUpHandler);
   }
 
-  function onPointerMove(e) {
-    if(!dragging) return;
-    const p = getPointerPos(e);
-    const dx = p.x - startX;
-    const dy = p.y - startY;
-    if(!isDragAction && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)){
-      isDragAction = true;
+  function onPointerMoveHandler(event) {
+    if(!isDragging) return;
+    const pos = getPointerPosition(event);
+    const deltaX = pos.x - pointerStartX;
+    const deltaY = pos.y - pointerStartY;
+
+    if(!hasPerformedDrag && (Math.abs(deltaX) > dragThresholdPx || Math.abs(deltaY) > dragThresholdPx)){
+      hasPerformedDrag = true;
     }
-    if(isDragAction) {
-      e.preventDefault();
-      let newLeft = btnStartLeft + dx;
-      let newTop = btnStartTop + dy;
+
+    if(hasPerformedDrag) {
+      event.preventDefault();
+      let newButtonLeft = buttonStartLeft + deltaX;
+      let newButtonTop = buttonStartTop + deltaY;
       // 边界限制
-      const w = switcher.offsetWidth;
-      const h = switcher.offsetHeight;
-      newLeft = Math.max(0, Math.min(window.innerWidth - w, newLeft));
-      newTop  = Math.max(0, Math.min(window.innerHeight - h, newTop));
-      switcher.style.left = newLeft + 'px';
-      switcher.style.top = newTop + 'px';
+      const btnWidth = switchButton.offsetWidth;
+      const btnHeight = switchButton.offsetHeight;
+      newButtonLeft = Math.max(0, Math.min(window.innerWidth - btnWidth, newButtonLeft));
+      newButtonTop  = Math.max(0, Math.min(window.innerHeight - btnHeight, newButtonTop));
+      switchButton.style.left = newButtonLeft + 'px';
+      switchButton.style.top = newButtonTop + 'px';
     }
   }
 
-  function onPointerUp() {
-    dragging = false;
+  function onPointerUpHandler() {
+    isDragging = false;
     // 恢复iframe交互
-    frame.style.pointerEvents = '';
-    document.removeEventListener('touchmove', onPointerMove);
-    document.removeEventListener('mousemove', onPointerMove);
-    document.removeEventListener('touchend', onPointerUp);
-    document.removeEventListener('mouseup', onPointerUp);
+    frameElement.style.pointerEvents = '';
+    document.removeEventListener('touchmove', onPointerMoveHandler);
+    document.removeEventListener('mousemove', onPointerMoveHandler);
+    document.removeEventListener('touchend', onPointerUpHandler);
+    document.removeEventListener('mouseup', onPointerUpHandler);
     // 只有不是拖拽，才触发翻页
-    if(!isDragAction) next();
+    if(!hasPerformedDrag) goNextPage();
   }
 
-  switcher.addEventListener('touchstart', onPointerDown, {passive:false});
-  switcher.addEventListener('mousedown', onPointerDown);
+  switchButton.addEventListener('touchstart', onPointerDownHandler, {passive:false});
+  switchButton.addEventListener('mousedown', onPointerDownHandler);
 
   // 键盘快捷键：空格 / → 下一页，← 上一页（不影响 iframe 内部交互）
-  document.addEventListener('keydown', function (e) {
-    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); show((current - 1 + PAGES.length) % PAGES.length); }
+  document.addEventListener('keydown', function (event) {
+    if (event.target && (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA')) return;
+    if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); goNextPage(); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); goPrevPage(); }
   });
 
-  // 通过 #slug 直接打开某一页
-  var start = 0;
-  try {
-    var hash = decodeURIComponent(location.hash.slice(1));
-    var idx = PAGES.findIndex(function (p) { return p.slug === hash; });
-    if (idx >= 0) start = idx;
-  } catch (e) { /* ignore */ }
-
-  show(start);
+  const initialPageIndex = 0;
+  showPage(initialPageIndex);
 })();
 </script>
 </body>
@@ -228,29 +219,30 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 
 # ---------------------------------------------------------------- 工具函数
-def read_text(path: Path) -> str:
+def read_text(file_path: Path) -> str:
     """读取文件，自动尝试常见编码。"""
-    data = path.read_bytes()
-    for enc in ("utf-8-sig", "utf-8", "gb18030"):
+    file_bytes = file_path.read_bytes()
+    for encoding in ("utf-8-sig", "utf-8", "gb18030"):
         try:
-            return data.decode(enc)
+            return file_bytes.decode(encoding)
         except UnicodeDecodeError:
             continue
-    print(f"警告：无法识别 {path.name} 的编码，按 UTF-8 强制解码", file=sys.stderr)
-    return data.decode("utf-8", errors="replace")
+    print(f"警告：无法识别 {file_path.name} 的编码，按 UTF-8 强制解码", file=sys.stderr)
+    return file_bytes.decode("utf-8", errors="replace")
 
 
-def extract_title(raw: str) -> str:
+def extract_title(html_raw: str) -> str:
     """从 HTML 中提取 <title> 文本，没有则返回空串。"""
-    m = TITLE_RE.search(raw)
-    if not m:
+    match_result = TITLE_RE.search(html_raw)
+    if not match_result:
         return ""
-    text = TAG_RE.sub("", m.group(1))
-    text = html.unescape(text)
-    return WS_RE.sub(" ", text).strip()
+    title_text = TAG_RE.sub("", match_result.group(1))
+    title_text = html.unescape(title_text)
+    title_text = WS_RE.sub(" ", title_text).strip()
+    return title_text
 
 
-def js_str(value: str) -> str:
+def js_escape_string(value: str) -> str:
     """把 Python 字符串安全地嵌入 JS 代码。"""
     return (
         json.dumps(value, ensure_ascii=False)
@@ -260,145 +252,141 @@ def js_str(value: str) -> str:
     )
 
 
-def collect_files(folder: Path, pattern: str) -> list[Path]:
-    found: dict[Path, Path] = {}
-    for pat in pattern.split(","):
-        pat = pat.strip()
-        if not pat:
+def collect_matching_files(folder: Path, glob_pattern: str) -> list[Path]:
+    found_file_map: dict[Path, Path] = {}
+    for single_pattern in glob_pattern.split(","):
+        single_pattern = single_pattern.strip()
+        if not single_pattern:
             continue
-        for p in folder.glob(pat):
-            if p.is_file():
-                found[p.resolve()] = p
-    return list(found.values())
+        for file_item in folder.glob(single_pattern):
+            if file_item.is_file():
+                found_file_map[file_item.resolve()] = file_item
+    return list(found_file_map.values())
 
 
-def default_sort(files: list[Path]) -> list[Path]:
-    def key(p: Path):
-        name = p.name.lower()
-        is_index = 0 if re.match(r"^index\.html?$", name) else 1
-        return (is_index, name)
-    return sorted(files, key=key)
+def default_file_sort(file_list: list[Path]) -> list[Path]:
+    def sort_key(file_item: Path):
+        filename_lower = file_item.name.lower()
+        # index.html优先排前面
+        is_index_file = 0 if re.match(r"^index\.html?$", filename_lower) else 1
+        return (is_index_file, filename_lower)
+    return sorted(file_list, key=sort_key)
 
 
-def apply_order(files: list[Path], order: str | None) -> list[Path]:
-    if not order:
-        return default_sort(files)
-
-    wanted = [s.strip().lower() for s in order.split(",") if s.strip()]
-    ordered: list[Path] = []
-    used: set[Path] = set()
-
-    for w in wanted:
-        for f in files:
-            if f in used:
+def apply_custom_file_order(file_list: list[Path], order_config: str | None) -> list[Path]:
+    if not order_config:
+        return default_file_sort(file_list)
+    wanted_names = [s.strip().lower() for s in order_config.split(",") if s.strip()]
+    ordered_result: list[Path] = []
+    used_files: set[Path] = set()
+    for wanted_name in wanted_names:
+        for file_item in file_list:
+            if file_item in used_files:
                 continue
-            if f.name.lower() == w or f.stem.lower() == w:
-                ordered.append(f)
-                used.add(f)
+            if file_item.name.lower() == wanted_name or file_item.stem.lower() == wanted_name:
+                ordered_result.append(file_item)
+                used_files.add(file_item)
                 break
         else:
-            print(f"警告：--order 中的 \"{w}\" 没有匹配到文件", file=sys.stderr)
-
-    rest = [f for f in default_sort(files) if f not in used]
-    return ordered + rest
+            print(f"警告：--order 中的 \"{wanted_name}\" 没有匹配到文件", file=sys.stderr)
+    rest_files = [f for f in default_file_sort(file_list) if f not in used_files]
+    return ordered_result + rest_files
 
 
 # ---------------------------------------------------------------- 主流程
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(
+    argument_parser = argparse.ArgumentParser(
         description="把文件夹里的多个 HTML 合并成一个带循环切换按钮的单文件 HTML",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    ap.add_argument("folder", help="包含 HTML 文件的文件夹")
-    ap.add_argument("-o", "--output", help="输出文件路径（默认 <folder>/merged.html）")
-    ap.add_argument("-t", "--title", default="合并页面", help="合并后的总标题")
-    ap.add_argument("--pattern", default="*.html,*.htm",
+    argument_parser.add_argument("folder", help="包含 HTML 文件的文件夹")
+    argument_parser.add_argument("-o", "--output", help="输出文件路径（默认 <folder>/merged.html）")
+    argument_parser.add_argument("-t", "--title", default="合并页面", help="合并后的总标题")
+    argument_parser.add_argument("--pattern", default="*.html,*.htm",
                     help="文件匹配模式，逗号分隔（默认 *.html,*.htm）")
-    ap.add_argument("--order", help="逗号分隔的文件名/主干名，用于指定循环顺序")
-    ap.add_argument("--labels", help="逗号分隔的标题文字（只用于提示/页面标题），按最终顺序对应")
-    ap.add_argument("--exclude", action="append", default=[], metavar="NAME",
+    argument_parser.add_argument("--order", help="逗号分隔的文件名/主干名，用于指定循环顺序")
+    argument_parser.add_argument("--labels", help="逗号分隔的标题文字（只用于提示/页面标题），按最终顺序对应")
+    argument_parser.add_argument("--exclude", action="append", default=[], metavar="NAME",
                     help="要跳过的文件名或主干名，可重复，也可逗号分隔")
-    args = ap.parse_args(argv)
+    args = argument_parser.parse_args(argv)
 
-    folder = Path(args.folder).expanduser().resolve()
-    if not folder.is_dir():
-        ap.error(f"不是文件夹：{folder}")
+    target_folder = Path(args.folder).expanduser().resolve()
+    if not target_folder.is_dir():
+        argument_parser.error(f"不是文件夹：{target_folder}")
 
-    out_path = (Path(args.output).expanduser().resolve()
-                if args.output else folder / "merged.html")
+    if args.output:
+        output_file_path = Path(args.output).expanduser().resolve()
+    else:
+        output_file_path = target_folder / "merged.html"
 
-    files = collect_files(folder, args.pattern)
-    files = [f for f in files if f.resolve() != out_path]
+    file_list = collect_matching_files(target_folder, args.pattern)
+    # 排除输出文件自身
+    file_list = [f for f in file_list if f.resolve() != output_file_path]
 
-    excludes: set[str] = set()
-    for item in args.exclude:
-        for part in item.split(","):
+    exclude_name_set: set[str] = set()
+    for exclude_item in args.exclude:
+        for part in exclude_item.split(","):
             part = part.strip().lower()
             if part:
-                excludes.add(part)
-    if excludes:
-        files = [f for f in files
-                 if f.name.lower() not in excludes and f.stem.lower() not in excludes]
+                exclude_name_set.add(part)
 
-    if not files:
-        ap.error(f"在 {folder} 中没有找到匹配 {args.pattern} 的文件")
+    if exclude_name_set:
+        file_list = [
+            f for f in file_list
+            if f.name.lower() not in exclude_name_set and f.stem.lower() not in exclude_name_set
+        ]
 
-    files = apply_order(files, args.order)
+    if not file_list:
+        argument_parser.error(f"在 {target_folder} 中没有找到匹配 {args.pattern} 的文件")
 
-    labels = None
+    file_list = apply_custom_file_order(file_list, args.order)
+
+    custom_labels = None
     if args.labels:
-        labels = [s.strip() for s in args.labels.split(",")]
-        if len(labels) != len(files):
-            print(f"提示：--labels 有 {len(labels)} 项，文件有 {len(files)} 个，多余的将被忽略",
+        custom_labels = [s.strip() for s in args.labels.split(",")]
+        if len(custom_labels) != len(file_list):
+            print(f"提示：--labels 有 {len(custom_labels)} 项，文件有 {len(file_list)} 个，多余的将被忽略",
                   file=sys.stderr)
 
-    pages = []
-    used_slugs: set[str] = set()
-    for idx, f in enumerate(files):
-        raw = read_text(f)
+    page_info_list = []
+    for page_idx, html_file in enumerate(file_list):
+        html_content = read_text(html_file)
+        page_title = ""
+        if custom_labels and page_idx < len(custom_labels) and custom_labels[page_idx]:
+            page_title = custom_labels[page_idx]
+        if not page_title:
+            page_title = extract_title(html_content) or html_file.stem
 
-        title = ""
-        if labels and idx < len(labels) and labels[idx]:
-            title = labels[idx]
-        if not title:
-            title = extract_title(raw) or f.stem
-
-        slug = f.stem
-        n = 2
-        while slug in used_slugs:
-            slug = f"{f.stem}-{n}"
-            n += 1
-        used_slugs.add(slug)
-
-        b64 = base64.b64encode(raw.encode("utf-8")).decode("ascii")
-        pages.append({
-            "title": title,
-            "slug": slug,
-            "data": b64,
-            "_size": f.stat().st_size,
+        base64_encoded = base64.b64encode(html_content.encode("utf-8")).decode("ascii")
+        page_info_list.append({
+            "title": page_title,
+            "data": base64_encoded,
+            "_file_size_bytes": html_file.stat().st_size,
         })
 
-    payload = [{k: p[k] for k in ("title", "slug", "data")} for p in pages]
-    pages_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-    pages_json = (pages_json
+    # 输出给前端JSON
+    frontend_payload = [{k: page[k] for k in ("title", "data")} for page in page_info_list]
+    pages_json_text = json.dumps(frontend_payload, ensure_ascii=False, separators=(",", ":"))
+    pages_json_text = (pages_json_text
                   .replace("<", "\\u003c")
                   .replace(">", "\\u003e")
                   .replace("&", "\\u0026"))
 
-    out_html = Template(TEMPLATE).substitute(
+    final_html_output = Template(TEMPLATE).substitute(
         HTML_TITLE=html.escape(args.title),
-        JS_TITLE=js_str(args.title),
-        PAGES_JSON=pages_json,
+        JS_TITLE=js_escape_string(args.title),
+        PAGES_JSON=pages_json_text,
     )
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(out_html, encoding="utf-8")
+    output_file_path.parent.mkdir(parents=True, exist_ok=True)
+    output_file_path.write_text(final_html_output, encoding="utf-8")
 
-    size_kb = out_path.stat().st_size / 1024
-    print(f"✅ 已生成：{out_path}")
-    print(f"   共 {len(pages)} 个页面，输出大小 {size_kb:.1f} KB")
-    for i, p in enumerate(pages, 1):
-        print(f"   {i}. {p['title']}  ({p['_size'] / 1024:.1f} KB, slug: {p['slug']})")
+    output_size_kb = output_file_path.stat().st_size / 1024
+    print(f"✅ 已生成：{output_file_path}")
+    print(f"   共 {len(page_info_list)} 个页面，输出大小 {output_size_kb:.1f} KB")
+    for idx, page in enumerate(page_info_list, 1):
+        print(f"   {idx}. {page['title']}  ({page['_file_size_bytes'] / 1024:.1f} KB)")
+
     return 0
 
 
