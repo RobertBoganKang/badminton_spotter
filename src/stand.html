@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <title>羽毛球场站位点</title>
   <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏸</text></svg>">
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦵</text></svg>">
   <style>
     /* ============================================================
        1. 设计变量
@@ -352,19 +352,6 @@
       background: rgba(31, 111, 139, .12);
       border-color: rgba(31, 111, 139, .28);
       color: #1f6f8b
-    }
-
-    .pill-sep {
-      flex-shrink: 0;
-      display: inline-block;
-      width: 3px;
-      height: 3px;
-      border-radius: 999px;
-      background: rgba(91, 107, 98, .45);
-      margin: 0 1px;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-select: none
     }
 
     .seg-group {
@@ -893,12 +880,6 @@
         padding: 1px 7px;
       }
 
-      .pill-sep {
-        width: 3px;
-        height: 3px;
-        margin: 0;
-      }
-
       .tb-right {
         gap: 5px;
       }
@@ -968,7 +949,7 @@
   <div class="app" id="app">
     <header class="card header">
       <div class="header-left">
-        <div class="logo">🏸</div>
+        <div class="logo">🦵</div>
         <div>
           <h1 id="pageTitle">羽毛球场站位点</h1>
           <p id="pageSub"></p>
@@ -995,7 +976,6 @@
         <div class="tb-right">
           <div class="pill-group" id="pillGroup">
             <span class="pill pill-height" id="pillHeight">击球高 2.8m</span>
-            <span class="pill-sep" aria-hidden="true"></span>
             <div class="seg-group" role="group" aria-label="高吊杀概率">
               <span class="seg seg-clear" id="pillClear" data-label="高">高 22%</span>
               <span class="seg seg-drop" id="pillDrop" data-label="吊">吊 23%</span>
@@ -1065,9 +1045,9 @@
           footer: '创作 · 保留所有权利',
           principleTitle: '羽毛球场站位点 · 计算方法',
           net: '网',
-          lblNearDrop: '近吊', lblNearDropV: '1.5 m',
+          lblNearDrop: '近吊',
           lblFrontPen: '底线参考',
-          lblFarDrop: '远吊', lblFarDropV: '4.5 m',
+          lblFarDrop: '远吊',
           gSpeed: '球速', gSpeedHint: '初速 m/s',
           gProb: '概率', gProbHint: '三者联动 · 总和 100%',
           gReach: '可达性', gReachHint: '反应曲线 · 跑速 · 触及半径',
@@ -1079,7 +1059,8 @@
           sl_v0_drop_hi: '吊 v0 上限',
           sl_p_smash: '杀球 %', sl_p_clear: '高 %', sl_p_drop: '吊球 %',
           sl_t_react: '反应起点', sl_t_full: '充分反应',
-          sl_v_run: '跑动速度', sl_k2: '上网/后退', sl_r_touch: '触及半径',
+          sl_v_run_a: 'A 跑动速度', sl_v_run_b: 'B 跑动速度',
+          sl_k2: '上网/后退', sl_r_touch: '触及半径',
           sl_dropMaxOverNet: '吊过网高',
           sl_clearLineY: '底线参考线',
           sl_clearHeight: '高过网最低',
@@ -1090,6 +1071,7 @@
           pillHeight: '击球高',
           ourBack: '后', ourFront: '前', ourSolo: '站位',
           labelLeft: '左', labelRight: '右',
+          tagFast: '快', tagSlow: '慢',
           infoContact: '击球高',
           infoSmash: '杀', infoClear: '高', infoDrop: '吊',
           infoGap: '间距',
@@ -1122,13 +1104,13 @@
       <h3>三、可达概率（真实反应曲线 + 方向速度 + 触及半径）</h3>
       <div class="formula">p(t<sub>avail</sub>) = 0.92 · σ( k · (t<sub>avail</sub> − t<sub>mid</sub>) )</div>
       <p>曲线标定：<code>t₀=0.20 s</code> 时 p≈2%（纯反应时），<code>t₁=0.55 s</code> 时 p≈88%（充分反应 + 一步 + 出手），上限 92%（判断/技术/回球质量损耗）。</p>
-      <p><b>方向速度分离</b>：上网 <code>1.15 × v_run</code>、横向 <code>0.95 × v_run</code>、后退 <code>v_run / k₂</code>；合成 <code>t<sub>run</sub> = d<sub>touch</sub> / v<sub>eff</sub></code>。</p>
+      <p><b>方向速度分离</b>：上网 <code>1.15 × v_run</code>、横向 <code>0.95 × v_run</code>、后退 <code>v_run / k₂</code>；合成 <code>t<sub>run</sub> = d<sub>touch</sub> / v<sub>eff</sub></code>。双打中<b>A、B 两名球员各自使用自己的跑动速度</b>，站位大小与“快/慢”标签随之变化。</p>
       <p><b>触及半径随球种缩放</b>：杀球 ×0.72（贴地，半径最小）、吊球 ×1.15（下落慢 + 0.08 s 缓冲）、高球 ×1.0。</p>
       <p>双打联合接球率：<code>reach = 1 − (1−p₁)(1−p₂)</code>。</p>
 
       <h3>四、期望净得分与优化器</h3>
       <div class="formula">V(站位) = Σ<sub>L</sub> w(L) · [reach(L) · c(L) − (1 − reach(L))] / Σ w(L)</div>
-      <p><b>单打</b>：网格 + 局部精修。<b>双打</b>：全枚举所有位置对（粗网格 → 局部精修），过近惩罚：两人距离 &lt; 2 m 时按二次曲线惩罚。</p>
+      <p><b>单打</b>：网格 + 局部精修（使用 A 的跑动速度）。<b>双打</b>：全枚举所有位置对（粗网格 → 局部精修），A 用 A 的速度、B 用 B 的速度，过近惩罚：两人距离 &lt; 2 m 时按二次曲线惩罚。</p>
 
       <h3>五、信息栏诊断</h3>
       <p>信息栏显示当前站位下<b>杀接 / 高接 / 吊接</b>三类球的实际平均 reach，以及高球最快落地时间（“高最快”）。如果看到杀接 0% 或两人都挤到前场，检查吊 v0 上限、底线参考线是否太远，或反应曲线是否被拖宽。</p>
@@ -1143,7 +1125,7 @@
         <li><b>拖动“击球高”胶囊</b> → 调整击球高度（影响杀球速度、高球可用角度）</li>
         <li><b>拖动概率胶囊</b> → 调整杀/吊/高概率</li>
         <li><b>双击场地空白</b> → 开关热力图（主视图 + 侧视图）</li>
-        <li><b>参数面板</b> → 球速、吊/高 v0 上下限、底线参考线、高过网最低、反应曲线、跑速、触及半径、过滤</li>
+        <li><b>参数面板</b> → 球速、吊/高 v0 上下限、底线参考线、高过网最低、反应曲线、A/B 跑速、触及半径、过滤</li>
         <li>站位是概率意义上的最优，不是绝对最优；双打用独立 OR 合并，未建模让球/分工</li>
       </ul>
     `
@@ -1156,9 +1138,9 @@
           footer: 'Created · All Rights Reserved',
           principleTitle: 'Badminton Player Ground Position · Methodology',
           net: 'Net',
-          lblNearDrop: 'Near drop', lblNearDropV: '1.5 m',
+          lblNearDrop: 'Near drop',
           lblFrontPen: 'Baseline',
-          lblFarDrop: 'Far drop', lblFarDropV: '4.5 m',
+          lblFarDrop: 'Far drop',
           gSpeed: 'Shuttle speed', gSpeedHint: 'initial m/s',
           gProb: 'Probabilities', gProbHint: 'linked · sum = 100%',
           gReach: 'Reachability', gReachHint: 'reaction curve · speed · touch radius',
@@ -1170,7 +1152,8 @@
           sl_v0_drop_hi: 'Drop v0 hi',
           sl_p_smash: 'Smash %', sl_p_clear: 'High %', sl_p_drop: 'Drop %',
           sl_t_react: 'Reaction onset', sl_t_full: 'Full reaction',
-          sl_v_run: 'Run speed', sl_k2: 'Net / back', sl_r_touch: 'Touch radius',
+          sl_v_run_a: 'A run speed', sl_v_run_b: 'B run speed',
+          sl_k2: 'Net / back', sl_r_touch: 'Touch radius',
           sl_dropMaxOverNet: 'Drop net max',
           sl_clearLineY: 'Baseline ref',
           sl_clearHeight: 'High net min H',
@@ -1181,6 +1164,7 @@
           pillHeight: 'Height',
           ourBack: 'Rear', ourFront: 'Front', ourSolo: 'Spot',
           labelLeft: 'L', labelRight: 'R',
+          tagFast: 'Fast ', tagSlow: 'Slow ',
           infoContact: 'Height',
           infoSmash: 'Sm', infoClear: 'Hi', infoDrop: 'Dr',
           infoGap: 'Gap',
@@ -1210,12 +1194,12 @@
       <h3>3. Reach probability (realistic reaction + directional speed + touch radius)</h3>
       <div class="formula">p(t<sub>avail</sub>) = 0.92 · σ( k · (t<sub>avail</sub> − t<sub>mid</sub>) )</div>
       <p>Calibrated: <code>t₀=0.20 s</code> → p≈2%; <code>t₁=0.55 s</code> → p≈88%; cap 92%.</p>
-      <p><b>Directional speed</b>: forward <code>1.15×v_run</code>, sideways <code>0.95×v_run</code>, backward <code>v_run/k₂</code>.</p>
+      <p><b>Directional speed</b>: forward <code>1.15×v_run</code>, sideways <code>0.95×v_run</code>, backward <code>v_run/k₂</code>. In doubles <b>A and B each use their own run speed</b>, and the on-court dot size plus the Fast/Slow tag follow it.</p>
       <p><b>Touch radius scale</b>: smash ×0.72, drop ×1.15 (+0.08 s buffer), high ×1.0.</p>
       <p>Doubles OR: <code>reach = 1−(1−p₁)(1−p₂)</code>.</p>
       <h3>4. Expected net score</h3>
       <div class="formula">V(pos) = Σ<sub>L</sub> w(L) · [reach(L)·c(L) − (1−reach(L))] / Σ w(L)</div>
-      <p>Singles: grid + refinement. Doubles: enumerate pairs, proximity penalty &lt; 2 m.</p>
+      <p>Singles: grid + refinement (uses A's run speed). Doubles: enumerate pairs, A uses A's speed and B uses B's speed, proximity penalty &lt; 2 m.</p>
       <h3>5. Diagnostics</h3>
       <p>The info bar shows per-type average reach (smash/high/drop) and the fastest high landing time (“Hi min”). If smash reach is 0% or both crowd front, check drop v0 hi, baseline ref, or the reaction curve.</p>
       <h3>6. Heatmap &amp; side view</h3>
@@ -1227,7 +1211,7 @@
         <li>Drag height pill → contact height</li>
         <li>Drag probability pills → smash/drop/high</li>
         <li>Double-tap empty court → heatmap</li>
-        <li>Parameter panel → speeds, drop/high v0 bounds, baseline ref, high net min, reaction curve, run speed, touch radius, filters</li>
+        <li>Parameter panel → speeds, drop/high v0 bounds, baseline ref, high net min, reaction curve, A/B run speeds, touch radius, filters</li>
         <li>Positions are probabilistically optimal, not absolutely optimal; doubles uses independent OR, no rotation/covering model</li>
       </ul>
     `
@@ -1247,7 +1231,8 @@
         {group: 'reach', key: 't_react', min: 0.05, max: 0.60, step: 0.01, def: 0.20},
         {group: 'reach', key: 't_full', min: 0.30, max: 1.60, step: 0.01, def: 0.55},
         {group: 'reach', key: 'r_touch', min: 0, max: 1.5, step: 0.05, def: 0.90},
-        {group: 'reach', key: 'v_run', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
+        {group: 'reach', key: 'v_run_a', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
+        {group: 'reach', key: 'v_run_b', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
         {group: 'reach', key: 'k2', min: 1.0, max: 1.6, step: 0.01, def: 1.30},
         {group: 'filter', key: 'dropMaxOverNet', min: 0, max: 1.0, step: 0.01, def: 0.20},
         {group: 'filter', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
@@ -1261,17 +1246,24 @@
 
       const PRM = {};
       SLIDER_DEFS.forEach(d => {PRM[d.key] = d.def;});
-      const HH_DEFAULT = 2.8;  // ★ 修改：击球高默认值（与 SLIDER 初值保持一致）
+      const HH_DEFAULT = 2.8;
       PRM.hh = HH_DEFAULT;
 
       const PROB_KEYS = ['p_smash', 'p_clear', 'p_drop'];
       const SHOT_TYPES = ['smash', 'clear', 'drop'];
 
-      const SHOT_RGB = {
-        clear: '45,90,200',
-        drop: '40,170,80',
-        kill: '192,57,43'
+      /* 统一颜色定义：热力图用数组，胶囊用 "r,g,b" 字符串 */
+      const SHOT_COLOR = {
+        smash: [192, 57, 43],
+        clear: [45, 90, 200],
+        drop: [40, 170, 80]
       };
+      const SHOT_RGB = {
+        kill: SHOT_COLOR.smash.join(','),
+        clear: SHOT_COLOR.clear.join(','),
+        drop: SHOT_COLOR.drop.join(',')
+      };
+      const HEAT_RGB = SHOT_COLOR;
 
       /* ---- 场地常量 ---- */
       const L = 13.4, W = 6.10, HL = L / 2, HW = W / 2;
@@ -1302,19 +1294,14 @@
       const C_PERSON_PENDING = '#b4bdb8';
       const C_PERSON_PENDING_LINE = 'rgba(120,132,126,.30)';
 
-      const HEAT_RGB = {
-        smash: [192, 57, 43],
-        clear: [45, 90, 200],
-        drop: [40, 170, 80]
-      };
-
       const HEAT_CELL = 0.08;
       const HEAT_SIGMA = 0.26;
       const HEAT_CUT = 0.01;
 
-      /* ---- 空气动力学 ---- */
-      const AERO = {dt: 0.005, tMax: 6.0, g: 9.81, RHO: 1.2, S_SHUTTLE: 0.003, M_SHUTTLE: 0.005};
-      const AERO_K = 0.5 * AERO.RHO * AERO.S_SHUTTLE / AERO.M_SHUTTLE;
+      /* ---- 空气动力学 ----
+         AERO_K = 0.5·ρ·S / m = 0.5×1.2×0.003 / 0.005 = 0.36 */
+      const AERO = {dt: 0.005, tMax: 6.0, g: 9.81};
+      const AERO_K = 0.36;
 
       function cdOf(v) {
         const u = v / 8;
@@ -1327,6 +1314,8 @@
       const DROP_EXTRA_T = 0.04;
 
       const V_FWD_K = 1.15, V_SIDE_K = 0.95;
+
+      const SPEED_BASE = 3.8;
 
       /* ---- 运行时状态 ---- */
       let mode = 'double';
@@ -1344,7 +1333,6 @@
         highTMin: null
       };
 
-      /* 三名球员身高在 1.6–1.85 m 之间随机 */
       function randHeight() {
         return 1.60 + Math.random() * 0.25;
       }
@@ -1382,12 +1370,16 @@
         return Math.max(w1, w2) + TAG_PADX * 2;
       }
 
+      /* 标签第二行从物理常量生成，避免与 DROP_*_EDGE 不同步 */
+      function nearDropLabel() {return DROP_NEAR_EDGE.toFixed(1) + ' m';}
+      function farDropLabel() {return DROP_FAR_EDGE.toFixed(1) + ' m';}
+
       function computePadL() {
         const w = Math.max(
           measureTagWidth(t('net'), null),
-          measureTagWidth(t('lblNearDrop'), t('lblNearDropV')),
-          measureTagWidth(t('lblFrontPen'), '4.5 m'),
-          measureTagWidth(t('lblFarDrop'), t('lblFarDropV'))
+          measureTagWidth(t('lblNearDrop'), nearDropLabel()),
+          measureTagWidth(t('lblFrontPen'), PRM.clearLineY.toFixed(1) + ' m'),
+          measureTagWidth(t('lblFarDrop'), farDropLabel())
         );
         return Math.ceil(w) + 12;
       }
@@ -1474,16 +1466,14 @@
       const sideCanvas = $('sideCanvas');
       const sctx = sideCanvas.getContext('2d');
 
-      /* 侧视图显示的高度范围：国际比赛场地净空 ≥12 m */
       const SIDE_Z_MAX = 12.0;
       const SIDE_GAP = 8;
 
-      /* 人物绘制常量（侧视图） */
-      const SIDE_HEAD_R = 5.2;    /* 脑袋半径 */
-      const SIDE_BODY_LW = 5.0;   /* 身体线宽 */
+      const SIDE_HEAD_R = 5.2;
+      const SIDE_BODY_LW = 5.0;
 
       let sideW = 150, sideH = 400;
-      let sideGroundX = 12;
+      const sideGroundX = 12;
       let sideScaleZ = 12;
       let sideScaleY = 40;
       let sideCourtTop = 0;
@@ -1508,7 +1498,6 @@
         sideHeatReady = false;
       }
 
-      /* ---- 侧视图热力图 ---- */
       function buildSideHeatGrid() {
         const cell = 0.15;
         const Y0 = -HL, Z0 = 0;
@@ -1643,7 +1632,6 @@
         sideHeatReady = true;
       }
 
-      /* ---- 侧视图人物：粗身体线 + 大脑袋 ---- */
       function drawSidePerson(y, color, heightM) {
         const sy = sideCourtTop + (HL - y) * sideScaleY;
         const headR = SIDE_HEAD_R;
@@ -1651,7 +1639,6 @@
         const bodyLen = Math.max(2, fullLen - headR * 2);
         const headX = sideGroundX + bodyLen + headR;
 
-        /* 身体（粗线） */
         sctx.strokeStyle = color;
         sctx.lineWidth = SIDE_BODY_LW;
         sctx.lineCap = 'round';
@@ -1661,7 +1648,6 @@
         sctx.stroke();
         sctx.lineCap = 'butt';
 
-        /* 脑袋 */
         sctx.beginPath();
         sctx.fillStyle = color;
         sctx.arc(headX, sy, headR, 0, Math.PI * 2);
@@ -1671,16 +1657,13 @@
         sctx.stroke();
       }
 
-      /* ---- 球拍：横向 3:2 椭圆，全黑色 ---- */
       function drawRacketContact() {
         const sy = sideCourtTop + (HL - opponents[0].y) * sideScaleY;
         const hx = sideGroundX + PRM.hh * sideScaleZ;
 
-        // ★ 修改：删掉未使用的 headR 声明
         const fullLen = Math.max(10, personHeights[0] * sideScaleZ);
         const headRight = sideGroundX + fullLen;
 
-        /* 高度指示虚线：地面 → 击球点 */
         sctx.save();
         sctx.strokeStyle = 'rgba(31,111,139,0.35)';
         sctx.lineWidth = 1;
@@ -1691,10 +1674,8 @@
         sctx.stroke();
         sctx.restore();
 
-        /* 拍框：横向椭圆 3:2（宽:高 = 3:2） */
         const rx = 6.0, ry = 4.0;
 
-        /* 拍杆：从人物头部右侧到椭圆左边缘 */
         const fromX = headRight + 1;
         let toX = hx - rx;
         if (toX < fromX) toX = fromX;
@@ -1709,7 +1690,6 @@
           sctx.lineCap = 'butt';
         }
 
-        /* 拍面椭圆（黑色线） */
         sctx.beginPath();
         sctx.ellipse(hx, sy, rx, ry, 0, 0, Math.PI * 2);
         sctx.fillStyle = 'rgba(0,0,0,0.04)';
@@ -1718,7 +1698,6 @@
         sctx.lineWidth = 1.6;
         sctx.stroke();
 
-        /* 击球点小球（黑色 + 白边，作为唯一亮点位置标记） */
         sctx.beginPath();
         sctx.fillStyle = '#111';
         sctx.arc(hx, sy, 2.2, 0, Math.PI * 2);
@@ -1727,7 +1706,6 @@
         sctx.lineWidth = 0.9;
         sctx.stroke();
 
-        /* 文字：黑色 */
         const label = lang === 'zh' ? '击球点' : 'Contact';
         const hLabel = PRM.hh.toFixed(1) + ' m';
         sctx.font = 'bold 8px system-ui';
@@ -1764,7 +1742,6 @@
         sctx.fillStyle = '#f7fbf9';
         sctx.fillRect(0, 0, sideW, sideH);
 
-        /* ---- 轨迹热力图 ---- */
         if (showHeat && result.valid && cachedLandings.length) {
           if (sideHeatDirty && quality === 'full') {
             try {computeSideHeat();} catch (e) {console.error('side heat error:', e);}
@@ -1779,7 +1756,6 @@
         const yTop = sideCourtTop - 2;
         const yBot = sideCourtTop + L * sideScaleY + 2;
 
-        /* ---- 地面竖线（与主视图场边同色） ---- */
         sctx.strokeStyle = C_COURT_FRAME;
         sctx.lineWidth = 2.4;
         sctx.lineCap = 'round';
@@ -1789,7 +1765,6 @@
         sctx.stroke();
         sctx.lineCap = 'butt';
 
-        /* ---- 地面刻度：端线深色，中间线细绿 ---- */
         const ticks = [HL, HL - LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL - LONG_SVC), -HL];
         for (const ty of ticks) {
           const sy = sideCourtTop + (HL - ty) * sideScaleY;
@@ -1800,7 +1775,6 @@
           sctx.fillRect(sideGroundX + 1, sy - th / 2, tw, th);
         }
 
-        /* ---- 球网：与主视图同色同粗 ---- */
         const netSy = sideCourtTop + HL * sideScaleY;
         const netLen = NET_H * sideScaleZ;
         const cssMainW = parseFloat(canvas.style.width) || LW;
@@ -1814,7 +1788,6 @@
         sctx.stroke();
         sctx.lineCap = 'butt';
 
-        /* ---- 人 ---- */
         const ourColor = result.precise ? '#111' : '#b4bdb8';
 
         drawSidePerson(opponents[0].y, '#111', personHeights[0]);
@@ -1828,7 +1801,6 @@
           }
         }
 
-        /* ---- 球拍 / 击球点 ---- */
         if (result.valid) drawRacketContact();
       }
 
@@ -1845,7 +1817,6 @@
         const availTotal = wrap.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
         const maxH = Math.min(window.innerHeight * 0.75, 720);
 
-        /* 迭代求主画布尺寸与侧视图宽度（侧视图适当加宽，让高度比例更大） */
         let sideWc = clamp(maxH * 0.36, 130, 200);
         let cw = 300, ch = 400;
         for (let it = 0; it < 4; it++) {
@@ -1919,7 +1890,6 @@
         const dn = -y;
         const baseCenter = type === 'smash' ? 5.8 : 1.9;
         const shiftK = type === 'drop' ? 0.8 : 0.5;
-        // ★ 修改：2.8 → HH_DEFAULT
         const hShift = Math.max(0, Math.min(1.2, (HH_DEFAULT - PRM.hh) * 0.6));
         const center = Math.max(0.5, baseCenter - (4.6 - oppDist) * shiftK - hShift);
         const sigma = type === 'smash' ? 1.2 : 1.1;
@@ -1934,7 +1904,7 @@
         return Math.exp(-2.5 * u * u);
       }
 
-      function runTime(pos, Lp, type) {
+      function runTime(pos, Lp, type, vRun) {
         const dx = Lp.x - pos.x;
         const dy = Lp.y - pos.y;
         const dEff = Math.hypot(dx, dy);
@@ -1944,24 +1914,24 @@
         const dTouch = Math.max(0, dEff - rTouch);
         if (dTouch <= 0) return 0;
 
+        const vr = (vRun != null) ? vRun : PRM.v_run_a;
         const ux = dx / dEff, uy = dy / dEff;
-        const vSide = PRM.v_run * V_SIDE_K;
-        const vy = (uy >= 0 ? PRM.v_run * V_FWD_K : PRM.v_run / Math.max(1.0, PRM.k2));
+        const vSide = vr * V_SIDE_K;
+        const vy = (uy >= 0 ? vr * V_FWD_K : vr / Math.max(1.0, PRM.k2));
         const vEff = 1 / Math.hypot(ux / vSide, uy / vy);
         return dTouch / vEff;
       }
 
-      function pDef(pos, Lp, t, type) {
-        const tau = runTime(pos, Lp, type);
-        let tAvail = t - tau;
-        if (type === 'drop') tAvail += DROP_EXTRA_T;
+      function pDef(pos, Lp, t, type, vRun) {
+        const tau = runTime(pos, Lp, type, vRun);
+        const tAvail = t - tau + (type === 'drop' ? DROP_EXTRA_T : 0);
         return reachProb(tAvail);
       }
 
       const LAMBDA_RUN = 0.6;
 
-      function qRun(pos, item) {
-        const tau = runTime(pos, item.L, item.type);
+      function qRun(pos, item, vRun) {
+        const tau = runTime(pos, item.L, item.type, vRun);
         return Math.exp(-LAMBDA_RUN * tau);
       }
 
@@ -1972,9 +1942,9 @@
       function getProbs() {
         const smashF = Math.max(0, Math.min(1, (PRM.hh - NET_H) / 0.8));
         const clearF = Math.max(0, Math.min(1, (PRM.hh - 1.0) / 1.0));
-        let ps = PRM.p_smash / 100 * smashF;
-        let pc = PRM.p_clear / 100 * clearF;
-        let pd = PRM.p_drop / 100;
+        const ps = PRM.p_smash / 100 * smashF;
+        const pc = PRM.p_clear / 100 * clearF;
+        const pd = PRM.p_drop / 100;
         const total = ps + pc + pd || 1;
         return {ps: ps / total, pc: pc / total, pd: pd / total};
       }
@@ -2021,7 +1991,7 @@
             const f = pz / (pz - nz);
             const rx = px + (nx - px) * f;
             const ry = py + (ny - py) * f;
-            return {x: rx, y: ry, z: 0, t: t + f * dt};
+            return {x: rx, y: ry, t: t + f * dt};
           }
 
           px = nx; py = ny; pz = nz;
@@ -2080,12 +2050,10 @@
         const halfW = mode === 'single' ? SINGLES_HW : HW;
         const azimSig = SHOT_AZIM_SIG.smash;
 
-        // ★ 1) 步长加密：边线杀在角度上很"窄"，太粗会漏
         const azimStep = fast ? 3 : 1.5;
         const elevStep = fast ? 1.5 : 0.5;
         const elevMaxUp = 10;
 
-        // ★ 2) 范围放宽：直接扫满 AZIM_MAX（±55°），出界的会被 probe 里 |r.x| > halfW 自动剔掉
         const aLo = -AZIM_MAX;
         const aHi = AZIM_MAX;
 
@@ -2123,6 +2091,7 @@
         const th = maxW * W_MIN_REL;
         return Array.from(landings.values()).filter(Ld => Ld.w >= th);
       }
+
       function genDropLandings(hitter, fast) {
         const halfW = mode === 'single' ? SINGLES_HW : HW;
         const azimSig = SHOT_AZIM_SIG.drop;
@@ -2137,8 +2106,7 @@
         const validV0 = [];
         for (let k = 0; k < nCoarse; k++) {
           const v0 = vLo * Math.pow(vHi / vLo, k / (nCoarse - 1));
-          // ★ 修改：coarseMode=true 时 fast 被忽略，这里改成 false 更清晰
-          const ranges = coarseElevRanges(v0, hitter, halfW, false, maxOverNet, true);
+          const ranges = coarseElevRanges(v0, hitter, halfW, fast, maxOverNet, true);
           if (ranges.length) validV0.push(v0);
         }
         if (!validV0.length) return [];
@@ -2310,17 +2278,17 @@
         return items;
       }
 
-      function avgReachByType(items, P1, P2) {
+      function avgReachByType(items, P1, P2, v1, v2) {
         const acc = {
           smash: {s: 0, w: 0},
           clear: {s: 0, w: 0},
           drop: {s: 0, w: 0}
         };
         for (const it of items) {
-          const pa = pDef(P1, it.L, it.t, it.type);
+          const pa = pDef(P1, it.L, it.t, it.type, v1);
           let r = pa;
           if (P2) {
-            const pb = pDef(P2, it.L, it.t, it.type);
+            const pb = pDef(P2, it.L, it.t, it.type, v2);
             r = 1 - (1 - pa) * (1 - pb);
           }
           acc[it.type].s += r * it.w;
@@ -2336,11 +2304,11 @@
       /* ============================================================
          八、站位优化
          ============================================================ */
-      function itemV(pos1, pos2, item) {
-        const pa = pDef(pos1, item.L, item.t, item.type) * qRun(pos1, item);
+      function itemV(pos1, pos2, item, v1, v2) {
+        const pa = pDef(pos1, item.L, item.t, item.type, v1) * qRun(pos1, item, v1);
         let r = pa;
         if (pos2) {
-          const pb = pDef(pos2, item.L, item.t, item.type) * qRun(pos2, item);
+          const pb = pDef(pos2, item.L, item.t, item.type, v2) * qRun(pos2, item, v2);
           r = 1 - (1 - pa) * (1 - pb);
         }
         const c = cValue(item.type, item.L.y);
@@ -2354,11 +2322,11 @@
           : 0;
       }
 
-      function totalV(pos, items, otherPos) {
+      function totalV(pos, items, otherPos, v1, v2) {
         let sumWV = 0, sumW = 0;
         for (let i = 0; i < items.length; i++) {
           const it = items[i];
-          sumWV += it.w * itemV(pos, otherPos, it);
+          sumWV += it.w * itemV(pos, otherPos, it, v1, v2);
           sumW += it.w;
         }
         return sumW > 0 ? sumWV / sumW : -1;
@@ -2367,11 +2335,12 @@
       function optimizeSolo(items, step) {
         const x0 = -HW + 0.30, x1 = HW - 0.30;
         const y0 = -HL + 0.40, y1 = -0.5;
+        const vA = PRM.v_run_a;
 
         let bestPos = null, bestV = -Infinity;
         for (let x = x0; x <= x1 + 1e-9; x += step) {
           for (let y = y0; y <= y1 + 1e-9; y += step) {
-            const v = totalV({x, y}, items, null);
+            const v = totalV({x, y}, items, null, vA, vA);
             if (v > bestV) {bestV = v; bestPos = {x, y};}
           }
         }
@@ -2384,7 +2353,7 @@
           for (const dx of STEP) for (const dy of STEP) {
             const nx = ax + dx, ny = ay + dy;
             if (nx < x0 || nx > x1 || ny < y0 || ny > y1) continue;
-            const v = totalV({x: nx, y: ny}, items, null);
+            const v = totalV({x: nx, y: ny}, items, null, vA, vA);
             if (v > av + 1e-9) {ax = nx; ay = ny; av = v; improved = true;}
           }
           if (!improved) break;
@@ -2395,6 +2364,8 @@
       function optimizeDouble(items, fast) {
         const N = items.length;
         if (!N) return [{x: -1.5, y: -3}, {x: 1.5, y: -3}];
+
+        const vA = PRM.v_run_a, vB = PRM.v_run_b;
 
         const aArr = new Float64Array(N);
         let sumW = 0;
@@ -2412,28 +2383,31 @@
         for (const y of ys) for (const x of xs) pos.push({x, y});
         const M = pos.length;
 
-        const P = new Array(M);
+        const PA = new Array(M), PB = new Array(M);
+        const SA = new Float64Array(M), SB = new Float64Array(M);
         for (let p = 0; p < M; p++) {
-          const arr = new Float64Array(N);
+          const arrA = new Float64Array(N);
+          const arrB = new Float64Array(N);
+          let sa = 0, sb = 0;
           for (let i = 0; i < N; i++) {
             const it = items[i];
-            arr[i] = pDef(pos[p], it.L, it.t, it.type) * qRun(pos[p], it);
+            const pa = pDef(pos[p], it.L, it.t, it.type, vA) * qRun(pos[p], it, vA);
+            const pb = pDef(pos[p], it.L, it.t, it.type, vB) * qRun(pos[p], it, vB);
+            arrA[i] = pa; arrB[i] = pb;
+            sa += aArr[i] * pa; sb += aArr[i] * pb;
           }
-          P[p] = arr;
+          PA[p] = arrA; PB[p] = arrB; SA[p] = sa; SB[p] = sb;
         }
 
         let bi = 0, bj = 0, bs = -Infinity;
         for (let i = 0; i < M; i++) {
-          const Pi = P[i];
-          for (let j = i; j < M; j++) {
-            const Pj = P[j];
-            let s = 0;
-            for (let k = 0; k < N; k++) {
-              const pa = Pi[k], pb = Pj[k];
-              const r = 1 - (1 - pa) * (1 - pb);
-              s += aArr[k] * r;
-            }
-            const V = (s - sumW) / sumW - overlapPenalty(pos[i], pos[j]);
+          const Pi = PA[i];
+          const pi = pos[i];
+          for (let j = 0; j < M; j++) {
+            const Pj = PB[j];
+            let s = SA[i] + SB[j];
+            for (let k = 0; k < N; k++) s -= aArr[k] * Pi[k] * Pj[k];
+            const V = (s - sumW) / sumW - overlapPenalty(pi, pos[j]);
             if (V > bs) {bs = V; bi = i; bj = j;}
           }
         }
@@ -2446,8 +2420,8 @@
           let s = 0;
           for (let k = 0; k < N; k++) {
             const it = items[k];
-            const pa = pDef(a, it.L, it.t, it.type) * qRun(a, it);
-            const pb = pDef(b, it.L, it.t, it.type) * qRun(b, it);
+            const pa = pDef(a, it.L, it.t, it.type, vA) * qRun(a, it, vA);
+            const pb = pDef(b, it.L, it.t, it.type, vB) * qRun(b, it, vB);
             const r = 1 - (1 - pa) * (1 - pb);
             s += aArr[k] * r;
           }
@@ -2504,14 +2478,15 @@
         }
 
         const precise = !fast;
+        const vA = PRM.v_run_a, vB = PRM.v_run_b;
 
         if (mode === 'single') {
           const P1 = optimizeSolo(items, stepPos);
-          return {P1, P2: null, valid: true, precise, reachStats: avgReachByType(items, P1, null), highTMin};
+          return {P1, P2: null, valid: true, precise, reachStats: avgReachByType(items, P1, null, vA, vA), highTMin};
         }
 
         const [P1, P2] = optimizeDouble(items, fast);
-        return {P1, P2, valid: true, precise, reachStats: avgReachByType(items, P1, P2), highTMin};
+        return {P1, P2, valid: true, precise, reachStats: avgReachByType(items, P1, P2, vA, vB), highTMin};
       }
 
       /* ============================================================
@@ -2565,9 +2540,9 @@
         const tagRightX = w2c({x: -HW, y: 0}).x - 6;
         const lineV = PRM.clearLineY.toFixed(1) + ' m';
 
-        drawCourtTag(t('lblNearDrop'), t('lblNearDropV'), tagRightX, w2c({x: 0, y: -DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
+        drawCourtTag(t('lblNearDrop'), nearDropLabel(), tagRightX, w2c({x: 0, y: -DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
         drawCourtTag(t('lblFrontPen'), lineV, tagRightX, w2c({x: 0, y: -PRM.clearLineY}).y - 8, '#c0392b', 'right');
-        drawCourtTag(t('lblFarDrop'), t('lblFarDropV'), tagRightX, w2c({x: 0, y: -DROP_FAR_EDGE}).y + 8, '#1f6f8b', 'right');
+        drawCourtTag(t('lblFarDrop'), farDropLabel(), tagRightX, w2c({x: 0, y: -DROP_FAR_EDGE}).y + 8, '#1f6f8b', 'right');
         drawCourtTag(t('net'), null, tagRightX, w2c({x: 0, y: 0}).y, C_NET, 'right');
       }
 
@@ -2662,7 +2637,7 @@
 
             const sum = s + c + d;
             const o = (py * W + px) * 4;
-            if (sum < max * HEAT_CUT) {data[o + 3] = 0; continue;}
+            if (sum < max * HEAT_CUT) continue;
 
             const norm = Math.min(1, Math.sqrt(sum * invMax));
             const inv = 1 / sum;
@@ -2704,31 +2679,46 @@
         drawLabelWithHalo(lang === 'zh' ? '对手' : 'Opp', c.x, c.y - 11, C_PERSON, FONT_PLAYER, 'center', 'bottom');
       }
 
-      function drawOurPoint(p, label) {
+      function speedDotRadius(vRun) {
+        const k = (vRun != null ? vRun : SPEED_BASE) / SPEED_BASE;
+        return 8 * clamp(0.45 + 0.55 * k, 0.62, 1.60);
+      }
+
+      function speedTag(v, otherV) {
+        const d = v - otherV;
+        if (Math.abs(d) < 0.05) return '';
+        return d > 0 ? t('tagFast') : t('tagSlow');
+      }
+
+      function drawOurPoint(p, label, vRun) {
         const c = w2c(p);
         const col = result.precise ? C_PERSON : C_PERSON_PENDING;
         const lineCol = result.precise ? 'rgba(0,0,0,.30)' : C_PERSON_PENDING_LINE;
+        const rad = speedDotRadius(vRun);
+        const arm = rad * 1.9;
 
         ctx.beginPath(); ctx.fillStyle = col;
-        ctx.arc(c.x, c.y, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.arc(c.x, c.y, rad, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.save();
         ctx.strokeStyle = lineCol; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
         ctx.beginPath();
-        ctx.moveTo(c.x - 15, c.y); ctx.lineTo(c.x + 15, c.y);
-        ctx.moveTo(c.x, c.y - 15); ctx.lineTo(c.x, c.y + 15);
+        ctx.moveTo(c.x - arm, c.y); ctx.lineTo(c.x + arm, c.y);
+        ctx.moveTo(c.x, c.y - arm); ctx.lineTo(c.x, c.y + arm);
         ctx.stroke();
         ctx.restore();
 
-        drawLabelWithHalo(label, c.x, c.y + 11, col, FONT_OUR, 'center', 'top');
+        drawLabelWithHalo(label, c.x, c.y + rad + 3, col, FONT_OUR, 'center', 'top');
       }
 
       function drawOurs() {
         if (!result.valid) return;
 
+        const vA = PRM.v_run_a, vB = PRM.v_run_b;
+
         if (mode === 'single') {
-          if (result.P1) drawOurPoint(result.P1, t('ourSolo'));
+          if (result.P1) drawOurPoint(result.P1, t('ourSolo'), vA);
           return;
         }
 
@@ -2738,17 +2728,19 @@
         const dX = Math.abs(P1.x - P2.x);
         const dY = Math.abs(P1.y - P2.y);
 
+        let baseA, baseB;
         if (dX >= dY) {
-          const left = P1.x <= P2.x ? P1 : P2;
-          const right = P1.x <= P2.x ? P2 : P1;
-          drawOurPoint(left, t('labelLeft'));
-          drawOurPoint(right, t('labelRight'));
+          const aIsLeft = P1.x <= P2.x;
+          baseA = aIsLeft ? t('labelLeft') : t('labelRight');
+          baseB = aIsLeft ? t('labelRight') : t('labelLeft');
         } else {
-          const rear = P1.y < P2.y ? P1 : P2;
-          const front = P1.y < P2.y ? P2 : P1;
-          drawOurPoint(rear, t('ourBack'));
-          drawOurPoint(front, t('ourFront'));
+          const aIsRear = P1.y < P2.y;
+          baseA = aIsRear ? t('ourBack') : t('ourFront');
+          baseB = aIsRear ? t('ourFront') : t('ourBack');
         }
+
+        drawOurPoint(P1, speedTag(vA, vB) + baseA, vA);
+        drawOurPoint(P2, speedTag(vB, vA) + baseB, vB);
       }
 
       function draw() {
@@ -3150,7 +3142,7 @@
 
       resetBtn.addEventListener('click', () => {
         SLIDER_DEFS.forEach(d => {PRM[d.key] = d.def;});
-        PRM.hh = 2.8;
+        PRM.hh = HH_DEFAULT;
         buildSliders();
         updateHeightPill();
         quality = 'full';

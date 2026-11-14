@@ -236,6 +236,47 @@
       background: #dbe7f3
     }
 
+    /* A/B 速度比控件 */
+    .ratio-btn {
+      appearance: none;
+      cursor: ns-resize;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: #eef3f8;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      color: #1e6bb8;
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 1;
+      letter-spacing: .3px;
+      transition: background .15s, transform .12s;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ratio-btn:hover {
+      background: #e2ebf5
+    }
+
+    .ratio-btn:active {
+      transform: scale(.96)
+    }
+
+    .ratio-btn .ratio-label {
+      font-size: 10.5px;
+      opacity: .7
+    }
+
+    .ratio-btn .ratio-val {
+      min-width: 26px;
+      text-align: center
+    }
+
     .legend {
       display: flex;
       align-items: center;
@@ -632,12 +673,28 @@
         order: 1
       }
 
+      .ratio-btn {
+        padding: 4px 9px;
+        font-size: 11.5px;
+        gap: 4px;
+        flex-shrink: 0;
+        order: 2
+      }
+
+      .ratio-btn .ratio-label {
+        font-size: 10px
+      }
+
+      .ratio-btn .ratio-val {
+        min-width: 22px
+      }
+
       .collapse-btn {
         width: 16px;
         height: 16px;
         flex-shrink: 0;
         margin-left: auto;
-        order: 2
+        order: 3
       }
 
       .collapse-btn svg {
@@ -649,7 +706,7 @@
       .legend {
         font-size: 11px;
         gap: 8px;
-        order: 3;
+        order: 4;
         flex-basis: 100%;
         padding-top: 6px;
         border-top: 1px solid #f0f4f1;
@@ -723,7 +780,7 @@
 
     <header class="card header">
       <div class="header-left">
-        <div class="logo">🏸</div>
+        <div class="logo">🎯</div>
         <div>
           <h1 data-i18n="title">羽毛球远身场地落点</h1>
           <p id="pageSub"></p>
@@ -737,6 +794,9 @@
     <div class="card canvas-card">
       <div class="canvas-topbar">
         <button class="mode-toggle" id="modeToggle" data-mode="double" data-i18n="doubles">双打</button>
+        <button class="ratio-btn" id="ratioBtn" aria-label="A/B speed ratio">
+          <span class="ratio-label">A/B</span><span class="ratio-val" id="ratioVal">1</span>
+        </button>
         <div class="legend" id="legendBar"></div>
         <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
           <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
@@ -815,10 +875,11 @@
         <li>加权跑动距离 × 启动修正</li>
         <li>× 追身加成（距对手 &lt; 0.45 m 时 ×1.6）</li>
         <li>× 贴边加成（<code>1 + 1.2·exp(-b/0.3)</code>）</li>
+        <li>÷ 速度比（A 为 r，B 为 1/r；r ∈ [0.8, 1.2]，双击 A/B 按钮回到 1）</li>
       </ol>
 
       <h3>六、热力图</h3>
-      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正）。偏蓝快、偏红慢。双击场地空白处开关。</p>
+      <p>每格颜色 = <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> 的等效时间（含启动修正与速度比）。偏蓝快、偏红慢。双击场地空白处开关。</p>
 
       <h3>七、总评分 J</h3>
       <ul>
@@ -833,15 +894,19 @@
       <h3>九、红点与四角次优</h3>
       <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤。</p>
 
-      <h3>十、可调参数</h3>
+      <h3>十、A/B 速度比</h3>
+      <p>双打模式下，双打按钮右侧出现「A/B」按钮，内部数字即速度比 r，默认 1。按住上下拖动调节（上拖增大、下拖减小），范围 0.8–1.2，步长 0.01；双击回到 1。A 的速度乘 r，B 的速度乘 1/r，同时两人的圆点按 √倍数 缩放，标签右侧标注 <code>x2</code> / <code>x0.5</code> 之类的倍率。</p>
+
+      <h3>十一、可调参数</h3>
       <ul>
         <li><code>W_BACK / W_FWD</code>：1.7 / 1.15</li>
         <li><code>K_REV / K_ADV</code>：1.8 / 0.7</li>
         <li><code>S0_DIST</code>：1.5m；<code>K_BODY</code>：1.6；<code>K_EDGE</code>：1.2</li>
         <li><code>W_ME_SINGLE</code>：0.3；<code>V_GAMMA</code>：3.0；<code>LONG_PRESS_MS</code>：500ms</li>
+        <li><code>RATIO_MIN / MAX / STEP</code>：0.8 / 1.2 / 0.01</li>
       </ul>
 
-      <h3>十一、局限</h3>
+      <h3>十二、局限</h3>
       <ul>
         <li>双打不评估我方回位</li>
         <li>热力图"时间"是等效时间（加权距离），不是真实秒数</li>
@@ -899,10 +964,11 @@
         <li>Weighted running distance × startup correction</li>
         <li>× body-shot bonus (×1.6 when distance to opponent &lt; 0.45 m)</li>
         <li>× edge bonus (<code>1 + 1.2·exp(-b/0.3)</code>)</li>
+        <li>÷ speed ratio (r for A, 1/r for B; r ∈ [0.8, 1.2], double-tap the A/B button to reset to 1)</li>
       </ol>
 
       <h3>6. Heatmap</h3>
-      <p>Each cell colour = equivalent time of <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> (including startup correction). Bluer = faster, redder = slower. Double-tap blank court area to toggle.</p>
+      <p>Each cell colour = equivalent time of <code>min(t<sub>A</sub>, t<sub>B</sub>)</code> (including startup correction and speed ratio). Bluer = faster, redder = slower. Double-tap blank court area to toggle.</p>
 
       <h3>7. Total score J</h3>
       <ul>
@@ -917,15 +983,19 @@
       <h3>9. Red dot and corner suboptimals</h3>
       <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid), sorted by J and labeled ②③④⑤.</p>
 
-      <h3>10. Tunable parameters</h3>
+      <h3>10. A/B speed ratio</h3>
+      <p>In doubles, an "A/B" button appears to the right of the mode toggle. Its number is the speed ratio r (default 1). Press and drag up/down to change it (up increases, down decreases); range 0.8–1.2, step 0.01. Double-tap resets to 1. A's speed is multiplied by r, B's by 1/r. The two dots scale by √ratio and the multiplier is shown next to the label, e.g. <code>x2</code> / <code>x0.5</code>.</p>
+
+      <h3>11. Tunable parameters</h3>
       <ul>
         <li><code>W_BACK / W_FWD</code>: 1.7 / 1.15</li>
         <li><code>K_REV / K_ADV</code>: 1.8 / 0.7</li>
         <li><code>S0_DIST</code>: 1.5 m; <code>K_BODY</code>: 1.6; <code>K_EDGE</code>: 1.2</li>
         <li><code>W_ME_SINGLE</code>: 0.3; <code>V_GAMMA</code>: 3.0; <code>LONG_PRESS_MS</code>: 500 ms</li>
+        <li><code>RATIO_MIN / MAX / STEP</code>: 0.8 / 1.2 / 0.01</li>
       </ul>
 
-      <h3>11. Limitations</h3>
+      <h3>12. Limitations</h3>
       <ul>
         <li>Doubles does not evaluate our own recovery</li>
         <li>Heatmap "time" is equivalent time (weighted distance), not real seconds</li>
@@ -946,6 +1016,12 @@
       const SAFE_DELTA = 0.20;
       const OPP_SIDE_Y_MIN = NET_Y, OPP_SIDE_Y_MAX = L;
 
+      // 网格 / 落点合法边界（computeGrid / buildHeatCanvas / computeGapPoints 共用）
+      const GRID_X_MIN = -HALF_W + SAFE_DELTA;
+      const GRID_X_MAX = HALF_W - SAFE_DELTA;
+      const GRID_Y_MIN = OPP_SIDE_Y_MIN + SAFE_DELTA;
+      const GRID_Y_MAX = OPP_SIDE_Y_MAX - SAFE_DELTA;
+
       const W_X = 1.0, W_BACK = 1.7, W_FWD = 1.15;
       const K_REV = 1.8, K_ADV = 0.7;
       const B0 = 0.30, K_EDGE = 1.2;
@@ -956,8 +1032,19 @@
       const W_ME_SINGLE = 0.3;
 
       const GRID_STEP_FAST = 0.25, GRID_STEP_FINE = 0.10;
+      const LOCUS_STEP = 0.15;
+      const GAP_SAMPLES = 4;
       const THROTTLE_MS = 60;
       const CORNER_R = 2.0, CORNER_SHOW_R = 1.0;
+      const ALREADY_BEST = 0.15;
+
+      // 四角种子点（角点筛选的起点）
+      const CORNER_SEEDS = [
+        {x: GRID_X_MIN, y: GRID_Y_MAX},
+        {x: GRID_X_MAX, y: GRID_Y_MAX},
+        {x: GRID_X_MIN, y: GRID_Y_MIN},
+        {x: GRID_X_MAX, y: GRID_Y_MIN},
+      ];
 
       const SCALE = 90, PAD = 50;
       const EXPOSE_M = 0.8, VIEW_Y_MIN = NET_Y - EXPOSE_M;
@@ -975,12 +1062,17 @@
       const V_HANDLE_TIP = isTouch ? 7 : 5;
 
       const S0_DIST = 1.5;
-      const VMAG_BLEND = 1.0;
 
       const DBLCLICK_MS = 420;
       const DBLCLICK_DIST = 60;
       const DRAG_START_THRESHOLD = 5;
       const LONG_PRESS_MS = 500;
+
+      // A/B 速度比
+      const RATIO_MIN = 0.8, RATIO_MAX = 1.2, RATIO_STEP = 0.01;
+      const RATIO_SENS = 0.001;        // 每像素变化量（越小越"慢"）
+      const RATIO_TAP_MS = 350;        // 双击判定窗口
+      const RATIO_TAP_DIST = 40;
 
       const COLOR_PLAYER = '#111111';
       const COLOR_VEL = '#1e88e5';
@@ -1008,15 +1100,13 @@
         mode: 'double',
         showHeat: false,
         hover: null,
+        speedRatio: 1,
         players: {
           a: {pos: {x: -1.2, y: 9.2}, vel: {x: 0, y: 0}, velVisible: false},
           b: {pos: {x: 1.2, y: 9.2}, vel: {x: 0, y: 0}, velVisible: false},
         },
-        // 计算结果
         best: {pt: null, J: 0},
         heat: [],
-        heatStep: GRID_STEP_FINE,
-        heatCanvas: null,
         heatMeta: null,
         corners: [],
         locus: [],
@@ -1038,6 +1128,8 @@
 
       let lastGridCompute = 0;
       let lastTap = {time: 0, x: 0, y: 0};
+
+      // 热力图离屏画布（唯一来源）
       let heatCanvas = null, heatCtx = null;
 
       const appEl = document.getElementById('app');
@@ -1048,6 +1140,8 @@
       const pageSub = document.getElementById('pageSub');
       const legendBar = document.getElementById('legendBar');
       const modeToggleEl = document.getElementById('modeToggle');
+      const ratioBtnEl = document.getElementById('ratioBtn');
+      const ratioValEl = document.getElementById('ratioVal');
 
       /* =========================================================
        * 4. 工具
@@ -1084,6 +1178,9 @@
       const isHot = (target) =>
         pointer.dragTarget === target || state.hover === target;
 
+      // 数字格式化（整数不带小数）
+      const fmtNum = (v) => v.toFixed(2).replace(/\.?0+$/, '');
+
       /* =========================================================
        * 5. 计算：难度 / 栅格 / 等难度线
        * ========================================================= */
@@ -1092,16 +1189,16 @@
         const projDist = s / vmag;
         const sig = 1 / (1 + Math.exp(-projDist / S0_DIST));
         const kFull = K_ADV + (K_REV - K_ADV) * (1 - sig);
-        const blend = Math.min(vmag / VMAG_BLEND, 1.0);
-        return 1 + (kFull - 1) * blend;
+        return 1 + (kFull - 1) * Math.min(vmag, 1.0);
       }
 
-      function evalAt(x, y, opp, v) {
+      // vmag: 预计算的 |v|；mul: 速度倍率（A 为 r，B 为 1/r），越快 → 等效难度越低
+      function evalAt(x, y, opp, v, vmag, mul = 1) {
         const dx = x - opp.x, dy = y - opp.y;
         const wy = dy >= 0 ? W_BACK : W_FWD;
         let base = Math.sqrt((W_X * dx) ** 2 + (wy * dy) ** 2);
-        base *= startFactor(dx * v.x + dy * v.y, Math.hypot(v.x, v.y));
-        return base;
+        base *= startFactor(dx * v.x + dy * v.y, vmag);
+        return base / mul;
       }
 
       function bodyEdgeFactor(x, y, opp) {
@@ -1116,26 +1213,33 @@
         return f * (1 + K_EDGE * Math.exp(-Math.max(0, dEdge) / B0));
       }
 
-      const difficulty = (pt, opp, v) =>
-        evalAt(pt.x, pt.y, opp, v) * bodyEdgeFactor(pt.x, pt.y, opp);
+      function difficulty(x, y, opp, v, vmag, mul = 1) {
+        return evalAt(x, y, opp, v, vmag, mul) * bodyEdgeFactor(x, y, opp);
+      }
 
-      function computeGrid(o1, o2, v1, v2, step, mode) {
-        const xMin = -HALF_W + SAFE_DELTA;
-        const xMax = HALF_W - SAFE_DELTA;
-        const yMin = OPP_SIDE_Y_MIN + SAFE_DELTA;
-        const yMax = OPP_SIDE_Y_MAX - SAFE_DELTA;
-        const nX = Math.max(1, Math.round((xMax - xMin) / step));
-        const nY = Math.max(1, Math.round((yMax - yMin) / step));
+      // 当前模式下的速度倍率
+      function mulOf(key, mode) {
+        const m = mode || state.mode;
+        if (m !== 'double') return 1;
+        return key === 'a' ? state.speedRatio : 1 / state.speedRatio;
+      }
+
+      function computeGrid(o1, o2, v1, vm1, v2, vm2, step, mode) {
+        const nX = Math.max(1, Math.round((GRID_X_MAX - GRID_X_MIN) / step));
+        const nY = Math.max(1, Math.round((GRID_Y_MAX - GRID_Y_MIN) / step));
+
+        const m1 = mulOf('a', mode);
+        const m2 = mulOf('b', mode);
 
         const heat = [];
         let bestPt = null, bestJ = -Infinity;
         let minTime = Infinity, maxTime = -Infinity;
 
         for (let i = 0; i <= nX; i++) {
-          const x = xMin + (xMax - xMin) * i / nX;
+          const x = GRID_X_MIN + (GRID_X_MAX - GRID_X_MIN) * i / nX;
           for (let j = 0; j <= nY; j++) {
-            const y = yMin + (yMax - yMin) * j / nY;
-            const base1 = evalAt(x, y, o1, v1);
+            const y = GRID_Y_MIN + (GRID_Y_MAX - GRID_Y_MIN) * j / nY;
+            const base1 = evalAt(x, y, o1, v1, vm1, m1);
 
             let jv, time;
             if (mode === 'single') {
@@ -1144,7 +1248,7 @@
               jv = oppScore - W_ME_SINGLE * Math.sqrt(dx * dx + dy * dy);
               time = base1;
             } else {
-              const base2 = evalAt(x, y, o2, v2);
+              const base2 = evalAt(x, y, o2, v2, vm2, m2);
               jv = Math.min(
                 base1 * bodyEdgeFactor(x, y, o1),
                 base2 * bodyEdgeFactor(x, y, o2)
@@ -1159,43 +1263,43 @@
           }
         }
 
-        const seeds = [
-          {x: -HALF_W + SAFE_DELTA, y: L - SAFE_DELTA},
-          {x: HALF_W - SAFE_DELTA, y: L - SAFE_DELTA},
-          {x: -HALF_W + SAFE_DELTA, y: NET_Y + SAFE_DELTA},
-          {x: HALF_W - SAFE_DELTA, y: NET_Y + SAFE_DELTA},
-        ];
-        const raw = seeds.map((s) => {
+        const raw = CORNER_SEEDS.map((s) => {
           let bx = s.x, by = s.y, bj = -Infinity;
           for (const h of heat) {
             if (Math.abs(h.x - s.x) <= CORNER_R + 1e-9 &&
               Math.abs(h.y - s.y) <= CORNER_R + 1e-9 &&
               h.val > bj) {bj = h.val; bx = h.x; by = h.y;}
           }
-          return {x: bx, y: by, val: bj, rank: null, distToSeed: Math.hypot(bx - s.x, by - s.y)};
+          return {x: bx, y: by, val: bj, distToSeed: Math.hypot(bx - s.x, by - s.y), rank: null};
         });
 
-        const visible = raw.filter((c) => c.distToSeed <= CORNER_SHOW_R).sort((a, b) => b.val - a.val);
-        const ALREADY_BEST = 0.15;
+        // 过滤后剥掉 distToSeed（渲染不需要）
+        const visible = raw
+          .filter((c) => c.distToSeed <= CORNER_SHOW_R)
+          .sort((a, b) => b.val - a.val)
+          .map(({distToSeed, ...rest}) => rest);
+
         let cursor = 2;
         for (const cb of visible) {
           cb.rank = Math.hypot(cb.x - bestPt.x, cb.y - bestPt.y) < ALREADY_BEST ? null : cursor++;
         }
 
         const span = (maxTime - minTime) || 1;
-        for (const h of heat) h.norm = (h.time - minTime) / span;
+        // 只保留热力图需要的字段
+        const heatOut = heat.map((h) => ({x: h.x, y: h.y, norm: (h.time - minTime) / span}));
 
-        return {best: {pt: bestPt, J: bestJ}, heat, step, corners: visible};
+        return {best: {pt: bestPt, J: bestJ}, heat: heatOut, step, corners: visible};
       }
 
-      function equiLocus(o1, o2, v1, v2) {
+      function equiLocus(o1, o2, v1, vm1, v2, vm2, m1, m2) {
         if (Math.hypot(o2.x - o1.x, o2.y - o1.y) < MIN_GAP_DIST) return [];
-        const F = (x, y) => difficulty({x, y}, o1, v1) - difficulty({x, y}, o2, v2);
+        const F = (x, y) => difficulty(x, y, o1, v1, vm1, m1) - difficulty(x, y, o2, v2, vm2, m2);
         const xMin = -HALF_W - 0.5, xMax = HALF_W + 0.5;
         const yMin = OPP_SIDE_Y_MIN - 0.5, yMax = OPP_SIDE_Y_MAX + 0.5;
-        const step = 0.15;
-        const nx = Math.ceil((xMax - xMin) / step), ny = Math.ceil((yMax - yMin) / step);
-        const gx = (i) => xMin + i * step, gy = (j) => yMin + j * step;
+        const nx = Math.ceil((xMax - xMin) / LOCUS_STEP);
+        const ny = Math.ceil((yMax - yMin) / LOCUS_STEP);
+        const gx = (i) => xMin + i * LOCUS_STEP;
+        const gy = (j) => yMin + j * LOCUS_STEP;
 
         const Fg = [];
         for (let j = 0; j <= ny; j++) {
@@ -1239,18 +1343,24 @@
         return segs;
       }
 
-      function computeGapPoints(segs, o1, o2, v1, v2) {
+      function computeGapPoints(segs, o1, o2, v1, vm1, v2, vm2, m1, m2) {
         if (!segs.length) return [null, null];
 
         const cands = [];
         const push = (x, y) => {
           if (Math.abs(x) > HALF_W - SAFE_DELTA) return;
-          if (y < OPP_SIDE_Y_MIN + SAFE_DELTA || y > OPP_SIDE_Y_MAX - SAFE_DELTA) return;
-          cands.push({x, y, s: Math.min(difficulty({x, y}, o1, v1), difficulty({x, y}, o2, v2))});
+          if (y < GRID_Y_MIN || y > GRID_Y_MAX) return;
+          cands.push({
+            x, y,
+            s: Math.min(
+              difficulty(x, y, o1, v1, vm1, m1),
+              difficulty(x, y, o2, v2, vm2, m2)
+            )
+          });
         };
         for (const [a, b] of segs) {
-          for (let k = 0; k <= 4; k++) {
-            const u = k / 4;
+          for (let k = 0; k <= GAP_SAMPLES; k++) {
+            const u = k / GAP_SAMPLES;
             push(a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u);
           }
         }
@@ -1277,8 +1387,15 @@
         if (state.mode === 'double') {
           const v1 = getEffectiveVel('a');
           const v2 = getEffectiveVel('b');
-          state.locus = equiLocus(state.players.a.pos, state.players.b.pos, v1, v2);
-          state.gaps = computeGapPoints(state.locus, state.players.a.pos, state.players.b.pos, v1, v2);
+          const vm1 = Math.hypot(v1.x, v1.y);
+          const vm2 = Math.hypot(v2.x, v2.y);
+          const m1 = mulOf('a');
+          const m2 = mulOf('b');
+          state.locus = equiLocus(state.players.a.pos, state.players.b.pos, v1, vm1, v2, vm2, m1, m2);
+          state.gaps = computeGapPoints(
+            state.locus, state.players.a.pos, state.players.b.pos,
+            v1, vm1, v2, vm2, m1, m2
+          );
         } else {
           state.locus = [];
           state.gaps = [null, null];
@@ -1311,15 +1428,10 @@
         ];
       }
 
-      function buildHeatCanvas() {
-        if (!state.heat.length) {state.heatCanvas = null; state.heatMeta = null; return;}
-        const step = state.heatStep;
-        const xMin = -HALF_W + SAFE_DELTA;
-        const xMax = HALF_W - SAFE_DELTA;
-        const yMin = OPP_SIDE_Y_MIN + SAFE_DELTA;
-        const yMax = OPP_SIDE_Y_MAX - SAFE_DELTA;
-        const cols = Math.round((xMax - xMin) / step) + 1;
-        const rows = Math.round((yMax - yMin) / step) + 1;
+      function buildHeatCanvas(step) {
+        if (!state.heat.length) {state.heatMeta = null; return;}
+        const cols = Math.round((GRID_X_MAX - GRID_X_MIN) / step) + 1;
+        const rows = Math.round((GRID_Y_MAX - GRID_Y_MIN) / step) + 1;
 
         if (!heatCanvas) {
           heatCanvas = document.createElement('canvas');
@@ -1331,8 +1443,8 @@
         const img = heatCtx.createImageData(cols, rows);
         const data = img.data;
         for (const h of state.heat) {
-          const ix = Math.round((h.x - xMin) / (xMax - xMin) * (cols - 1));
-          const iy = Math.round((h.y - yMin) / (yMax - yMin) * (rows - 1));
+          const ix = Math.round((h.x - GRID_X_MIN) / (GRID_X_MAX - GRID_X_MIN) * (cols - 1));
+          const iy = Math.round((h.y - GRID_Y_MIN) / (GRID_Y_MAX - GRID_Y_MIN) * (rows - 1));
           if (ix < 0 || ix >= cols || iy < 0 || iy >= rows) continue;
           const [r, g, b] = rampColor(h.norm);
           const idx = ((rows - 1 - iy) * cols + ix) * 4;
@@ -1340,8 +1452,7 @@
         }
         heatCtx.putImageData(img, 0, 0);
 
-        state.heatCanvas = heatCanvas;
-        state.heatMeta = {xMin, xMax, yMin, yMax, step};
+        state.heatMeta = {xMin: GRID_X_MIN, xMax: GRID_X_MAX, yMin: GRID_Y_MIN, yMax: GRID_Y_MAX, step};
       }
 
       /* =========================================================
@@ -1351,12 +1462,16 @@
         const step = pointer.dragActive ? GRID_STEP_FAST : GRID_STEP_FINE;
         const v1 = getEffectiveVel('a');
         const v2 = getEffectiveVel('b');
-        const result = computeGrid(state.players.a.pos, state.players.b.pos, v1, v2, step, state.mode);
+        const vm1 = Math.hypot(v1.x, v1.y);
+        const vm2 = Math.hypot(v2.x, v2.y);
+        const result = computeGrid(
+          state.players.a.pos, state.players.b.pos,
+          v1, vm1, v2, vm2, step, state.mode
+        );
         state.best = result.best;
         state.heat = result.heat;
-        state.heatStep = result.step;
         state.corners = result.corners;
-        buildHeatCanvas();
+        buildHeatCanvas(step);
       }
 
       /* =========================================================
@@ -1372,14 +1487,14 @@
 
       function drawHeat() {
         const m = state.heatMeta;
-        if (!m || !state.heatCanvas) return;
+        if (!m || !heatCanvas) return;
         const tl = w2c({x: m.xMin - m.step / 2, y: m.yMax + m.step / 2});
         const br = w2c({x: m.xMax + m.step / 2, y: m.yMin - m.step / 2});
         ctx.save();
         ctx.globalAlpha = 0.55;
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(state.heatCanvas, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+        ctx.drawImage(heatCanvas, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
         ctx.restore();
       }
 
@@ -1492,9 +1607,10 @@
         ctx.restore();
       }
 
-      function drawDot(pt, color, label, radius, labelDy, shrunk) {
+      // suffix：标签右侧的小号倍率文字，如 "x2" / "x0.5"
+      function drawDot(pt, color, label, radius, shrunk, suffix) {
         const p = w2c(pt);
-        const r = (radius || 10) * (shrunk ? 0.8 : 1);
+        const r = radius * (shrunk ? 0.8 : 1);
         ctx.beginPath();
         ctx.fillStyle = color;
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -1502,16 +1618,36 @@
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.stroke();
-        if (label) {
-          ctx.save();
-          ctx.font = `bold ${isTouch ? 16 : 17}px system-ui`;
-          ctx.fillStyle = color;
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'alphabetic';
-          const m = ctx.measureText(label);
-          ctx.fillText(label, p.x - m.width / 2, p.y + (labelDy ?? -(r + 6)));
-          ctx.restore();
+
+        if (!label) return;
+
+        ctx.save();
+        const labelFont = `bold ${isTouch ? 16 : 17}px system-ui`;
+        const subFont = `bold ${isTouch ? 11 : 12}px system-ui`;
+        const baseY = p.y - (r + 6);
+
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = labelFont;
+        const wl = ctx.measureText(label).width;
+        let ws = 0;
+        if (suffix) {
+          ctx.font = subFont;
+          ws = ctx.measureText(suffix).width;
         }
+        const gapW = suffix ? 2 : 0;
+        const startX = p.x - (wl + ws + gapW) / 2;
+
+        ctx.textAlign = 'left';
+        ctx.font = labelFont;
+        ctx.fillStyle = color;
+        ctx.fillText(label, startX, baseY);
+
+        if (suffix) {
+          ctx.font = subFont;
+          ctx.fillStyle = COLOR_VEL;
+          ctx.fillText(suffix, startX + wl + gapW, baseY);
+        }
+        ctx.restore();
       }
 
       function drawEquiLocus(segs) {
@@ -1572,7 +1708,6 @@
         ctx.stroke();
 
         const labelY = p.y - 10;
-        const hasJ = typeof J === 'number' && isFinite(J);
 
         ctx.save();
         ctx.textBaseline = 'bottom';
@@ -1585,15 +1720,13 @@
         ctx.strokeText(t('best'), p.x - 2, labelY);
         ctx.fillText(t('best'), p.x - 2, labelY);
 
-        if (hasJ) {
-          ctx.font = `bold ${isTouch ? 13 : 12}px system-ui`;
-          ctx.textAlign = 'left';
-          ctx.lineWidth = 3;
-          ctx.fillStyle = 'rgba(211,47,47,0.72)';
-          const jText = `[${J.toFixed(1)}]`;
-          ctx.strokeText(jText, p.x - 2, labelY);
-          ctx.fillText(jText, p.x - 2, labelY);
-        }
+        ctx.font = `bold ${isTouch ? 13 : 12}px system-ui`;
+        ctx.textAlign = 'left';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(211,47,47,0.72)';
+        const jText = `[${J.toFixed(1)}]`;
+        ctx.strokeText(jText, p.x - 2, labelY);
+        ctx.fillText(jText, p.x - 2, labelY);
         ctx.restore();
       }
 
@@ -1603,7 +1736,6 @@
         for (const cb of list) {
           if (cb.rank == null) continue;
           const p = w2c(cb);
-          const hasV = typeof cb.val === 'number' && isFinite(cb.val);
           const text = String(cb.rank);
 
           ctx.font = 'bold 22px system-ui';
@@ -1611,23 +1743,17 @@
           ctx.strokeStyle = '#ffffff';
           ctx.fillStyle = COLOR_RANK;
 
-          if (!hasV) {
-            ctx.textAlign = 'center';
-            ctx.strokeText(text, p.x, p.y);
-            ctx.fillText(text, p.x, p.y);
-          } else {
-            ctx.textAlign = 'right';
-            ctx.strokeText(text, p.x - 3, p.y);
-            ctx.fillText(text, p.x - 3, p.y);
+          ctx.textAlign = 'right';
+          ctx.strokeText(text, p.x - 3, p.y);
+          ctx.fillText(text, p.x - 3, p.y);
 
-            ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
-            ctx.textAlign = 'left';
-            ctx.lineWidth = 3;
-            ctx.fillStyle = 'rgba(142,68,173,0.82)';
-            const vText = `[${cb.val.toFixed(1)}]`;
-            ctx.strokeText(vText, p.x + 3, p.y);
-            ctx.fillText(vText, p.x + 3, p.y);
-          }
+          ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
+          ctx.textAlign = 'left';
+          ctx.lineWidth = 3;
+          ctx.fillStyle = 'rgba(142,68,173,0.82)';
+          const vText = `[${cb.val.toFixed(1)}]`;
+          ctx.strokeText(vText, p.x + 3, p.y);
+          ctx.fillText(vText, p.x + 3, p.y);
         }
         ctx.restore();
       }
@@ -1643,7 +1769,7 @@
         ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
 
         // 热力图
-        if (state.showHeat && state.heatCanvas) drawHeat();
+        if (state.showHeat && heatCanvas) drawHeat();
 
         // 场内线
         ctx.strokeStyle = C_LINE;
@@ -1726,12 +1852,17 @@
           drawVelocityHandle(b.pos, b.vel, h, isHot(TARGET.B_VEL));
         }
 
-        // 球员点
+        // 球员点（双打时半径随速度比缩放，标签右侧带倍率）
         if (state.mode === 'single') {
-          drawDot(a.pos, COLOR_PLAYER, t('opponent'), 10, -16, aHot);
+          drawDot(a.pos, COLOR_PLAYER, t('opponent'), 10, aHot);
         } else {
-          drawDot(a.pos, COLOR_PLAYER, 'A', 10, -16, aHot);
-          drawDot(b.pos, COLOR_PLAYER, 'B', 10, -16, bHot);
+          const mA = state.speedRatio;
+          const mB = 1 / mA;
+          const showMul = Math.abs(mA - 1) > 1e-6;
+          const rA = 10 * Math.sqrt(mA);
+          const rB = 10 * Math.sqrt(mB);
+          drawDot(a.pos, COLOR_PLAYER, 'A', rA, aHot, showMul ? 'x' + fmtNum(mA) : '');
+          drawDot(b.pos, COLOR_PLAYER, 'B', rB, bHot, showMul ? 'x' + fmtNum(mB) : '');
         }
 
         // 四角次优
@@ -1967,6 +2098,61 @@
       });
 
       /* =========================================================
+       * 11b. A/B 速度比控件
+       * ========================================================= */
+      let ratioPointer = null;
+      let lastRatioTap = {time: 0, y: 0};
+
+      function setSpeedRatio(v) {
+        const inv = 1 / RATIO_STEP;
+        const snapped = Math.round(clamp(v, RATIO_MIN, RATIO_MAX) * inv) / inv;
+        if (snapped === state.speedRatio) return;
+        state.speedRatio = snapped;
+        ratioValEl.textContent = fmtNum(snapped);
+        markDirty();
+      }
+
+      ratioBtnEl.addEventListener('pointerdown', (e) => {
+        if (ratioPointer) return;
+        e.preventDefault();
+        ratioPointer = {
+          id: e.pointerId,
+          startY: e.clientY,
+          startRatio: state.speedRatio,
+          moved: false,
+        };
+        try {ratioBtnEl.setPointerCapture(e.pointerId);} catch (_) { }
+      });
+
+      ratioBtnEl.addEventListener('pointermove', (e) => {
+        if (!ratioPointer || e.pointerId !== ratioPointer.id) return;
+        e.preventDefault();
+        const dy = ratioPointer.startY - e.clientY;   // 上拖为正
+        if (!ratioPointer.moved && Math.abs(dy) < 3) return;
+        ratioPointer.moved = true;
+        setSpeedRatio(ratioPointer.startRatio + dy * RATIO_SENS);
+      });
+
+      function endRatioPointer(e, cancelled) {
+        if (!ratioPointer || e.pointerId !== ratioPointer.id) return;
+        const moved = ratioPointer.moved;
+        ratioPointer = null;
+        if (cancelled || moved) return;
+
+        const now = performance.now();
+        if (now - lastRatioTap.time < RATIO_TAP_MS &&
+          Math.abs(e.clientY - lastRatioTap.y) < RATIO_TAP_DIST) {
+          lastRatioTap.time = 0;
+          setSpeedRatio(1);
+        } else {
+          lastRatioTap = {time: now, y: e.clientY};
+        }
+      }
+
+      ratioBtnEl.addEventListener('pointerup', (e) => endRatioPointer(e, false));
+      ratioBtnEl.addEventListener('pointercancel', (e) => endRatioPointer(e, true));
+
+      /* =========================================================
        * 12. 界面文案 / 语言 / 折叠 / 模式
        * ========================================================= */
       function updateSubtitle() {
@@ -1992,6 +2178,8 @@
       function updateUIForMode() {
         modeToggleEl.textContent = state.mode === 'single' ? t('singles') : t('doubles');
         modeToggleEl.dataset.mode = state.mode;
+        ratioBtnEl.style.display = state.mode === 'double' ? '' : 'none';
+        ratioValEl.textContent = fmtNum(state.speedRatio);
         updateSubtitle();
         updateLegend();
       }
@@ -2059,6 +2247,7 @@
       var mask = document.getElementById('principleModal');
       var credit = document.getElementById('credit');
 
+      // 首段脚本启动时 modal 的 principleBody 尚未解析，这里补一次填充
       if (typeof window.__applyLang === 'function') window.__applyLang();
 
       function openM() {mask.classList.add('open'); document.body.style.overflow = 'hidden';}
