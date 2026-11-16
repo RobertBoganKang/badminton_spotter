@@ -787,13 +787,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .param-help {
-    margin-top: 8px;
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.5;
-  }
-
   .params-foot {
     display: flex;
     justify-content: space-between;
@@ -810,17 +803,6 @@
     border-radius: 12px;
     color: var(--muted);
     background: var(--surface-2);
-  }
-
-  .param-done {
-    min-height: 42px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 12px;
-    color: #fff7ef;
-    background: var(--accent-strong);
-    cursor: pointer;
-    font-weight: 700;
   }
 
   .sr-only {
@@ -2032,7 +2014,7 @@
 
   .param-item {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: 74px minmax(0, 1fr);
     align-items: center;
     gap: 6px;
     min-width: 0;
@@ -2076,13 +2058,6 @@
     cursor: pointer;
   }
 
-  .param-help {
-    margin-top: 8px;
-    color: var(--text-3);
-    font-size: 9.5px;
-    line-height: 1.5;
-  }
-
   .params-foot {
     display: flex;
     flex-direction: row;
@@ -2104,16 +2079,6 @@
     background: #f5f9f6;
     font-size: 11px;
     font-weight: 600;
-  }
-
-  .param-done {
-    flex: 1 1 0;
-    min-height: 34px;
-    padding: 0 16px;
-    border-radius: 8px;
-    color: #fff;
-    background: var(--primary);
-    font-size: 11px;
   }
 
   @media (max-width: 680px) {
@@ -2486,12 +2451,10 @@
             <input id="heatOpacity" data-param="heatOpacity" type="range" min="0.25" max="0.95" step="0.01" value="0.72">
           </div>
         </div>
-        <p class="param-help">反应曲线沿用 stand.html：t0 时约 2%，t1 时约 88%，上限 92%。对手只能在自己半场、且球处于指定高度范围时截击。</p>
       </section>
     </div>
     <div class="params-foot">
       <button class="param-reset" id="paramsReset" type="button">恢复默认参数</button>
-      <button class="param-done" id="paramsDone" type="button">完成</button>
     </div>
   </div>
 </dialog>
@@ -2574,7 +2537,6 @@
       zMax: '可接高度上限',
       k2: '后退速度系数',
       heatOpacity: '热力图透明度',
-      paramHelp: '反应曲线沿用 stand.html：t0 时约 2%，t1 时约 88%，上限 92%。对手只能在自己半场、且球处于指定高度范围时截击。',
       resetParams: '恢复默认参数',
       done: '完成',
       methodTitle: '羽毛球最优出球轨迹 · 计算方法',
@@ -2645,7 +2607,6 @@
       zMax: 'Reach height max',
       k2: 'Backward speed factor',
       heatOpacity: 'Heatmap opacity',
-      paramHelp: 'The reaction curve follows stand.html: about 2% at t0, 88% at t1, and a 92% ceiling. Opponents may intercept only on their own side within the configured height range.',
       resetParams: 'Reset parameters',
       done: 'Done',
       methodTitle: 'Optimal Badminton Shot · Method',
@@ -2826,7 +2787,6 @@
     paramsTitle: $('paramsTitle'),
     paramsBtn: $('paramsBtn'),
     paramsClose: $('paramsClose'),
-    paramsDone: $('paramsDone'),
     paramsReset: $('paramsReset')
   };
 
@@ -3500,9 +3460,7 @@
     els.modeToggle.textContent = state.mode === 'single' ? t('singles') : t('doubles');
     els.paramsTitle.textContent = t('paramsTitle');
     document.querySelector('.params-head p').textContent = t('paramsDesc');
-    document.querySelector('.param-help').textContent = t('paramHelp');
     els.paramsReset.textContent = t('resetParams');
-    els.paramsDone.textContent = t('done');
     els.principleTitle.textContent = t('methodTitle');
     els.principleBody.innerHTML = t('method');
 
@@ -5123,7 +5081,6 @@
     else els.paramsDialog.setAttribute('open', '');
   });
   els.paramsClose.addEventListener('click', () => els.paramsDialog.close());
-  els.paramsDone.addEventListener('click', () => els.paramsDialog.close());
   els.paramsDialog.addEventListener('click', (event) => {
     if (event.target === els.paramsDialog) els.paramsDialog.close();
   });
