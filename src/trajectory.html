@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>羽毛球搓球 — 质心模型 · 手柄 + 可拖拍面与网</title>
+<style>
+  :root{
+    --bg:#eef2f6;--card:#fff;--text:#1a2b22;--text-2:#5b6b62;--text-3:#8a9a91;
+    --border:#e4ebe6;--primary:#166b46;--primary-2:#1f8a5b;--primary-bright:#22a06b;
+    --blue:#2563eb;--red:#d94b3d;--red-dark:#a82f26;--purple:#7b52d3;
+    --normal-orange:#ef7d22;--tangent-crimson:#941d3d;
+    --racket:#73c18e;--racket-soft:rgba(115,193,142,.20);--ink:#111b16;
+    --shadow:0 1px 2px rgba(20,50,35,.04),0 8px 24px rgba(20,50,35,.05);
+  }
+  *{box-sizing:border-box;}
+  html{min-width:320px;background:var(--bg);}
+  body{
+    margin:0;min-width:320px;min-height:100vh;padding:16px 18px;color:var(--text);
+    background:radial-gradient(1000px 500px at 15% -5%,#d9ece1 0%,transparent 55%),
+      radial-gradient(800px 400px at 90% 0%,#e3e9f7 0%,transparent 50%),var(--bg);
+    font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{width:100%;max-width:1780px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);}
+  .header{position:relative;display:flex;align-items:flex-start;gap:14px;padding:14px 18px;overflow:hidden;}
+  .header::before{content:"";position:absolute;top:-80px;right:-80px;width:240px;height:240px;
+    background:radial-gradient(circle,rgba(31,138,91,.10),transparent 65%);pointer-events:none;}
+  .header-copy{flex:1;min-width:0;position:relative;}
+  .header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto;position:relative;}
+  .lang-btn{display:inline-flex;align-items:center;justify-content:center;padding:3px 7px;border:0;
+    border-radius:5px;color:var(--text-3);background:transparent;font:700 11.5px system-ui;cursor:pointer;}
+  .lang-btn:hover{color:var(--primary);}
+  .app.collapsed .header{display:none;}
+  .logo{display:flex;width:42px;height:42px;flex:0 0 auto;align-items:center;justify-content:center;
+    border-radius:12px;font-size:21px;background:var(--primary-bright);
+    box-shadow:0 4px 12px rgba(22,107,70,.28),inset 0 1px 0 rgba(255,255,255,.2);}
+  h1{margin:0 0 4px;font-size:16.5px;line-height:1.35;letter-spacing:.2px;}
+  .header p{margin:0;color:var(--text-3);font-size:11.5px;line-height:1.55;}
+  .main-card{overflow:hidden;}
+  .canvas-topbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 12px;
+    border-bottom:1px solid #f0f4f1;color:var(--text-2);font-size:11.5px;}
+  .sidebar-btn{display:inline-flex;width:26px;height:26px;flex:0 0 auto;align-items:center;justify-content:center;
+    padding:0;border:1px solid var(--border);border-radius:7px;color:var(--text-2);background:#f0f5f2;cursor:pointer;}
+  .sidebar-btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;}
+  .topbar-legend{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:10.5px;font-weight:600;}
+  .topbar-legend .item{display:inline-flex;align-items:center;gap:5px;color:var(--text-3);}
+  .topbar-legend .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .topbar-legend .line{width:16px;height:2px;border-radius:2px;background:currentColor;}
+  .topbar-legend .incoming{color:var(--blue);}
+  .topbar-legend .racket{color:var(--red);}
+  .topbar-legend .trajectory{color:#7b857f;}
+  .topbar-legend .trajectory.is-failed{color:#e08b84;}
+  .collapse-btn{display:inline-flex;width:24px;height:24px;flex:0 0 auto;align-items:center;justify-content:center;
+    margin-left:auto;padding:0;border:0;color:var(--text-3);background:transparent;cursor:pointer;}
+  .collapse-btn:hover{color:var(--primary);}
+  .collapse-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;
+    stroke-linecap:round;stroke-linejoin:round;}
+  .collapse-btn .chev-down{display:none;}
+  .app.collapsed .collapse-btn .chev-up{display:none;}
+  .app.collapsed .collapse-btn .chev-down{display:inline;}
+  .workspace{display:grid;grid-template-columns:500px minmax(0,1fr);gap:9px;padding:9px 10px 8px;}
+  .workspace.angle-hidden{grid-template-columns:minmax(0,1fr);gap:0;}
+  .workspace.angle-hidden .angle-panel{display:none;}
+  .angle-panel{position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);
+    border-radius:11px;background:#f7fbf9;overflow:hidden;padding-bottom:44px;}
+  .panel-head{padding:9px 11px 7px;border-bottom:1px solid var(--border);}
+  .panel-head h2{margin:0;font-size:13px;color:var(--text);}
+  .panel-head p{margin:3px 0 0;color:var(--text-3);font-size:10px;line-height:1.45;}
+  #handleWrap{display:flex;justify-content:center;padding:0;}
+  #handleCanvas{display:block;max-width:100%;height:auto!important;aspect-ratio:1;border-radius:10px;
+    background:#f7fbf9;cursor:grab;touch-action:none;box-shadow:0 1px 3px rgba(20,50,35,.05);}
+  .dial-stack{display:flex;flex-direction:column;align-items:center;width:100%;min-width:0;}
+  .dial-readouts{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:4px 5px 0;}
+  .vector-readout{min-width:0;flex:1 1 0;padding:5px 6px;border:1px solid var(--border);border-radius:8px;
+    color:var(--text-2);background:#fff;text-align:left;cursor:pointer;touch-action:manipulation;}
+  .vector-readout span{display:flex;align-items:center;gap:4px;color:var(--text-3);font-size:9px;white-space:nowrap;}
+  .vector-readout i{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:currentColor;}
+  .vector-readout b{display:block;margin-top:2px;color:var(--text-2);font-size:9.5px;
+    font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .vector-readout.incoming span{color:var(--blue);}
+  .vector-readout.normal span{color:var(--normal-orange);}
+  .vector-readout.tangent span{color:var(--tangent-crimson);}
+  .speed-editor{position:absolute;z-index:5;left:50%;bottom:50px;transform:translateX(-50%);
+    display:flex;align-items:center;gap:5px;padding:7px;border:1px solid var(--border);border-radius:10px;
+    background:#fff;box-shadow:0 8px 24px rgba(20,50,35,.14);}
+  .speed-editor[hidden]{display:none;}
+  .speed-editor label{color:var(--text-2);font-size:10px;white-space:nowrap;}
+  .speed-editor input{width:84px;height:28px;padding:0 6px;border:1px solid var(--border);border-radius:7px;
+    color:var(--text);background:#f7fbf9;font:600 11px system-ui;font-variant-numeric:tabular-nums;}
+  .speed-editor button{height:28px;padding:0 8px;border:1px solid var(--border);border-radius:7px;
+    color:var(--text-2);background:#f2f7f4;font-size:10px;font-weight:700;cursor:pointer;}
+  .axis-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 10px;padding:2px 10px 10px;
+    color:var(--text-3);font-size:9.5px;line-height:1.4;text-align:center;}
+  .axis-legend span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+  .axis-legend i{width:8px;height:8px;border-radius:50%;background:currentColor;}
+  .traj-panel{position:relative;min-width:0;min-height:620px;border:1px solid var(--border);
+    border-radius:11px;background:#f7fbf9;overflow:hidden;}
+  #trajCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  .playback{display:flex;align-items:center;gap:9px;padding:8px 12px 10px;border-top:1px solid var(--border);}
+  #play{min-width:88px;height:38px;border:0;border-radius:999px;color:#fff;background:var(--primary);
+    box-shadow:0 6px 16px rgba(22,107,70,.22);font-weight:700;cursor:pointer;}
+  #reset{height:34px;padding:0 12px;border:1px solid var(--border);border-radius:999px;
+    color:var(--text-2);background:#f7fbf9;cursor:pointer;}
+  .playback label{color:var(--text-3);font-size:10.5px;}
+  .playback .val{width:62px;color:var(--primary);font-size:10.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+  .playback input[type=range]{flex:1;accent-color:var(--primary);}
+  .detail-panel{padding:10px 12px 12px;border-top:1px solid var(--border);background:#fff;}
+  .detail-title{margin:0 0 7px;color:var(--text-2);font-size:11px;font-weight:700;}
+  .detail-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px;}
+  .detail-chip{padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#f7fbf9;min-width:0;}
+  .detail-chip span{display:block;color:var(--text-3);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .detail-chip b{display:block;margin-top:2px;color:var(--text-2);font-size:10.5px;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
+  .footer{padding:2px 8px 8px;color:var(--text-3);font-size:11px;text-align:center;}
+  .sidebar{position:fixed;z-index:60;top:0;bottom:0;left:0;width:min(330px,88vw);display:flex;flex-direction:column;
+    background:#fff;box-shadow:4px 0 26px rgba(20,50,35,.14);transform:translateX(-103%);
+    transition:transform .26s cubic-bezier(.4,0,.2,1);}
+  .sidebar.open{transform:none;}
+  .sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;color:#fff;
+    background:var(--primary);}
+  .sidebar-head h2{margin:0;font-size:14.5px;}
+  .sidebar-close{padding:0 4px;border:0;color:#fff;background:transparent;font-size:22px;cursor:pointer;}
+  .sidebar-body{flex:1;overflow-y:auto;}
+  .sidebar-foot{padding:10px 14px;border-top:1px solid var(--border);}
+  .sidebar-foot button{width:100%;min-height:36px;border:1px solid var(--border);border-radius:8px;
+    color:var(--text-2);background:#f5f9f6;font-weight:600;cursor:pointer;}
+  .param-group{padding:10px 14px;border-bottom:1px solid #f0f4f1;}
+  .param-group h3{margin:0 0 8px;color:var(--text-2);font-size:10.5px;letter-spacing:.2px;}
+  .row{display:grid;grid-template-columns:95px minmax(0,1fr) 48px;align-items:center;gap:6px;margin:7px 0;}
+  .row label{color:var(--text-2);font-size:10px;}
+  .row input[type=range]{width:100%;accent-color:var(--primary);}
+  .row .val{color:var(--primary);font-size:9.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+  .model-note{padding:10px 14px 16px;color:var(--text-3);font-size:9.5px;line-height:1.55;}
+  .sidebar-mask{position:fixed;z-index:59;inset:0;background:rgba(10,30,20,.40);opacity:0;pointer-events:none;
+    transition:opacity .26s;backdrop-filter:blur(1px);}
+  .sidebar-mask.open{opacity:1;pointer-events:auto;}
+  .modal-mask{position:fixed;z-index:70;inset:0;display:none;align-items:flex-start;justify-content:center;
+    padding:26px 14px;overflow:auto;background:rgba(10,30,20,.46);backdrop-filter:blur(2px);}
+  .modal-mask.open{display:flex;}
+  .modal{width:100%;max-width:720px;overflow:hidden;border-radius:16px;background:#fff;
+    box-shadow:0 24px 70px rgba(0,0,0,.28);animation:modal-pop .22s ease;}
+  @keyframes modal-pop{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+  .modal-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;color:#fff;background:var(--primary);}
+  .modal-head h2{margin:0;font-size:16px;font-weight:650;}
+  .modal-close{padding:0 6px;border:0;color:#fff;background:transparent;font-size:24px;line-height:1;cursor:pointer;}
+  .modal-body{max-height:76vh;overflow:auto;padding:18px 22px 24px;color:var(--text);
+    font-size:13.5px;line-height:1.78;}
+  .modal-body h3{margin:22px 0 8px;padding-bottom:4px;border-bottom:1px solid #e8f0ec;
+    color:var(--primary);font-size:15px;font-weight:650;}
+  .modal-body h3:first-child{margin-top:0;}
+  .modal-body p{margin:6px 0;}
+  .modal-body .lead{margin-bottom:12px;padding:10px 13px;border-left:3px solid var(--primary);
+    border-radius:8px;background:#f2f7f4;}
+  .modal-body ul,.modal-body ol{margin:6px 0;padding-left:22px;}
+  .modal-body li{margin:4px 0;}
+  .modal-body code{padding:1px 6px;border-radius:5px;background:#eef2f6;font-size:12.5px;}
+  .formula{margin:8px 0;padding:8px 13px;overflow-x:auto;border-left:3px solid var(--primary);
+    border-radius:6px;background:#f2f7f4;font:14px "Cambria Math","Times New Roman",Georgia,serif;white-space:nowrap;}
+  .zoom-controls{position:absolute;left:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:4px;
+    padding:4px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.94);
+    box-shadow:0 4px 14px rgba(20,50,35,.08);}
+  .zoom-btn{min-width:30px;height:26px;padding:0 7px;border:0;border-radius:7px;color:var(--text-2);
+    background:#f2f7f4;font-size:10px;font-weight:700;cursor:pointer;}
+  .zoom-btn:hover{background:#e6efe9;color:var(--primary);}
+  .zoom-btn.active{color:#fff;background:var(--primary);}
+  .dial-zoom-controls{position:absolute;left:9px;bottom:9px;z-index:3;display:flex;align-items:center;gap:4px;
+    padding:4px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.95);
+    box-shadow:0 4px 14px rgba(20,50,35,.07);}
+  .sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;}
+  @media(max-width:760px){
+    body{padding:10px 8px;}
+    .app{gap:10px;}
+    .header{padding:11px 13px;gap:10px;}
+    .logo{width:36px;height:36px;font-size:18px;}
+    h1{font-size:14.5px;}
+    .header p{font-size:10.5px;}
+    .workspace,.workspace.angle-hidden{grid-template-columns:minmax(0,1fr);padding:7px 6px 6px;}
+    .traj-panel{min-height:430px;}
+    .detail-chips{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
+    .playback{flex-wrap:wrap;}
+    .playback input[type=range]{flex:1 1 100%;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="card header">
+    <div class="logo" aria-hidden="true">🏸</div>
+    <div class="header-copy">
+      <h1 id="pageTitle" data-i18n="pageTitle">羽毛球运动轨迹</h1>
+      <p id="pageSub" data-i18n="pageSub">左侧角度盘拖动来球与球拍速度方向，右侧观察碰撞后的羽毛球轨迹。拖动空白处平移画布；拖动浅绿色球拍调整击球点；拖动绿色球网调整前后位置。</p>
+    </div>
+    <div class="header-actions">
+      <button class="lang-btn" id="langBtn" type="button" aria-label="Switch language">EN</button>
+    </div>
+  </header>
+
+  <div class="card main-card">
+    <div class="canvas-topbar">
+      <button class="sidebar-btn" id="sidebarBtn" type="button" aria-label="打开模型参数">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <circle cx="9" cy="7" r="2.4"></circle>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+          <circle cx="15" cy="17" r="2.4"></circle>
+        </svg>
+      </button>
+      <div class="topbar-legend">
+        <span class="item incoming"><i class="dot"></i><span data-i18n="incomingSpeedLegend">来球速度</span></span>
+        <span class="item racket"><i class="dot"></i><span data-i18n="racketSpeedLegend">球拍速度</span></span>
+        <span class="item trajectory" id="trajectoryLegend"><i class="line"></i><span id="trajectoryLegendText" data-i18n="trajectory">轨迹</span></span>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" type="button" aria-label="隐藏标题">
+        <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4"></path></svg>
+        <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"></path></svg>
+      </button>
+    </div>
+
+    <div class="workspace">
+      <section class="angle-panel" aria-label="角度与速度控制">
+        <div class="dial-stack">
+          <div id="handleWrap"><canvas id="handleCanvas"></canvas></div>
+          <div class="dial-readouts" aria-label="矢量速度与角度">
+            <button class="vector-readout incoming" data-speed-target="incoming" type="button"
+              title="滚轮细调，长按或双击输入精确速度">
+              <span><i></i><span data-i18n="incoming">来球</span></span><b id="dialIncomingValue">—</b>
+            </button>
+            <button class="vector-readout normal" data-speed-target="normal" type="button"
+              title="滚轮细调，长按或双击输入精确速度">
+              <span><i></i><span data-i18n="normal">拍法向</span></span><b id="dialNormalValue">—</b>
+            </button>
+            <button class="vector-readout tangent" data-speed-target="tangent" type="button"
+              title="滚轮细调，长按或双击输入精确速度">
+              <span><i></i><span data-i18n="tangent">拍切向</span></span><b id="dialTangentValue">—</b>
+            </button>
+          </div>
+        </div>
+        <div class="speed-editor" id="speedEditor" hidden>
+          <label id="speedEditorLabel" for="speedEditorInput">速度</label>
+          <input id="speedEditorInput" type="number" step="0.01">
+          <button id="speedEditorApply" type="button" data-i18n="confirm">确定</button>
+          <button id="speedEditorClose" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="dial-zoom-controls" role="group" aria-label="左侧角度盘缩放">
+          <button class="zoom-btn active" id="dialZoomAuto" type="button" data-i18n="auto">自动</button>
+          <button class="zoom-btn" id="dialZoomOut" type="button">−</button>
+          <button class="zoom-btn" id="dialZoomIn" type="button">＋</button>
+        </div>
+      </section>
+
+      <section class="traj-panel" aria-label="羽毛球运动轨迹视图">
+        <canvas id="trajCanvas"></canvas>
+        <div class="zoom-controls" role="group" aria-label="轨迹视图缩放">
+          <button class="zoom-btn active" id="zoomAuto" type="button" data-i18n="auto">自动</button>
+          <button class="zoom-btn" id="zoomOut" type="button">−</button>
+          <button class="zoom-btn" id="zoomIn" type="button">＋</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="playback">
+      <button id="play" type="button">▶ 播放</button>
+      <button id="reset" type="button" data-i18n="resetButton">↺ 复位</button>
+      <label for="time" data-i18n="playbackProgress">回放进度</label>
+      <input type="range" id="time" min="0" max="1000" value="0" step="1">
+      <span class="val" id="vT">0.000 s</span>
+    </div>
+
+    <div class="detail-panel">
+      <h2 class="detail-title" data-i18n="details">详细参数</h2>
+      <div class="detail-chips">
+        <div class="detail-chip"><span data-i18n="ballHeight">球头高度</span><b id="dH">—</b></div>
+        <div class="detail-chip"><span data-i18n="restitution">恢复系数</span><b id="dE">—</b></div>
+        <div class="detail-chip"><span data-i18n="stringFriction">拍线摩擦</span><b id="dMu">—</b></div>
+        <div class="detail-chip"><span data-i18n="liftPeak">升力峰值</span><b id="dCl">—</b></div>
+        <div class="detail-chip"><span data-i18n="spinDecay">自旋衰减</span><b id="dSpin">—</b></div>
+        <div class="detail-chip"><span data-i18n="incomingSpeed">来球速度</span><b id="dInSpeed">—</b></div>
+        <div class="detail-chip"><span data-i18n="incomingAngle">来球角度</span><b id="dInAngle">—</b></div>
+        <div class="detail-chip"><span data-i18n="normalSpeed">球拍法向速度</span><b id="dNormalSpeed">—</b></div>
+        <div class="detail-chip"><span data-i18n="tangentSpeed">球拍切向速度</span><b id="dTangentSpeed">—</b></div>
+        <div class="detail-chip"><span data-i18n="contactX">击球点横向坐标</span><b id="dRx">—</b></div>
+        <div class="detail-chip"><span data-i18n="netX">球网坐标</span><b id="dNx">—</b></div>
+        <div class="detail-chip"><span data-i18n="outSpeed">出球速度</span><b id="dOutSpeed">—</b></div>
+        <div class="detail-chip"><span data-i18n="outAngle">出球角度</span><b id="dOutAngle">—</b></div>
+        <div class="detail-chip"><span data-i18n="currentSpeed">当前球速</span><b id="dCurrentSpeed">—</b></div>
+        <div class="detail-chip"><span data-i18n="currentAngle">当前空间角度</span><b id="dCurrentAngle">—</b></div>
+        <div class="detail-chip"><span data-i18n="flipDirection">翻转方向</span><b id="dFlipDir">—</b></div>
+        <div class="detail-chip"><span data-i18n="flipComplete">翻转完成</span><b id="dFlipTime">—</b></div>
+        <div class="detail-chip"><span data-i18n="spinRate">自旋角速度</span><b id="dSpinRate">—</b></div>
+        <div class="detail-chip"><span data-i18n="currentFlipAngle">当前翻转角</span><b id="dPhi">—</b></div>
+        <div class="detail-chip"><span data-i18n="trajectoryStatus">轨迹状态</span><b id="dStatus">—</b></div>
+        <div class="detail-chip"><span data-i18n="trajectoryDuration">轨迹时长</span><b id="dDuration">—</b></div>
+        <div class="detail-chip"><span data-i18n="currentPlayback">当前回放</span><b id="dTime">—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="credit">© <b>Robert Bogan Kang</b> <span id="footerText" data-i18n="footer">创作 · 保留所有权利</span></footer>
+</div>
+
+<aside class="sidebar" id="sidebar" aria-label="模型参数">
+  <div class="sidebar-head">
+    <h2 data-i18n="modelParams">模型参数</h2>
+    <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭">×</button>
+  </div>
+  <div class="sidebar-body">
+    <section class="param-group">
+      <h3 data-i18n="collisionParams">碰撞参数</h3>
+      <div class="row"><label for="h" data-i18n="ballHeight">球头高度</label>
+        <input type="range" id="h" min="0.7" max="3.5" value="1.5" step="0.05">
+        <span class="val" id="vH">1.50</span></div>
+      <div class="row"><label for="e" data-i18n="restitution">恢复系数</label>
+        <input type="range" id="e" min="0.2" max="0.9" value="0.50" step="0.01">
+        <span class="val" id="vE">0.50</span></div>
+      <div class="row"><label for="mu" data-i18n="stringFriction">拍线摩擦</label>
+        <input type="range" id="mu" min="0" max="0.9" value="0.60" step="0.01">
+        <span class="val" id="vMu">0.60</span></div>
+    </section>
+    <section class="param-group">
+      <h3 data-i18n="flightOrientation">翻转与自旋</h3>
+      <div class="row"><label for="cl" data-i18n="liftPeak">升力峰值</label>
+        <input type="range" id="cl" min="0" max="0.8" value="0.50" step="0.01">
+        <span class="val" id="vCl">0.50</span></div>
+      <div class="row"><label for="spindamp" data-i18n="spinDecay">自旋衰减</label>
+        <input type="range" id="spindamp" min="0.1" max="2" value="0.60" step="0.05">
+        <span class="val" id="vSpin">0.60</span></div>
+    </section>
+    <section class="param-group">
+      <h3 data-i18n="speedDirectionParams">速度与方向（与角度盘同步）</h3>
+      <div class="row"><label for="vin" data-i18n="incomingSpeed">来球速度</label>
+        <input type="range" id="vin" min="0" max="8" value="1.2" step="0.1">
+        <span class="val" id="vVin">1.2</span></div>
+      <div class="row"><label for="ain" data-i18n="incomingAngle">来球角度</label>
+        <input type="range" id="ain" min="0" max="360" value="210" step="1">
+        <span class="val" id="vAin">210°</span></div>
+      <div class="row"><label for="vn" data-i18n="normalSpeedShort">法向速度</label>
+        <input type="range" id="vn" min="0" max="1000" value="0" step="1">
+        <span class="val" id="vVn">3.5</span></div>
+      <div class="row"><label for="an" data-i18n="normalAngle">法向角度</label>
+        <input type="range" id="an" min="0" max="360" value="65" step="1">
+        <span class="val" id="vAn">65°</span></div>
+      <div class="row"><label for="vt" data-i18n="tangentSpeedShort">切向速度</label>
+        <input type="range" id="vt" min="-1000" max="1000" value="0" step="1">
+        <span class="val" id="vVt">2.5</span></div>
+    </section>
+    <section class="param-group">
+      <h3 data-i18n="positionParams">位置（相对网 = 0 m）</h3>
+      <div class="row"><label for="rx" data-i18n="contactLateral">击球点横向</label>
+        <input type="range" id="rx" min="-6.7" max="-0.1" value="-2.0" step="0.1">
+        <span class="val" id="vRx">-2.0</span></div>
+      <div class="row"><label for="nx" data-i18n="netPosition">球网位置</label>
+        <input type="range" id="nx" min="-1.9" max="8" value="0" step="0.1">
+        <span class="val" id="vNx">0.0</span></div>
+    </section>
+  </div>
+  <div class="sidebar-foot">
+    <button id="paramResetBtn" type="button" data-i18n="resetParams">恢复默认参数</button>
+  </div>
+</aside>
+<div class="sidebar-mask" id="sidebarMask"></div>
+
+<div class="modal-mask" id="principleModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="principleTitle">
+    <div class="modal-head">
+      <h2 id="principleTitle" data-i18n="principleTitle">羽毛球运动轨迹 · 原理与操作</h2>
+      <button class="modal-close" id="principleClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="principleBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ==================== 常量 ====================
+const P = {
+  g: 9.81, rho: 1.204, m: 0.005,
+  S: Math.PI * 0.0325 * 0.0325,
+  R: 0.0325,              // 裙部横截面半径（用于自旋）
+  L_CM_TIP: 0.0314,       // 质心到球头尖端（文献实测 31.4 mm）
+  R_CORK: 0.0065,         // 球头半球半径（尖端到球头圆心的距离）
+  L_CM: 0.0314 - 0.0065,  // 质心到球头圆心 = 24.9 mm（代码实际用这个）
+  k_M: 5.0e-6,
+  tau: 0.025,
+  tauMin: 0.0015,
+  vRef: 5.0,
+  zeta: 1.20,
+  I: 1.5e-5,
+  C_spin: 0.55
+};
+const NET_HEIGHT = 1.55;
+const D2R = Math.PI/180;
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const normAngle = a=>{ while(a>Math.PI) a-=2*Math.PI; while(a<-Math.PI) a+=2*Math.PI; return a; };
+const angleDeg = a=>Math.round((((a/D2R)%360)+360)%360);
+const GUIDE_LINE_COLOR = '#b7c9bf';
+const GUIDE_LABEL_COLOR = '#4d6256';
+const $ = id=>document.getElementById(id);
+
+let lang = 'zh';
+const I18N = {
+  zh: {
+    pageTitle:'羽毛球运动轨迹',
+    pageSub:'左侧角度盘拖动来球与球拍速度方向，右侧观察碰撞后的羽毛球轨迹。拖动空白处平移画布；拖动浅绿色球拍调整击球点；拖动绿色球网调整前后位置。',
+    incomingSpeedLegend:'来球速度', racketSpeedLegend:'球拍速度',
+    trajectory:'轨迹', unreachableTrajectory:'无法触达轨迹',
+    incoming:'来球', normal:'拍法向', tangent:'拍切向',
+    auto:'自动', confirm:'确定',
+    resetButton:'↺ 复位', playbackProgress:'回放进度', play:'播放', pause:'暂停',
+    details:'详细参数',
+    ballHeight:'球头高度', restitution:'恢复系数', stringFriction:'拍线摩擦',
+    liftPeak:'升力峰值', spinDecay:'自旋衰减',
+    incomingSpeed:'来球速度', incomingAngle:'来球角度',
+    normalSpeed:'球拍法向速度', tangentSpeed:'球拍切向速度',
+    contactX:'击球点横向坐标', netX:'球网坐标',
+    outSpeed:'出球速度', outAngle:'出球角度',
+    currentSpeed:'当前球速', currentAngle:'当前空间角度',
+    flipDirection:'翻转方向', flipComplete:'翻转完成',
+    spinRate:'自旋角速度', currentFlipAngle:'当前翻转角',
+    trajectoryStatus:'轨迹状态', trajectoryDuration:'轨迹时长', currentPlayback:'当前回放',
+    footer:'创作 · 保留所有权利',
+    modelParams:'模型参数', collisionParams:'碰撞参数', flightOrientation:'翻转与自旋',
+    speedDirectionParams:'速度与方向（与角度盘同步）',
+    normalSpeedShort:'法向速度', normalAngle:'法向角度', tangentSpeedShort:'切向速度',
+    positionParams:'位置（相对网 = 0 m）', contactLateral:'击球点横向', netPosition:'球网位置',
+    resetParams:'恢复默认参数',
+    reachable:'可触达', netBlocked:'被球网阻挡', cannotReach:'无法到达对面场地',
+    notCompleted:'未完成', ccw:'逆时针 ↺', cw:'顺时针 ↻',
+    drag:'↕ 拖', serviceLine:'发球线', rearServiceLine:'后发球线', baseline:'底线',
+    netLabel:'网 · 1.55米',
+    speedHint:'滚轮细调，长按或双击输入精确速度',
+    collapseHide:'隐藏标题', collapseShow:'展开标题', langBtn:'EN',
+    principleTitle:'羽毛球运动轨迹 · 原理与操作',
+    principleHTML:`
+      <p class="lead"><b>一句话：</b>把来球速度、拍面法向速度和切向速度转换成碰撞后的羽毛球速度，再用空气阻力、升力、重力、自旋和球头翻转动力学计算轨迹。</p>
+      <h3>一、坐标与视图</h3>
+      <ul>
+        <li>横坐标以球网为 <code>0 m</code>，右侧为正；高度以地面为 <code>0 m</code>。</li>
+        <li>空间角度按“向右为 0°、向上为正、向下为负”显示。</li>
+        <li>球网固定在 <code>1.55 m</code> 高；轨迹低于网顶或无法到达对面时标记为“无法触达”。</li>
+      </ul>
+      <h3>二、碰撞模型</h3>
+      <div class="formula">v<sub>out,N</sub> = (1+e)·v<sub>racket,N</sub> − e·v<sub>in,N</sub></div>
+      <div class="formula">v<sub>out,T</sub> = v<sub>in,T</sub> − μ·(v<sub>in,T</sub> − v<sub>racket,T</sub>)</div>
+      <p>法向速度控制球离开拍面的主要速度，切向速度改变出球方向、球头初始翻转和自旋。恢复系数 <code>e</code>、拍线摩擦 <code>μ</code> 可在参数栏调整。</p>
+      <h3>三、飞行动力学</h3>
+      <p>轨迹使用 RK4 积分。每个时刻同时计算：重力、与速度方向相反的空气阻力、由球头相对速度方向偏角产生的升力，以及自旋产生的 Magnus 力。</p>
+      <ul>
+        <li>阻力系数随球头偏角变化；倒飞时阻力会继续增大。</li>
+        <li>升力使用连续奇函数，避免球头穿过零点时力方向突然跳变。</li>
+        <li>球头绝对朝向角单独积分，速度方向旋转会自然耦合到翻转过程。</li>
+        <li>翻转时标随速度缩短，并采用过阻尼；高速杀球时可以快速翻正。</li>
+      </ul>
+      <h3>四、角度盘与速度控制</h3>
+      <ul>
+        <li>蓝色：来球；橙色：拍面法向；深红：拍面切向。</li>
+        <li>法向速度和切向速度使用对数刻度：低速区域获得更长手柄行程，高速仍可到 <code>80 m/s</code>。</li>
+        <li>拖动手柄选择方向和速度；滚轮落在手柄上可细调，<code>Shift + 滚轮</code> 更精细。</li>
+        <li>长按或双击角度盘下方的数值，可以直接输入精确速度。</li>
+      </ul>
+      <h3>五、主视图操作</h3>
+      <ul>
+        <li>拖动空白处平移画布；滚轮缩放；左下角可恢复自动视图。</li>
+        <li>拖动浅绿色球拍改变击球位置和高度；拖动球网改变其横向位置。</li>
+        <li>双击主视图可隐藏或恢复左侧角度盘。</li>
+        <li>点击播放可观察球头朝向；拖动回放进度可检查任意时刻的速度和空间角度。</li>
+      </ul>
+      <h3>六、参数与结果</h3>
+      <p>详细参数会实时显示当前球速、空间角度、出球速度、球头翻转、自旋、轨迹状态和飞行时间。物理参数可在左上角按钮打开的侧栏中调整。</p>
+      <h3>七、模型边界</h3>
+      <p>这是二维剖面的简化气动模型，不包含三维侧向风、羽裙柔性变形、拍线非线性振动和完整六自由度刚体运动。结果适合比较不同击球参数的趋势，不应视为实际比赛的绝对预测。</p>
+    `
+  },
+  en: {
+    pageTitle:'Badminton Shuttlecock Trajectory',
+    pageSub:'Drag the left dial to set incoming and racket velocity directions, then inspect the post-impact trajectory on the right. Drag blank space to pan, the light-green racket to move the contact point, and the net to change its position.',
+    incomingSpeedLegend:'Incoming', racketSpeedLegend:'Racket',
+    trajectory:'Trajectory', unreachableTrajectory:'Unreachable trajectory',
+    incoming:'Incoming', normal:'Normal', tangent:'Tangential',
+    auto:'Auto', confirm:'Apply',
+    resetButton:'↺ Reset', playbackProgress:'Playback', play:'Play', pause:'Pause',
+    details:'Detailed parameters',
+    ballHeight:'Contact height', restitution:'Restitution', stringFriction:'String friction',
+    liftPeak:'Lift peak', spinDecay:'Spin decay',
+    incomingSpeed:'Incoming speed', incomingAngle:'Incoming angle',
+    normalSpeed:'Racket normal speed', tangentSpeed:'Racket tangential speed',
+    contactX:'Contact x', netX:'Net x',
+    outSpeed:'Outgoing speed', outAngle:'Outgoing angle',
+    currentSpeed:'Current speed', currentAngle:'Current flight angle',
+    flipDirection:'Flip direction', flipComplete:'Flip settled',
+    spinRate:'Spin rate', currentFlipAngle:'Current flip angle',
+    trajectoryStatus:'Trajectory status', trajectoryDuration:'Flight duration', currentPlayback:'Playback time',
+    footer:'Created · All Rights Reserved',
+    modelParams:'Model parameters', collisionParams:'Impact parameters', flightOrientation:'Flip & spin',
+    speedDirectionParams:'Speed and direction (synced with dial)',
+    normalSpeedShort:'Normal speed', normalAngle:'Normal angle', tangentSpeedShort:'Tangential speed',
+    positionParams:'Position (net = 0 m)', contactLateral:'Contact x', netPosition:'Net position',
+    resetParams:'Reset parameters',
+    reachable:'Reachable', netBlocked:'Blocked by net', cannotReach:'Cannot reach opponent court',
+    notCompleted:'Not settled', ccw:'Counter-clockwise ↺', cw:'Clockwise ↻',
+    drag:'↕ Drag', serviceLine:'Service line', rearServiceLine:'Rear service', baseline:'Baseline',
+    netLabel:'Net · 1.55 m',
+    speedHint:'Wheel to fine-tune; long-press or double-click for an exact speed',
+    collapseHide:'Hide header', collapseShow:'Show header', langBtn:'中',
+    principleTitle:'Badminton Shuttlecock Trajectory · Method & Controls',
+    principleHTML:`
+      <p class="lead"><b>In short:</b> convert incoming velocity, racket normal velocity and tangential velocity into the post-impact shuttle velocity, then integrate drag, lift, gravity, spin and shuttle-head rotation.</p>
+      <h3>1. Coordinates and view</h3>
+      <ul>
+        <li>The net is <code>x = 0 m</code>; positive x is to the right and ground height is <code>y = 0 m</code>.</li>
+        <li>Flight angle uses right = 0°, upward = positive and downward = negative.</li>
+        <li>The net is <code>1.55 m</code> high. A trajectory below the net top or unable to cross the net is marked unreachable.</li>
+      </ul>
+      <h3>2. Impact model</h3>
+      <div class="formula">v<sub>out,N</sub> = (1+e)·v<sub>racket,N</sub> − e·v<sub>in,N</sub></div>
+      <div class="formula">v<sub>out,T</sub> = v<sub>in,T</sub> − μ·(v<sub>in,T</sub> − v<sub>racket,T</sub>)</div>
+      <p>Normal speed dominates the departing velocity. Tangential speed changes launch direction, initial head rotation and spin. Restitution <code>e</code> and string friction <code>μ</code> are adjustable.</p>
+      <h3>3. Flight dynamics</h3>
+      <p>The trajectory is integrated with RK4 using gravity, speed-opposing drag, lift from the head-angle relative to velocity, and spin-induced Magnus force.</p>
+      <ul>
+        <li>Drag depends on head angle and rises when the shuttle is flying skirt-first.</li>
+        <li>Lift uses a continuous odd function, preventing a force-direction jump when the relative angle crosses zero.</li>
+        <li>The absolute head angle is integrated separately, so rotating velocity direction couples naturally into the flip.</li>
+        <li>The flip time scale decreases with speed and uses over-damping, allowing fast settling in a smash.</li>
+      </ul>
+      <h3>4. Angle dial and speed control</h3>
+      <ul>
+        <li>Blue: incoming; orange: racket normal; dark crimson: racket tangential.</li>
+        <li>Normal and tangential speeds use logarithmic radial scales. Low speeds get useful handle travel while the maximum remains <code>80 m/s</code>.</li>
+        <li>Drag a handle to set angle and speed. Wheel over the handle for fine tuning; <code>Shift + wheel</code> is finer.</li>
+        <li>Long-press or double-click a speed readout below the dial to enter an exact value.</li>
+      </ul>
+      <h3>5. Main-view controls</h3>
+      <ul>
+        <li>Drag blank space to pan, use the wheel to zoom, and use the lower-left controls to return to Auto.</li>
+        <li>Drag the light-green racket to move the contact point and height; drag the net to move it horizontally.</li>
+        <li>Double-click the main view to hide or restore the angle panel.</li>
+        <li>Use Play or the playback slider to inspect speed and flight angle at any instant.</li>
+      </ul>
+      <h3>6. Parameters and results</h3>
+      <p>The detailed parameter row shows current speed, flight angle, outgoing velocity, head flip, spin, trajectory status and flight duration. Open the upper-left parameter button to adjust the physical model.</p>
+      <h3>7. Model limits</h3>
+      <p>This is a two-dimensional aerodynamic section model. It omits crosswind, flexible skirt deformation, nonlinear string vibration and full six-degree-of-freedom rigid-body motion. It is intended for trend comparison, not absolute match prediction.</p>
+    `
+  }
+};
+function t(key){ return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key; }
+
+// ==================== 手柄状态 ====================
+const HSIZE = 500;
+const VIN_MAX = 8, VN_MAX = 80, VT_MAX = 80;
+const SPEED_MIN = 0.1, SPEED_ZERO_BAND = 0.03;
+const COURT_HALF_LENGTH = 6.70;
+const HR_MAX = HSIZE * 0.40;
+
+const handles = {
+  incoming: { angle: Math.PI + 30*D2R, mag: 1.2 },
+  normal:   { angle: 65*D2R,           mag: 3.5 },
+  tangent:  { mag: 2.5 }
+};
+let dragging = null;
+let dialHandleScale = 1;
+const DIAL_HANDLE_MIN = 0.60;
+const DIAL_HANDLE_MAX = 1.18;
+
+function activeHandleRadius(){ return HR_MAX * dialHandleScale; }
+function speedFromLogPosition(position, max=VN_MAX){
+  const u = clamp(Math.abs(position), 0, 1);
+  if(u <= SPEED_ZERO_BAND) return SPEED_MIN * u / SPEED_ZERO_BAND;
+  const t = (u - SPEED_ZERO_BAND) / (1 - SPEED_ZERO_BAND);
+  return SPEED_MIN * Math.pow(max / SPEED_MIN, t);
+}
+function logPositionFromSpeed(speed, max=VN_MAX){
+  const v = clamp(Math.abs(speed), 0, max);
+  if(v <= SPEED_MIN) return SPEED_ZERO_BAND * v / SPEED_MIN;
+  return SPEED_ZERO_BAND + (1 - SPEED_ZERO_BAND)
+    * Math.log(v / SPEED_MIN) / Math.log(max / SPEED_MIN);
+}
+function signedSpeedFromLogPosition(position, max=VT_MAX){
+  return Math.sign(position) * speedFromLogPosition(position, max);
+}
+function formatSpeed(value, signed=false){
+  const sign = signed && value > 0 ? '+' : '';
+  return sign + (Math.abs(value) < 10 ? value.toFixed(2) : value.toFixed(1));
+}
+function tangentPhysAngle(){ return handles.normal.angle - Math.PI/2; }
+function handlePos(physAngle, normMag){
+  const cAng = -physAngle;
+  const r = normMag * activeHandleRadius();
+  return [HSIZE/2 + Math.cos(cAng)*r, HSIZE/2 + Math.sin(cAng)*r];
+}
+function tangentHandlePos(){
+  const tAng = tangentPhysAngle();
+  const r = Math.sign(handles.tangent.mag)
+    * logPositionFromSpeed(handles.tangent.mag, VT_MAX) * activeHandleRadius();
+  const cAng = -tAng;
+  return [HSIZE/2 + Math.cos(cAng)*r, HSIZE/2 + Math.sin(cAng)*r];
+}
+
+// ==================== 手柄画布 ====================
+const hc = $('handleCanvas');
+const hctx = hc.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
+let dialZoomMode = 'auto';
+hc.width = HSIZE * dpr;
+hc.height = HSIZE * dpr;
+hc.style.width = HSIZE + 'px';
+hc.style.height = HSIZE + 'px';
+hctx.scale(dpr, dpr);
+
+function updateDialZoomButtons(){
+  $('dialZoomAuto').classList.toggle('active', dialZoomMode === 'auto');
+  $('dialZoomOut').classList.toggle('active', false);
+  $('dialZoomIn').classList.toggle('active', false);
+}
+function setDialHandleScale(scale){
+  dialHandleScale = clamp(scale, DIAL_HANDLE_MIN, DIAL_HANDLE_MAX);
+  drawHandlePanel();
+}
+function applyDialAuto(){
+  dialZoomMode = 'auto';
+  setDialHandleScale(1);
+  updateDialZoomButtons();
+}
+
+function drawHandlePanel(){
+  hctx.clearRect(0,0,HSIZE,HSIZE);
+  const cx = HSIZE/2, cy = HSIZE/2;
+
+  hctx.strokeStyle = GUIDE_LINE_COLOR; hctx.lineWidth = 1;
+  for(let i=1;i<=10;i++){
+    const r = HR_MAX*i/10;
+    hctx.beginPath(); hctx.arc(cx,cy,r,0,Math.PI*2); hctx.stroke();
+  }
+  hctx.strokeStyle = GUIDE_LINE_COLOR; hctx.lineWidth = 1;
+  for(let a=0;a<Math.PI*2;a+=Math.PI/12){
+    hctx.beginPath(); hctx.moveTo(cx,cy);
+    hctx.lineTo(cx+Math.cos(a)*HR_MAX, cy+Math.sin(a)*HR_MAX);
+    hctx.stroke();
+  }
+  hctx.font = '600 11.5px system-ui';
+  hctx.fillStyle = GUIDE_LABEL_COLOR;
+  hctx.textAlign = 'center';
+  hctx.textBaseline = 'middle';
+  for(let deg=0;deg<360;deg+=30){
+    const a=-deg*D2R;
+    hctx.fillText(deg+'°',cx+Math.cos(a)*(HR_MAX+18),cy+Math.sin(a)*(HR_MAX+18));
+  }
+  const tAng = tangentPhysAngle();
+  hctx.save();
+  hctx.translate(cx,cy);
+  hctx.rotate(-tAng);
+  hctx.beginPath();
+  hctx.ellipse(0,0,54,8,0,0,Math.PI*2);
+  hctx.fillStyle = 'rgba(115,193,142,.18)';
+  hctx.fill();
+  hctx.strokeStyle = 'rgba(79,154,112,.78)';
+  hctx.lineWidth = 2;
+  hctx.stroke();
+  hctx.beginPath();
+  hctx.moveTo(0,0); hctx.lineTo(0,52);
+  hctx.strokeStyle = '#73c18e'; hctx.lineWidth = 3.5;
+  hctx.lineCap = 'round'; hctx.stroke();
+  hctx.beginPath();
+  hctx.moveTo(0,50); hctx.lineTo(0,64);
+  hctx.strokeStyle = '#2f7350'; hctx.lineWidth = 6;
+  hctx.stroke();
+  hctx.restore();
+
+  {
+    const pos = handlePos(handles.incoming.angle, handles.incoming.mag/VIN_MAX);
+    stem(cx,cy,pos[0],pos[1],'#2563eb');
+    dot(pos[0],pos[1],'#2563eb');
+  }
+  {
+    const pos = handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX));
+    stem(cx,cy,pos[0],pos[1],'#ef7d22');
+    dot(pos[0],pos[1],'#ef7d22');
+  }
+  {
+    const pos = tangentHandlePos();
+    stem(cx,cy,pos[0],pos[1],'#941d3d');
+    dot(pos[0],pos[1],'#941d3d');
+  }
+
+  hctx.beginPath(); hctx.arc(cx,cy,5,0,Math.PI*2);
+  hctx.fillStyle = '#73c18e'; hctx.fill();
+  hctx.strokeStyle = '#fff'; hctx.lineWidth = 2; hctx.stroke();
+  syncVectorControls();
+}
+
+function syncVectorControls(){
+  if(!$('vin')) return;
+  const deg = a => ((a/D2R)%360+360)%360;
+  $('vin').value = handles.incoming.mag.toFixed(1);
+  $('vVin').textContent = handles.incoming.mag.toFixed(1);
+  $('ain').value = Math.round(deg(handles.incoming.angle));
+  $('vAin').textContent = Math.round(deg(handles.incoming.angle))+'°';
+  $('vn').value = Math.round(logPositionFromSpeed(handles.normal.mag, VN_MAX) * 1000);
+  $('vVn').textContent = formatSpeed(handles.normal.mag);
+  $('an').value = Math.round(deg(handles.normal.angle));
+  $('vAn').textContent = Math.round(deg(handles.normal.angle))+'°';
+  $('vt').value = Math.round(Math.sign(handles.tangent.mag)
+    * logPositionFromSpeed(handles.tangent.mag, VT_MAX) * 1000);
+  $('vVt').textContent = formatSpeed(handles.tangent.mag, true);
+  $('dialIncomingValue').textContent =
+    `${formatSpeed(handles.incoming.mag)} m/s · ${angleDeg(handles.incoming.angle)}°`;
+  $('dialNormalValue').textContent =
+    `${formatSpeed(handles.normal.mag)} m/s · ${angleDeg(handles.normal.angle)}°`;
+  $('dialTangentValue').textContent =
+    `${formatSpeed(handles.tangent.mag, true)} m/s`;
+  const rx = racketX-netX;
+  $('rx').value = rx.toFixed(1);
+  $('vRx').textContent = rx.toFixed(1);
+  $('nx').value = netX.toFixed(1);
+  $('vNx').textContent = netX.toFixed(1);
+}
+
+function stem(x1,y1,x2,y2,color){
+  hctx.save();
+  hctx.beginPath(); hctx.moveTo(x1,y1); hctx.lineTo(x2,y2);
+  hctx.strokeStyle = color; hctx.lineWidth = 2;
+  hctx.setLineDash([5,3]); hctx.stroke();
+  hctx.restore();
+}
+function dot(x,y,color){
+  hctx.beginPath(); hctx.arc(x,y,11,0,Math.PI*2);
+  hctx.fillStyle = color; hctx.fill();
+  hctx.strokeStyle = '#fff'; hctx.lineWidth = 2.5; hctx.stroke();
+  hctx.beginPath(); hctx.arc(x,y,3,0,Math.PI*2);
+  hctx.fillStyle = 'rgba(255,255,255,.9)'; hctx.fill();
+}
+function chip(x,y,dir,text,border,textColor,flipped){
+  hctx.font = 'bold 10px -apple-system';
+  const tw = hctx.measureText(text).width + 12;
+  const th = 18;
+  let lx = x - tw/2;
+  let ly = y + dir*22;
+  if(flipped) ly = y - dir*22 - th;
+  if(lx < 2) lx = 2;
+  if(lx+tw > HSIZE-2) lx = HSIZE-2-tw;
+  if(ly < 2) ly = 2;
+  if(ly+th > HSIZE-2) ly = HSIZE-2-th;
+  hctx.fillStyle = 'rgba(255,255,255,.95)';
+  hctx.strokeStyle = border; hctx.lineWidth = 1;
+  roundRect(hctx,lx,ly,tw,th,5); hctx.fill(); hctx.stroke();
+  hctx.fillStyle = textColor;
+  hctx.textAlign = 'center'; hctx.textBaseline = 'middle';
+  hctx.fillText(text, lx+tw/2, ly+th/2);
+}
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+
+// ==================== 手柄拖拽 ====================
+function getHandlePointer(e){
+  const r = hc.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (HSIZE / r.width),
+    y: (e.clientY - r.top)  * (HSIZE / r.height)
+  };
+}
+hc.addEventListener('pointerdown', e=>{
+  const p = getHandlePointer(e);
+  const iPos = handlePos(handles.incoming.angle, handles.incoming.mag/VIN_MAX);
+  const nPos = handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX));
+  const tPos = tangentHandlePos();
+  const cands = [
+    { name:'incoming', pos:iPos },
+    { name:'normal',   pos:nPos },
+    { name:'tangent',  pos:tPos }
+  ];
+  for(const c of cands){
+    if(Math.hypot(p.x-c.pos[0], p.y-c.pos[1]) < 20){
+      dragging = c.name;
+      hc.setPointerCapture(e.pointerId);
+      break;
+    }
+  }
+});
+hc.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  const p = getHandlePointer(e);
+  const cx = HSIZE/2, cy = HSIZE/2;
+  const dx = p.x - cx, dy = p.y - cy;
+  const r  = Math.hypot(dx,dy);
+  const physAngle = Math.atan2(-dy, dx);
+  const normR = clamp(r / activeHandleRadius(), 0, 1);
+
+  if(dragging === 'incoming'){
+    handles.incoming.angle = physAngle;
+    handles.incoming.mag   = normR * VIN_MAX;
+  } else if(dragging === 'normal'){
+    handles.normal.angle = physAngle;
+    handles.normal.mag   = speedFromLogPosition(normR, VN_MAX);
+  } else if(dragging === 'tangent'){
+    const tAng = tangentPhysAngle();
+    const proj = dx*Math.cos(tAng) + (-dy)*Math.sin(tAng);
+    const signedPosition = clamp(proj / activeHandleRadius(), -1, 1);
+    handles.tangent.mag = signedSpeedFromLogPosition(signedPosition, VT_MAX);
+  }
+  drawHandlePanel();
+  requestCompute();
+});
+hc.addEventListener('pointerup', ()=>{
+  if(dragging){ dragging = null; compute(); }
+});
+hc.addEventListener('pointercancel', ()=>{
+  if(dragging){ dragging = null; compute(); }
+});
+hc.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const p = getHandlePointer(e);
+  const candidates = [
+    { name:'incoming', pos:handlePos(handles.incoming.angle, handles.incoming.mag/VIN_MAX) },
+    { name:'normal', pos:handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX)) },
+    { name:'tangent', pos:tangentHandlePos() }
+  ];
+  let target = null, best = 26;
+  for(const item of candidates){
+    const dist = Math.hypot(p.x-item.pos[0], p.y-item.pos[1]);
+    if(dist < best){ best = dist; target = item.name; }
+  }
+  if(target){
+    const direction = e.deltaY < 0 ? 1 : -1;
+    const positionStep = e.shiftKey ? 0.001 : 0.004;
+    if(target === 'incoming'){
+      const step = Math.max(0.01, Math.abs(handles.incoming.mag) * (e.shiftKey ? 0.0002 : 0.002));
+      handles.incoming.mag = clamp(handles.incoming.mag + direction*step, 0, VIN_MAX);
+    } else if(target === 'normal'){
+      const next = clamp(logPositionFromSpeed(handles.normal.mag, VN_MAX) + direction*positionStep, 0, 1);
+      handles.normal.mag = speedFromLogPosition(next, VN_MAX);
+    } else {
+      const current = Math.sign(handles.tangent.mag)
+        * logPositionFromSpeed(handles.tangent.mag, VT_MAX);
+      const next = clamp(current + direction*positionStep, -1, 1);
+      handles.tangent.mag = signedSpeedFromLogPosition(next, VT_MAX);
+    }
+    drawHandlePanel();
+    requestCompute();
+    return;
+  }
+  dialZoomMode = 'manual';
+  updateDialZoomButtons();
+  setDialHandleScale(dialHandleScale * (e.deltaY < 0 ? 1.08 : 1/1.08));
+}, {passive:false});
+$('dialZoomAuto').addEventListener('click', applyDialAuto);
+$('dialZoomOut').addEventListener('click', ()=>{
+  dialZoomMode = 'manual';
+  updateDialZoomButtons();
+  setDialHandleScale(dialHandleScale / 1.08);
+});
+$('dialZoomIn').addEventListener('click', ()=>{
+  dialZoomMode = 'manual';
+  updateDialZoomButtons();
+  setDialHandleScale(dialHandleScale * 1.08);
+});
+
+const speedEditor = $('speedEditor');
+const speedEditorInput = $('speedEditorInput');
+const speedEditorLabel = $('speedEditorLabel');
+let speedEditTarget = null;
+let longPressTimer = null;
+const speedEditorConfig = {
+  incoming: { labelKey:'incomingSpeed', min:0, max:VIN_MAX, get:()=>handles.incoming.mag,
+    set:v=>{ handles.incoming.mag = clamp(v, 0, VIN_MAX); } },
+  normal: { labelKey:'normalSpeed', min:0, max:VN_MAX, get:()=>handles.normal.mag,
+    set:v=>{ handles.normal.mag = clamp(v, 0, VN_MAX); } },
+  tangent: { labelKey:'tangentSpeed', min:-VT_MAX, max:VT_MAX, get:()=>handles.tangent.mag,
+    set:v=>{ handles.tangent.mag = clamp(v, -VT_MAX, VT_MAX); } }
+};
+function openSpeedEditor(target){
+  const cfg = speedEditorConfig[target];
+  if(!cfg) return;
+  speedEditTarget = target;
+  speedEditorLabel.textContent = t(cfg.labelKey) + ' (m/s)';
+  speedEditorInput.min = cfg.min;
+  speedEditorInput.max = cfg.max;
+  speedEditorInput.value = cfg.get().toFixed(3);
+  speedEditor.hidden = false;
+  requestAnimationFrame(()=>{ speedEditorInput.focus(); speedEditorInput.select(); });
+}
+function closeSpeedEditor(){
+  speedEditor.hidden = true;
+  speedEditTarget = null;
+}
+function applySpeedEditor(){
+  const cfg = speedEditorConfig[speedEditTarget];
+  const value = Number(speedEditorInput.value);
+  if(!cfg || !Number.isFinite(value)) return;
+  cfg.set(value);
+  closeSpeedEditor();
+  drawHandlePanel();
+  compute();
+}
+document.querySelectorAll('.vector-readout').forEach(button=>{
+  const clearLongPress = ()=>{ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } };
+  button.addEventListener('pointerdown', ()=>{
+    clearLongPress();
+    const target = button.dataset.speedTarget;
+    longPressTimer = setTimeout(()=>{ longPressTimer = null; openSpeedEditor(target); }, 650);
+  });
+  button.addEventListener('pointerup', clearLongPress);
+  button.addEventListener('pointercancel', clearLongPress);
+  button.addEventListener('pointerleave', clearLongPress);
+  button.addEventListener('dblclick', ()=>openSpeedEditor(button.dataset.speedTarget));
+  button.addEventListener('contextmenu', e=>{
+    e.preventDefault();
+    openSpeedEditor(button.dataset.speedTarget);
+  });
+});
+$('speedEditorApply').addEventListener('click', applySpeedEditor);
+$('speedEditorClose').addEventListener('click', closeSpeedEditor);
+speedEditorInput.addEventListener('keydown', e=>{
+  if(e.key === 'Enter') applySpeedEditor();
+  if(e.key === 'Escape') closeSpeedEditor();
+});
+
+// ==================== 气动系数 ====================
+function aeroCoeffs(phi, clPeak){
+  const deg = Math.abs(phi)/D2R;
+  let Cd;
+  if(deg <= 65) Cd = 0.60 + 0.30 * (deg/65);
+  else Cd = 0.90 + 0.25 * Math.min((deg-65)/115, 1);
+  let magnitude = 0;
+  if(deg <= 90){
+    if(deg <= 40) magnitude = clPeak * Math.sin(deg/40 * Math.PI/2);
+    else          magnitude = clPeak * Math.cos((deg-40)/50 * Math.PI/2);
+  }
+  const smoothSign = Math.tanh(phi/(12*D2R));
+  const Cl = magnitude * smoothSign;
+  return { Cd, Cl, deg };
+}
+
+// ==================== 碰撞 ====================
+function collide(){
+  const beta = handles.normal.angle;
+  const vn   = handles.normal.mag;
+  const vt   = handles.tangent.mag;
+  const vInMag = handles.incoming.mag;
+  const thetaIn = handles.incoming.angle;
+  const headH = +$('h').value;
+  const e = +$('e').value, mu = +$('mu').value;
+
+  const n = [Math.cos(beta), Math.sin(beta)];
+  const t = [Math.sin(beta), -Math.cos(beta)];
+
+  const vIn = [vInMag*Math.cos(thetaIn), vInMag*Math.sin(thetaIn)];
+  const vInN = vIn[0]*n[0] + vIn[1]*n[1];
+  const vInT = vIn[0]*t[0] + vIn[1]*t[1];
+
+  const vOutN = (1+e)*vn - e*vInN;
+  const vRelT = vInT - vt;
+  const vOutT = vInT - mu*vRelT;
+  const vOut  = [vOutN*n[0] + vOutT*t[0], vOutN*n[1] + vOutT*t[1]];
+  const thetaOut = Math.atan2(vOut[1], vOut[0]);
+
+  let phi0 = normAngle(thetaIn - thetaOut);
+  if(Math.abs(Math.abs(phi0) - Math.PI) < 0.02) phi0 -= 0.02*Math.sign(phi0);
+  const psi0 = normAngle(thetaOut + phi0);
+
+  const slipNorm = Math.tanh(Math.abs(vRelT)/2.0);
+  const head0 = [Math.cos(thetaIn), Math.sin(thetaIn)];
+  const frictionDeltaV = -mu * vRelT;
+  const leverCross = head0[0]*t[1] - head0[1]*t[0];
+  const omegaFromImpulse = clamp(P.L_CM * P.m * frictionDeltaV * leverCross / P.I, -120, 120);
+  const omega0 = Math.abs(phi0) > 1e-6
+    ? -Math.sign(phi0) * Math.abs(omegaFromImpulse)
+    : omegaFromImpulse;
+  const flipDir = Math.sign(omega0) || -Math.sign(phi0) || 1;
+  const omegaSpin0 = -Math.sign(vRelT||1) * P.C_spin * mu * Math.abs(vRelT) / P.R;
+
+  // 击球锚点是球头圆心，质心在球头后方 L_CM（沿 -球头方向）
+  const cmX0 = racketX - P.L_CM * Math.cos(thetaIn);
+  const cmY0 = headH - P.L_CM * Math.sin(thetaIn);
+
+  return {
+    state: [cmX0, cmY0, vOut[0], vOut[1], psi0, omega0, omegaSpin0, 0],
+    info: {
+      vIn, vOut, thetaIn, thetaOut, vInN, vInT, vOutN, vOutT, vRelT,
+      phi0, psi0, omega0, omegaSpin0, flipDir, slipNorm, n, t, beta, headH
+    }
+  };
+}
+
+// ==================== 导数 & RK4 ====================
+function derivs(s, clPeak, spindamp){
+  const [x,y,vx,vy,psi,psiDot,omegaSpin,spinPhase] = s;
+  const v = Math.hypot(vx,vy);
+  const theta = v > 1e-9 ? Math.atan2(vy,vx) : 0;
+  const phi = normAngle(psi - theta);
+  let ax = 0, ay = -P.g;
+  if(v > 1e-9){
+    const evx = vx/v, evy = vy/v;
+    const co = aeroCoeffs(phi, clPeak);
+    const q  = 0.5 * P.rho * P.S * v * v;
+    ax += -q*co.Cd/P.m * evx;
+    ay += -q*co.Cd/P.m * evy;
+    if(Math.abs(co.Cl) > 1e-9){
+      ax += q*co.Cl/P.m * evy;
+      ay += q*co.Cl/P.m * (-evx);
+    }
+    const FM = P.k_M * omegaSpin * v;
+    const sgnS = omegaSpin >= 0 ? 1 : -1;
+    ax += FM/P.m * (evy * sgnS);
+    ay += FM/P.m * (-evx * sgnS);
+  }
+  const tauEff = Math.max(P.tauMin, P.tau * P.vRef / Math.max(v, 0.5));
+  const psiDDot = -(Math.sin(phi))/(tauEff*tauEff)
+                - (2*P.zeta/tauEff)*psiDot;
+  const dOmegaSp = -spindamp * omegaSpin;
+  const dSpinPh  = omegaSpin;
+  return [vx, vy, ax, ay, psiDot, psiDDot, dOmegaSp, dSpinPh];
+}
+function rk4(s, dt, clPeak, spindamp){
+  const k1 = derivs(s, clPeak, spindamp);
+  const s2 = s.map((v,i)=> v + k1[i]*dt/2);
+  const k2 = derivs(s2, clPeak, spindamp);
+  const s3 = s.map((v,i)=> v + k2[i]*dt/2);
+  const k3 = derivs(s3, clPeak, spindamp);
+  const s4 = s.map((v,i)=> v + k3[i]*dt);
+  const k4 = derivs(s4, clPeak, spindamp);
+  return s.map((v,i)=> v + (k1[i]+2*k2[i]+2*k3[i]+k4[i])*dt/6);
+}
+
+function headPosOf(q){
+  const theta = Math.atan2(q.vy, q.vx);
+  const thetaHead = Number.isFinite(q.psi) ? q.psi : theta + q.phi;
+  return {
+    x: q.x + P.L_CM * Math.cos(thetaHead),
+    y: q.y + P.L_CM * Math.sin(thetaHead),
+    thetaHead
+  };
+}
+
+function trajectoryPoint(t,s,previousTheta,dt){
+  const theta = Math.atan2(s[3],s[2]);
+  const frameOmega = previousTheta == null ? 0 : normAngle(theta-previousTheta)/dt;
+  return {
+    t, x:s[0], y:s[1], vx:s[2], vy:s[3],
+    phi:normAngle(s[4]-theta), phiDot:s[5]-frameOmega,
+    psi:s[4], psiDot:s[5],
+    omegaSpin:s[6], spinPhase:s[7]
+  };
+}
+
+// ==================== 计算 ====================
+let traj = [];
+let meta = null;
+let colInfo = null;
+let playing = false;
+let animId = null;
+let computeTimer = null;
+let netX = 0;
+let racketX = -2.0;
+
+function updatePlayButton(){
+  $('play').textContent = (playing ? '⏸ ' + t('pause') : '▶ ' + t('play'));
+}
+
+function compute(skipFitView){
+  if(animId){ cancelAnimationFrame(animId); animId = null; }
+  playing = false;
+  updatePlayButton();
+
+  const clPeak = +$('cl').value;
+  const spindamp = +$('spindamp').value;
+  const col = collide();
+  colInfo = col.info;
+
+  const dt = 0.0004;
+  let s = col.state.slice(), t = 0;
+  let previousTheta = Math.atan2(s[3],s[2]);
+  traj = [trajectoryPoint(0,s,previousTheta,dt)];
+
+  while(t < 3.5){
+    const previousPhi = normAngle(s[4]-previousTheta);
+    s = rk4(s, dt, clPeak, spindamp);
+    t += dt;
+    const nextTheta = Math.atan2(s[3],s[2]);
+    const nextPhi = normAngle(s[4]-nextTheta);
+    if(previousPhi !== 0 && previousPhi * nextPhi < 0){
+      s[4] = nextTheta;
+      s[5] = normAngle(nextTheta-previousTheta)/dt;
+    }
+    s[4] = normAngle(s[4]);
+    if(t > 0.015){
+      const hp = headPosOf({ x:s[0], y:s[1], vx:s[2], vy:s[3], psi:s[4] });
+      if(hp.y <= 0) break;
+    }
+    traj.push(trajectoryPoint(t,s,previousTheta,dt));
+    previousTheta = nextTheta;
+  }
+
+  const last = traj[traj.length-1];
+  const lastHead = headPosOf(last);
+  const speed0 = Math.hypot(col.info.vOut[0], col.info.vOut[1]);
+  const angle0 = Math.atan2(col.info.vOut[1], col.info.vOut[0]);
+
+  let maxPhi = 0;
+  for(const q of traj) if(Math.abs(q.phi) > maxPhi) maxPhi = Math.abs(q.phi);
+
+  let flipT = null;
+  for(let i=1;i<traj.length;i++){
+    if(Math.abs(traj[i].phi) < 10*D2R && Math.abs(traj[i].phiDot) < 15){
+      flipT = traj[i].t; break;
+    }
+  }
+  const totalTurns = Math.abs(last.spinPhase) / (2*Math.PI);
+  const reachability = evaluateReachability(traj.map(headPosOf), lastHead);
+
+  meta = {
+    speed0, angle0,
+    phi0: col.info.phi0, flipDir: col.info.flipDir,
+    omegaSpin0: col.info.omegaSpin0,
+    tA: last.t,
+    range: lastHead.x,
+    maxPhiDeg: maxPhi/D2R, flipT, totalTurns,
+    L_CM_TIP: P.L_CM_TIP,
+    L_CM: P.L_CM,
+    netCross: reachability.netCross,
+    reachable: reachability.reachable,
+    failureKey: reachability.failureKey,
+    failureReason: reachability.failureReason
+  };
+  if(!skipFitView && zoomMode === 'auto') fitTrajView();
+  $('time').max = traj.length-1;
+  $('time').value = 0;
+  updateView(0);
+}
+
+function evaluateReachability(heads,lastHead){
+  let netCross = null;
+  for(let i=1;i<heads.length;i++){
+    const a = heads[i-1], b = heads[i];
+    if((a.x-netX)*(b.x-netX) <= 0 && Math.abs(b.x-a.x) > 1e-9){
+      const u = (netX-a.x)/(b.x-a.x);
+      netCross = { x: netX, y:a.y+(b.y-a.y)*u };
+      break;
+    }
+  }
+  let failureReason = null;
+  let failureKey = null;
+  if(netCross && netCross.y < NET_HEIGHT){ failureReason = '被球网阻挡'; failureKey = 'netBlocked'; }
+  if(!failureReason && lastHead.x <= netX + 0.03){ failureReason = '无法到达对面场地'; failureKey = 'cannotReach'; }
+  return {netCross,reachable:!failureReason,failureReason,failureKey};
+}
+
+function refreshReachability(){
+  if(!meta || !traj.length) return;
+  const heads = traj.map(headPosOf);
+  const reach = evaluateReachability(heads,heads[heads.length-1]);
+  meta.netCross = reach.netCross;
+  meta.reachable = reach.reachable;
+  meta.failureKey = reach.failureKey;
+  meta.failureReason = reach.failureReason;
+}
+
+function requestCompute(){
+  if(computeTimer) clearTimeout(computeTimer);
+  computeTimer = setTimeout(()=>compute(), 60);
+}
+
+// ==================== 轨迹画布 ====================
+const tc = $('trajCanvas');
+const tctx = tc.getContext('2d');
+const trajWrap = tc.parentElement;
+let scaleT = 140, oxT = 100, oyT = 500;
+let zoomMode = 'auto';
+
+function sizeTrajCanvas(){
+  const rect = trajWrap.getBoundingClientRect();
+  const w = Math.max(200, Math.floor(rect.width));
+  const h = Math.max(200, Math.floor(rect.height));
+  tc.width  = w * dpr;
+  tc.height = h * dpr;
+  tc.style.width  = w + 'px';
+  tc.style.height = h + 'px';
+  tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if(zoomMode === 'auto') fitTrajView();
+}
+
+function fitTrajView(){
+  const W = tc.width / dpr;
+  const H = tc.height / dpr;
+  let xMin = Math.min(racketX,netX)-0.5;
+  let xMax = Math.max(racketX,netX)+0.5;
+  let yMin = 0, yMax = 0;
+  const initH = colInfo ? colInfo.headH : 1.5;
+  yMax = Math.max(yMax, initH);
+  xMin = Math.min(xMin, netX - 0.3);
+  xMax = Math.max(xMax, netX + 0.3);
+
+  for(const q of traj){
+    xMin = Math.min(xMin, q.x);
+    xMax = Math.max(xMax, q.x);
+    yMin = Math.min(yMin, q.y);
+    yMax = Math.max(yMax, q.y);
+    const hp = headPosOf(q);
+    xMin = Math.min(xMin, hp.x);
+    xMax = Math.max(xMax, hp.x);
+    yMin = Math.min(yMin, hp.y);
+    yMax = Math.max(yMax, hp.y);
+  }
+
+  const spanX = Math.max(xMax - xMin, 0.5);
+  const spanY = Math.max(yMax - yMin, 0.5);
+  const padX = Math.max(0.4, spanX * 0.10);
+  const padY = Math.max(0.3, spanY * 0.10);
+  xMin -= padX;
+  xMax += padX;
+  yMin = Math.min(yMin - padY, -0.15);
+  yMax += padY;
+
+  const rangeX = Math.max(xMax - xMin, 0.5);
+  const rangeY = Math.max(yMax - yMin, 0.5);
+
+  const pl = 105, pr = 32, pt = 22, pb = 48;
+  const availW = W - pl - pr;
+  const availH = H - pt - pb;
+
+  scaleT = Math.min(availW / rangeX, availH / rangeY);
+  scaleT = clamp(scaleT, 15, 250);
+
+  oxT = pl - xMin * scaleT;
+  oyT = H - pb + yMin * scaleT;
+  drawHandlePanel();
+}
+
+function toT(x,y){ return [oxT + x*scaleT, oyT - y*scaleT]; }
+
+function updateView(idx){
+  if(idx == null) idx = +$('time').value;
+  if(!traj.length) return;
+  idx = clamp(idx, 0, traj.length-1);
+  $('time').value = idx;
+  $('vT').textContent = traj[idx].t.toFixed(3) + ' s';
+  updateDetailChips(idx);
+
+  const W = tc.width/dpr, H = tc.height/dpr;
+  tctx.clearRect(0,0,W,H);
+
+  drawTrajBg(W,H);
+  drawNet();
+  drawRacketTraj();
+  drawTrajLine(idx);
+  drawShuttleTraj(traj[idx]);
+  updateTrajectoryLegend();
+}
+
+function updateTrajectoryLegend(){
+  const failed = meta && !meta.reachable;
+  const legend = $('trajectoryLegend');
+  legend.classList.toggle('is-failed', !!failed);
+  $('trajectoryLegendText').textContent = failed ? t('unreachableTrajectory') : t('trajectory');
+}
+
+function updateDetailChips(idx){
+  const q = traj[idx];
+  const set = (id, value) => { const el = $(id); if(el) el.textContent = value; };
+  const deg = a => (((a/D2R)%360)+360)%360;
+  set('dH', (+$('h').value).toFixed(2) + ' m');
+  set('dE', (+$('e').value).toFixed(2));
+  set('dMu', (+$('mu').value).toFixed(2));
+  set('dCl', (+$('cl').value).toFixed(2));
+  set('dSpin', (+$('spindamp').value).toFixed(2));
+  set('dInSpeed', handles.incoming.mag.toFixed(1) + ' m/s');
+  set('dInAngle', deg(handles.incoming.angle).toFixed(1) + '°');
+  set('dNormalSpeed', handles.normal.mag.toFixed(1) + ' m/s');
+  set('dTangentSpeed', handles.tangent.mag.toFixed(1) + ' m/s');
+  set('dRx', (racketX-netX).toFixed(2) + ' m');
+  set('dNx', '0.00 m');
+  if(meta){
+    set('dOutSpeed', meta.speed0.toFixed(2) + ' m/s');
+    set('dOutAngle', (meta.angle0 / D2R).toFixed(1) + '°');
+    set('dDuration', meta.tA.toFixed(3) + ' s');
+    set('dFlipDir', meta.flipDir > 0 ? t('ccw') : t('cw'));
+    set('dFlipTime', meta.flipT ? meta.flipT.toFixed(3) + ' s' : t('notCompleted'));
+    set('dSpinRate', (meta.omegaSpin0 / (2*Math.PI)).toFixed(1) + ' rev/s');
+    const statusEl = $('dStatus');
+    statusEl.textContent = meta.reachable ? t('reachable') : t(meta.failureKey || 'cannotReach');
+    statusEl.style.color = meta.reachable ? '#1f8a5b' : '#d94b3d';
+  }
+  if(q){
+    set('dTime', q.t.toFixed(3) + ' s');
+    set('dPhi', (q.phi / D2R).toFixed(0) + '°');
+    set('dCurrentSpeed', Math.hypot(q.vx, q.vy).toFixed(2) + ' m/s');
+    const spatialAngle = Math.atan2(q.vy, q.vx) / D2R;
+    const shownAngle = Math.abs(spatialAngle) < 0.05 ? 0 : spatialAngle;
+    set('dCurrentAngle', (shownAngle > 0 ? '+' : '') + shownAngle.toFixed(1) + '°');
+  }
+}
+
+function drawTrajBg(W,H){
+  tctx.fillStyle = '#f7fbf9';
+  tctx.fillRect(0, oyT, W, H - oyT);
+
+  tctx.font = '600 11.5px -apple-system, Segoe UI';
+  tctx.textAlign = 'left';
+  tctx.textBaseline = 'alphabetic';
+  tctx.lineWidth = 1;
+  tctx.strokeStyle = GUIDE_LINE_COLOR;
+  tctx.fillStyle = GUIDE_LABEL_COLOR;
+
+  const topGrid = Math.max(5, Math.ceil((oyT - 8) / scaleT * 2) / 2);
+  for(let hm=0; hm<=topGrid; hm+=0.5){
+    const y = oyT - hm*scaleT;
+    if(y < 0) break;
+    tctx.beginPath(); tctx.moveTo(0,y); tctx.lineTo(W,y); tctx.stroke();
+    tctx.fillText(hm.toFixed(1)+'m', 12, y-3);
+  }
+  const relStart = Math.floor((0 - oxT) / scaleT - netX);
+  const relEnd   = Math.ceil((W - oxT) / scaleT - netX);
+  for(let rel=relStart; rel<=relEnd; rel+=1){
+    const x = oxT + (rel + netX) * scaleT;
+    if(x < 0 || x > W) continue;
+    tctx.beginPath(); tctx.moveTo(x,0); tctx.lineTo(x,oyT); tctx.stroke();
+    tctx.textAlign = 'center';
+    tctx.fillText(rel+'m', clamp(x, 24, W-24), oyT+17);
+  }
+
+  tctx.beginPath(); tctx.moveTo(0,oyT); tctx.lineTo(W,oyT);
+  tctx.strokeStyle = '#73aa8f'; tctx.lineWidth = 1.5; tctx.stroke();
+
+  const markers = [
+    {d:1.98,label:t('serviceLine')},
+    {d:5.94,label:t('rearServiceLine')},
+    {d:6.70,label:t('baseline')}
+  ];
+  tctx.save();
+  tctx.font = '9px system-ui';
+  tctx.textAlign = 'center';
+  tctx.textBaseline = 'top';
+  for(const side of [-1,1]){
+    for(const m of markers){
+      const x = oxT + (netX + side*m.d) * scaleT;
+      if(x < -12 || x > W+12) continue;
+      tctx.fillStyle = '#1f8a5b';
+      tctx.fillRect(x-9, oyT-3, 18, 6);
+      tctx.fillStyle = GUIDE_LABEL_COLOR;
+      tctx.fillText(m.label, clamp(x, 34, W-34), oyT+34);
+    }
+  }
+  tctx.restore();
+}
+
+function drawNet(){
+  const [nx, nyBase] = toT(netX, 0);
+  const [, nyTop] = toT(netX, NET_HEIGHT);
+  if(nx < -20 || nx > tc.width/dpr + 20) return;
+
+  tctx.save();
+  const cellSize = 6;
+  tctx.fillStyle = 'rgba(31,138,91,.08)';
+  tctx.fillRect(nx-10, nyTop, 20, nyBase-nyTop);
+  tctx.strokeStyle = 'rgba(31,138,91,.55)';
+  tctx.lineWidth = 1;
+  for(let y=nyTop; y<nyBase; y+=cellSize){
+    tctx.beginPath(); tctx.moveTo(nx-10, y); tctx.lineTo(nx+10, y); tctx.stroke();
+  }
+  for(let x=nx-10; x<=nx+10; x+=cellSize){
+    tctx.beginPath(); tctx.moveTo(x, nyTop); tctx.lineTo(x, nyBase); tctx.stroke();
+  }
+  tctx.strokeStyle = '#166b46';
+  tctx.lineWidth = 3;
+  tctx.beginPath();
+  tctx.moveTo(nx-10, nyBase);
+  tctx.lineTo(nx-10, nyTop);
+  tctx.lineTo(nx+10, nyTop);
+  tctx.lineTo(nx+10, nyBase);
+  tctx.stroke();
+  tctx.fillStyle = '#1f8a5b';
+  tctx.fillRect(nx-11, nyTop-3, 22, 6);
+  tctx.restore();
+
+  tctx.textAlign = 'center';
+  tctx.fillStyle = '#73aa8f';
+  tctx.fillText('↔', nx, nyBase + 18);
+  tctx.font = '9px system-ui';
+  tctx.textBaseline = 'top';
+  tctx.fillStyle = GUIDE_LABEL_COLOR;
+  tctx.fillText(t('netLabel'), clamp(nx, 34, tc.width/dpr - 34), nyBase + 34);
+}
+
+function drawRacketTraj(){
+  if(!colInfo) return;
+  const p = colInfo;
+  const [cx,cy] = toT(racketX, p.headH);
+  const beta = p.beta;
+  const tAng = beta - Math.PI/2;
+
+  tctx.save();
+  tctx.translate(cx,cy);
+  tctx.rotate(-tAng);
+  tctx.beginPath();
+  tctx.ellipse(0,0,42,6.5,0,0,Math.PI*2);
+  tctx.fillStyle = 'rgba(115,193,142,.20)';
+  tctx.fill();
+  tctx.strokeStyle = '#73c18e';
+  tctx.lineWidth = 2.4;
+  tctx.stroke();
+  tctx.beginPath();
+  tctx.moveTo(0,0); tctx.lineTo(0,55);
+  tctx.strokeStyle = '#4f9a70'; tctx.lineWidth = 4;
+  tctx.lineCap = 'round'; tctx.stroke();
+  tctx.beginPath();
+  tctx.moveTo(0,54); tctx.lineTo(0,76);
+  tctx.strokeStyle = '#2f7350'; tctx.lineWidth = 6;
+  tctx.stroke();
+  tctx.restore();
+
+  tctx.beginPath(); tctx.arc(cx,cy,4.5,0,Math.PI*2);
+  tctx.fillStyle = '#73c18e'; tctx.fill();
+  tctx.strokeStyle = '#fff'; tctx.lineWidth = 1.5; tctx.stroke();
+
+  tctx.font = '9px -apple-system';
+  tctx.fillStyle = '#4f9a70';
+  tctx.textAlign = 'center'; tctx.textBaseline = 'middle';
+  tctx.fillText(t('drag'), cx, cy - 28);
+
+  const inLen = 42 + p.vInN * 4;
+  drawArrowT(
+    cx, cy,
+    cx + Math.cos(p.thetaIn) * inLen,
+    cy - Math.sin(p.thetaIn) * inLen,
+    '#2563eb', 2
+  );
+}
+
+function drawTrajLine(idx){
+  if(traj.length < 2) return;
+  const step = Math.max(1, Math.floor(traj.length/1000));
+  const valid = !meta || meta.reachable;
+  const lineColor = valid ? '#111b16' : '#d94b3d';
+  const ghostColor = valid ? 'rgba(17,27,22,.17)' : 'rgba(217,75,61,.18)';
+
+  tctx.beginPath();
+  for(let i=0;i<traj.length;i+=step){
+    const q = traj[i];
+    const [x,y] = toT(q.x,q.y);
+    i===0 ? tctx.moveTo(x,y) : tctx.lineTo(x,y);
+  }
+  tctx.strokeStyle = ghostColor;
+  tctx.lineWidth = 3.2;
+  tctx.stroke();
+
+  tctx.beginPath();
+  for(let i=0;i<=idx;i+=step){
+    const q = traj[i];
+    const [x,y] = toT(q.x,q.y);
+    i===0 ? tctx.moveTo(x,y) : tctx.lineTo(x,y);
+  }
+  const lq = traj[idx];
+  const [lx,ly] = toT(lq.x,lq.y);
+  tctx.lineTo(lx,ly);
+  tctx.strokeStyle = lineColor;
+  tctx.lineWidth = 5;
+  tctx.stroke();
+
+  const end = traj[traj.length-1];
+  const hp = headPosOf(end);
+  const [ex,ey] = toT(hp.x, 0);
+  tctx.beginPath(); tctx.arc(ex,ey,4.5,0,Math.PI*2);
+  tctx.fillStyle = lineColor; tctx.fill();
+  tctx.strokeStyle = '#fff'; tctx.lineWidth = 1.5; tctx.stroke();
+}
+
+function drawShuttleTraj(p){
+  const [cmx, cmy] = toT(p.x, p.y);
+  const velAng = Math.atan2(-p.vy, p.vx);
+  const theta  = Math.atan2(p.vy, p.vx);
+  const thetaHead = theta + p.phi;
+  const Lpx = P.L_CM * scaleT;
+
+  tctx.save();
+  tctx.translate(cmx, cmy);
+  tctx.rotate(velAng - p.phi);
+
+  const hxL = Lpx;
+
+  tctx.beginPath();
+  tctx.moveTo(hxL-4, -5.5); tctx.lineTo(hxL-4, 5.5);
+  tctx.lineTo(hxL-38, 16);  tctx.lineTo(hxL-38, -16);
+  tctx.closePath();
+  tctx.fillStyle = 'rgba(17,27,22,.94)';
+  tctx.fill();
+  tctx.strokeStyle = '#030706'; tctx.lineWidth = 1.5; tctx.stroke();
+
+  tctx.beginPath();
+  for(let i=0;i<3;i++){
+    tctx.moveTo(hxL-8, -4+i*4);
+    tctx.lineTo(hxL-36, -14+i*14);
+  }
+  tctx.strokeStyle = 'rgba(255,255,255,.32)';
+  tctx.lineWidth = 1; tctx.stroke();
+
+  tctx.beginPath();
+  tctx.moveTo(hxL-42, 0); tctx.lineTo(hxL+12, 0);
+  tctx.setLineDash([4,3]);
+  tctx.strokeStyle = 'rgba(120,120,128,.45)';
+  tctx.lineWidth = 1; tctx.stroke();
+  tctx.setLineDash([]);
+
+  tctx.beginPath(); tctx.arc(hxL, 0, 7, 0, Math.PI*2);
+  tctx.fillStyle = '#111b16'; tctx.fill();
+  tctx.strokeStyle = '#ffffff'; tctx.lineWidth = 1.8; tctx.stroke();
+  tctx.beginPath(); tctx.arc(hxL, 0, 2.2, 0, Math.PI*2);
+  tctx.fillStyle = '#4a5a51'; tctx.fill();
+
+  // 质心标记（黑色十字）
+  tctx.strokeStyle = '#7b52d3';
+  tctx.lineWidth = 1.6;
+  tctx.beginPath();
+  tctx.moveTo(-5,0); tctx.lineTo(5,0);
+  tctx.moveTo(0,-5); tctx.lineTo(0,5);
+  tctx.stroke();
+  tctx.beginPath(); tctx.arc(0,0,2.5,0,Math.PI*2);
+  tctx.fillStyle = '#7b52d3'; tctx.fill();
+
+  // 自旋相位小点
+  const spinMarkY = 16*Math.sin(p.spinPhase);
+  tctx.beginPath(); tctx.arc(hxL-36, spinMarkY, 2.8, 0, Math.PI*2);
+  tctx.fillStyle = '#7b52d3'; tctx.fill();
+  tctx.strokeStyle = '#fff'; tctx.lineWidth = 1; tctx.stroke();
+
+  tctx.restore();
+
+  const hcx = Math.cos(thetaHead), hcy = -Math.sin(thetaHead);
+  const tipLen = Lpx + 40;
+  drawArrowT(cmx, cmy, cmx+hcx*tipLen, cmy+hcy*tipLen, '#7b52d3', 3.0);
+
+  const vhx = Math.cos(theta), vhy = -Math.sin(theta);
+  drawArrowT(cmx, cmy, cmx+vhx*(Lpx+26), cmy+vhy*(Lpx+26), '#7b52d3', 1.6);
+
+  const co = aeroCoeffs(p.phi, +$('cl').value);
+  const v = Math.hypot(p.vx, p.vy);
+  if(Math.abs(co.Cl) > 0.001 && v > 0.05){
+    const L = 0.5*P.rho*P.S*v*v*co.Cl;
+    const evx = p.vx/v, evy = p.vy/v;
+    const lx = evy, ly = -evx;
+    const Lpx2 = Math.min(L*60, 70);
+    drawArrowT(cmx, cmy, cmx+lx*Lpx2, cmy-ly*Lpx2, 'rgba(123,82,211,.58)', 2);
+  }
+}
+
+function drawArrowT(x1,y1,x2,y2,color,lw){
+  tctx.beginPath(); tctx.moveTo(x1,y1); tctx.lineTo(x2,y2);
+  tctx.strokeStyle = color; tctx.lineWidth = lw;
+  tctx.lineCap = 'round'; tctx.stroke();
+  const ang = Math.atan2(y2-y1, x2-x1), hl = 9;
+  tctx.beginPath(); tctx.moveTo(x2,y2);
+  tctx.lineTo(x2-hl*Math.cos(ang-.42), y2-hl*Math.sin(ang-.42));
+  tctx.lineTo(x2-hl*Math.cos(ang+.42), y2-hl*Math.sin(ang+.42));
+  tctx.closePath(); tctx.fillStyle = color; tctx.fill();
+}
+
+function drawStatusCard(W){
+  if(!meta || !traj.length) return;
+  const q = traj[+$('time').value];
+  const phiDeg = q.phi / D2R;
+  let status, sc;
+  if(Math.abs(phiDeg) < 10)       { status = '已翻正'; sc = '#34c759'; }
+  else if(Math.abs(phiDeg) > 140) { status = '朝来球'; sc = '#ff3b30'; }
+  else                            { status = '翻转中'; sc = '#af52de'; }
+  const dirText = meta.flipDir > 0 ? '逆时针 ↺' : '顺时针 ↻';
+
+  const lines = [
+    ['出球',     `${meta.speed0.toFixed(2)} m/s · ${(meta.angle0/D2R).toFixed(1)}°`, '#007aff'],
+    ['翻转方向', dirText, '#af52de'],
+    ['翻转完成', meta.flipT ? meta.flipT.toFixed(3)+'s' : '未完成', '#34c759'],
+    ['自旋',     `${(meta.omegaSpin0/(2*Math.PI)).toFixed(1)} rev/s`, '#ff9500'],
+    ['当前 φ',   `${phiDeg.toFixed(0)}° ${status}`, sc],
+    ['质心轨迹', `${traj[traj.length-1].t.toFixed(2)}s · ${meta.range.toFixed(2)}m`, '#3a3a3c'],
+    ['L_CM',     `${(meta.L_CM*1000).toFixed(1)} mm（尖端 ${(meta.L_CM_TIP*1000).toFixed(1)} mm）`, '#8e8e93']
+  ];
+
+  const cw = 240, ch = lines.length*18 + 16;
+  const cx0 = W - cw - 14, cy0 = 14;
+
+  tctx.fillStyle = 'rgba(255,255,255,.96)';
+  tctx.strokeStyle = '#e4ebe6'; tctx.lineWidth = 1;
+  roundRect(tctx, cx0, cy0, cw, ch, 8); tctx.fill(); tctx.stroke();
+
+  tctx.font = '11px -apple-system';
+  tctx.textBaseline = 'middle';
+  lines.forEach((ln,i)=>{
+    const y = cy0 + 14 + i*18;
+    tctx.fillStyle = '#8e8e93';
+    tctx.textAlign = 'left';
+    tctx.fillText(ln[0], cx0+12, y);
+    tctx.fillStyle = ln[2];
+    tctx.textAlign = 'right';
+    tctx.fillText(ln[1], cx0+cw-12, y);
+  });
+}
+
+// ==================== 右侧画布拖拽 ====================
+let trajDragging = null;
+let dragTimer = null;
+let panState = null;
+
+function getTrajPointer(e){
+  const r = tc.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (tc.width/dpr / r.width),
+    y: (e.clientY - r.top)  * (tc.height/dpr / r.height)
+  };
+}
+
+tc.addEventListener('pointerdown', e=>{
+  const p = getTrajPointer(e);
+  if(e.detail > 1) return;
+  if(colInfo){
+    const [rx, ry] = toT(racketX, colInfo.headH);
+    if(Math.hypot(p.x-rx, p.y-ry) < 45){
+      trajDragging = 'racket';
+      tc.setPointerCapture(e.pointerId);
+      tc.style.cursor = 'grabbing';
+      return;
+    }
+  }
+  const [nx] = toT(netX, 0);
+  const [, nyTop] = toT(netX, NET_HEIGHT);
+  if(Math.abs(p.x - nx) < 12 && p.y > nyTop - 20 && p.y < oyT + 20){
+    trajDragging = 'net';
+    tc.setPointerCapture(e.pointerId);
+    tc.style.cursor = 'ew-resize';
+    return;
+  }
+  trajDragging = 'pan';
+  panState = { startX:p.x, startY:p.y, originX:oxT, originY:oyT };
+  tc.setPointerCapture(e.pointerId);
+  tc.style.cursor = 'grabbing';
+});
+
+tc.addEventListener('pointermove', e=>{
+  if(!trajDragging){
+    const p = getTrajPointer(e);
+    let cursor = 'grab';
+    if(colInfo){
+      const [rx, ry] = toT(racketX, colInfo.headH);
+      if(Math.hypot(p.x-rx, p.y-ry) < 45) cursor = 'grab';
+    }
+    const [nx] = toT(netX, 0);
+    const [, nyTop] = toT(netX, NET_HEIGHT);
+    if(Math.abs(p.x - nx) < 12 && p.y > nyTop - 20 && p.y < oyT + 20) cursor = 'ew-resize';
+    tc.style.cursor = cursor;
+    return;
+  }
+
+  const p = getTrajPointer(e);
+
+  if(trajDragging === 'pan'){
+    oxT = panState.originX + (p.x - panState.startX);
+    oyT = panState.originY + (p.y - panState.startY);
+    zoomMode = 'manual';
+    updateZoomButtons();
+    updateView(+$('time').value);
+  } else if(trajDragging === 'racket'){
+    const minX = netX - COURT_HALF_LENGTH + 0.05;
+    const maxX = netX - 0.1;
+    racketX = clamp((p.x - oxT) / scaleT, minX, maxX);
+    const newHeadH = clamp((oyT - p.y) / scaleT, 0.7, 3.5);
+    $('h').value = newHeadH;
+    $('vH').textContent = newHeadH.toFixed(2);
+    syncVectorControls();
+    if(dragTimer) clearTimeout(dragTimer);
+    dragTimer = setTimeout(()=>compute(true), 60);
+  } else if(trajDragging === 'net'){
+    const minX = Math.max((6 - oxT) / scaleT, racketX + 0.1);
+    const maxX = Math.min(
+      (tc.width/dpr - 6 - oxT) / scaleT,
+      racketX + COURT_HALF_LENGTH - 0.05
+    );
+    netX = clamp((p.x - oxT) / scaleT, minX, maxX);
+    racketX = clamp(racketX, netX - COURT_HALF_LENGTH + 0.05, netX - 0.1);
+    syncVectorControls();
+    refreshReachability();
+    updateView();
+  }
+});
+
+tc.addEventListener('pointerup', ()=>{
+  if(trajDragging){
+    const wasRacket = trajDragging === 'racket';
+    const wasPan = trajDragging === 'pan';
+    trajDragging = null;
+    panState = null;
+    tc.style.cursor = (wasPan || wasRacket) ? 'grab' : 'default';
+    if(wasRacket){
+      if(dragTimer){ clearTimeout(dragTimer); dragTimer = null; }
+      compute();
+    }
+  }
+});
+
+tc.addEventListener('pointercancel', ()=>{
+  if(trajDragging){
+    const wasRacket = trajDragging === 'racket';
+    const wasPan = trajDragging === 'pan';
+    trajDragging = null;
+    panState = null;
+    tc.style.cursor = (wasPan || wasRacket) ? 'grab' : 'default';
+    if(wasRacket){
+      if(dragTimer){ clearTimeout(dragTimer); dragTimer = null; }
+      compute();
+    }
+  }
+});
+
+tc.addEventListener('dblclick', e=>{
+  e.preventDefault();
+  const workspace = document.querySelector('.workspace');
+  workspace.classList.toggle('angle-hidden');
+  requestAnimationFrame(()=>{
+    sizeTrajCanvas();
+    if(traj.length) updateView(+$('time').value);
+  });
+});
+
+// ==================== 播放 ====================
+function togglePlay(){
+  if(traj.length === 0) return;
+  if(playing){
+    playing = false;
+    updatePlayButton();
+    if(animId) cancelAnimationFrame(animId);
+    return;
+  }
+  let idx = +$('time').value;
+  if(idx >= traj.length-1) idx = 0;
+  playing = true;
+  updatePlayButton();
+  const t0 = traj[idx].t;
+  const start = performance.now();
+  const speedFactor = 0.05;
+
+  function frame(now){
+    if(!playing) return;
+    const target = t0 + (now-start)/1000 * speedFactor;
+    if(target >= traj[traj.length-1].t){
+      updateView(traj.length-1);
+      playing = false;
+      updatePlayButton();
+      return;
+    }
+    let lo = 0, hi = traj.length-1;
+    while(hi-lo > 1){
+      const mid = (lo+hi)>>1;
+      if(traj[mid].t < target) lo = mid; else hi = mid;
+    }
+    updateView(lo);
+    animId = requestAnimationFrame(frame);
+  }
+  animId = requestAnimationFrame(frame);
+}
+
+// ==================== 侧栏与参数 ====================
+const sidebar = $('sidebar');
+const sidebarMask = $('sidebarMask');
+function openSidebar(){
+  sidebar.classList.add('open');
+  sidebarMask.classList.add('open');
+}
+function closeSidebar(){
+  sidebar.classList.remove('open');
+  sidebarMask.classList.remove('open');
+}
+$('sidebarBtn').addEventListener('click', openSidebar);
+$('sidebarClose').addEventListener('click', closeSidebar);
+sidebarMask.addEventListener('click', closeSidebar);
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
+});
+
+function updateZoomButtons(){
+  $('zoomAuto').classList.toggle('active', zoomMode === 'auto');
+  $('zoomIn').classList.toggle('active', false);
+  $('zoomOut').classList.toggle('active', false);
+}
+function applyZoom(factor, anchor){
+  const W = tc.width/dpr, H = tc.height/dpr;
+  const anchorX = anchor ? anchor.x : W/2;
+  const anchorY = anchor ? anchor.y : H/2;
+  const worldX = (anchorX - oxT) / scaleT;
+  const worldY = (oyT - anchorY) / scaleT;
+  scaleT = clamp(scaleT * factor, 15, 320);
+  oxT = anchorX - worldX * scaleT;
+  oyT = anchorY + worldY * scaleT;
+  zoomMode = 'manual';
+  updateZoomButtons();
+  drawHandlePanel();
+  updateView(+$('time').value);
+}
+$('zoomAuto').addEventListener('click', ()=>{
+  zoomMode = 'auto';
+  fitTrajView();
+  updateZoomButtons();
+  updateView(+$('time').value);
+});
+$('zoomOut').addEventListener('click', ()=>applyZoom(1/1.18));
+$('zoomIn').addEventListener('click', ()=>applyZoom(1.18));
+tc.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const p = getTrajPointer(e);
+  applyZoom(e.deltaY < 0 ? 1.12 : 1/1.12, p);
+}, {passive:false});
+
+// ==================== 事件绑定 ====================
+const ids = ['h','e','mu','cl','spindamp'];
+const disp = { h:'vH', e:'vE', mu:'vMu', cl:'vCl', spindamp:'vSpin' };
+const defaults = { h:1.5, e:0.5, mu:0.6, cl:0.5, spindamp:0.6 };
+const fmt = {
+  h: v=>v.toFixed(2),
+  e: v=>v.toFixed(2),
+  mu: v=>v.toFixed(2),
+  cl: v=>v.toFixed(2),
+  spindamp: v=>v.toFixed(2)
+};
+ids.forEach(id=>{
+  const el = $(id);
+  el.addEventListener('input', ()=>{
+    $(disp[id]).textContent = fmt[id](+el.value);
+    updateDetailChips(+$('time').value);
+    requestCompute();
+  });
+});
+
+const vectorControls = {
+  vin: v => { handles.incoming.mag = v; },
+  ain: v => { handles.incoming.angle = v*D2R; },
+  vn: v => { handles.normal.mag = speedFromLogPosition(v, VN_MAX); },
+  an: v => { handles.normal.angle = v*D2R; },
+  vt: v => { handles.tangent.mag = signedSpeedFromLogPosition(v, VT_MAX); }
+};
+Object.keys(vectorControls).forEach(id=>{
+  $(id).addEventListener('input', ()=>{
+    const raw = +$(id).value;
+    const value = (id === 'vn' || id === 'vt') ? raw / 1000 : raw;
+    vectorControls[id](value);
+    drawHandlePanel();
+    updateDetailChips(+$('time').value);
+    requestCompute();
+  });
+});
+
+$('rx').addEventListener('input', ()=>{
+  const rx = clamp(+$('rx').value, -COURT_HALF_LENGTH, -0.1);
+  racketX = netX + rx;
+  $('rx').value = rx.toFixed(1);
+  $('vRx').textContent = rx.toFixed(1);
+  compute();
+});
+$('nx').addEventListener('input', ()=>{
+  netX = clamp(+$('nx').value, racketX + 0.1, racketX + COURT_HALF_LENGTH - 0.05);
+  syncVectorControls();
+  compute();
+});
+
+$('time').addEventListener('input', ()=>{
+  if(playing){
+    playing = false;
+    updatePlayButton();
+    if(animId) cancelAnimationFrame(animId);
+  }
+  updateView(+$('time').value);
+});
+$('play').addEventListener('click', togglePlay);
+$('reset').addEventListener('click', ()=>{
+  if(playing){
+    playing = false;
+    updatePlayButton();
+    if(animId) cancelAnimationFrame(animId);
+  }
+  updateView(0);
+});
+
+$('paramResetBtn').addEventListener('click', ()=>{
+  ids.forEach(id=>{
+    $(id).value = defaults[id];
+    $(disp[id]).textContent = fmt[id](defaults[id]);
+  });
+  handles.incoming = {angle: Math.PI + 30*D2R, mag: 1.2};
+  handles.normal = {angle: 65*D2R, mag: 3.5};
+  handles.tangent = {mag: 2.5};
+  netX = 0;
+  racketX = -2.0;
+  drawHandlePanel();
+  syncVectorControls();
+  compute();
+});
+
+const appEl = $('app');
+const collapseBtn = $('collapseBtn');
+const langBtn = $('langBtn');
+const credit = $('credit');
+const principleModal = $('principleModal');
+
+function applyLanguage(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('pageTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.dataset.i18n;
+    if(key) el.textContent = t(key);
+  });
+  langBtn.textContent = t('langBtn');
+  $('principleTitle').textContent = t('principleTitle');
+  $('principleBody').innerHTML = t('principleHTML');
+  $('principleClose').setAttribute('aria-label', lang === 'zh' ? '关闭' : 'Close');
+  document.querySelectorAll('.vector-readout').forEach(button=>{
+    button.title = t('speedHint');
+  });
+  const collapsed = appEl.classList.contains('collapsed');
+  collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+  if(!speedEditor.hidden && speedEditTarget){
+    speedEditorLabel.textContent = t(speedEditorConfig[speedEditTarget].labelKey) + ' (m/s)';
+  }
+  updatePlayButton();
+  if(meta) updateTrajectoryLegend();
+  drawHandlePanel();
+  if(traj.length) updateView(+$('time').value);
+}
+
+langBtn.addEventListener('click', ()=>{
+  lang = lang === 'zh' ? 'en' : 'zh';
+  applyLanguage();
+});
+collapseBtn.addEventListener('click', ()=>{
+  const collapsed = appEl.classList.toggle('collapsed');
+  collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
+  requestAnimationFrame(()=>{
+    sizeTrajCanvas();
+    if(traj.length) updateView(+$('time').value);
+  });
+});
+
+function openPrinciple(){
+  principleModal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePrinciple(){
+  principleModal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+credit.addEventListener('dblclick', openPrinciple);
+let lastCreditTap = 0;
+credit.addEventListener('touchend', e=>{
+  const now = Date.now();
+  if(now - lastCreditTap < 350){ e.preventDefault(); openPrinciple(); lastCreditTap = 0; }
+  else lastCreditTap = now;
+}, {passive:false});
+$('principleClose').addEventListener('click', closePrinciple);
+principleModal.addEventListener('click', e=>{
+  if(e.target === principleModal) closePrinciple();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && principleModal.classList.contains('open')) closePrinciple();
+});
+
+const ro = new ResizeObserver(()=>{
+  sizeTrajCanvas();
+  if(traj.length) updateView(+$('time').value);
+});
+ro.observe(trajWrap);
+// ==================== 初始化 ====================
+ids.forEach(id=>{ $(disp[id]).textContent = fmt[id](+$(id).value); });
+applyDialAuto();
+syncVectorControls();
+sizeTrajCanvas();
+compute();
+applyLanguage();
+})();
+</script>
+</body>
+</html>
