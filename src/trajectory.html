@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>羽毛球搓球 — 质心模型 · 手柄 + 可拖拍面与网</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E〰️%3C/text%3E%3C/svg%3E">
+<title>羽毛球击球运动轨迹</title>
 <style>
   :root{
     --bg:#eef2f6;--card:#fff;--text:#1a2b22;--text-2:#5b6b62;--text-3:#8a9a91;
@@ -190,9 +191,9 @@
 <body>
 <div class="app" id="app">
   <header class="card header">
-    <div class="logo" aria-hidden="true">🏸</div>
+    <div class="logo" aria-hidden="true">〰️</div>
     <div class="header-copy">
-      <h1 id="pageTitle" data-i18n="pageTitle">羽毛球运动轨迹</h1>
+      <h1 id="pageTitle" data-i18n="pageTitle">羽毛球击球运动轨迹</h1>
       <p id="pageSub" data-i18n="pageSub">左侧角度盘拖动来球与球拍速度方向，右侧观察碰撞后的羽毛球轨迹。拖动空白处平移画布；拖动浅绿色球拍调整击球点；拖动绿色球网调整前后位置。</p>
     </div>
     <div class="header-actions">
@@ -253,7 +254,7 @@
         </div>
       </section>
 
-      <section class="traj-panel" aria-label="羽毛球运动轨迹视图">
+      <section class="traj-panel" aria-label="羽毛球击球运动轨迹视图">
         <canvas id="trajCanvas"></canvas>
         <div class="zoom-controls" role="group" aria-label="轨迹视图缩放">
           <button class="zoom-btn active" id="zoomAuto" type="button" data-i18n="auto">自动</button>
@@ -367,7 +368,7 @@
 <div class="modal-mask" id="principleModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="principleTitle">
     <div class="modal-head">
-      <h2 id="principleTitle" data-i18n="principleTitle">羽毛球运动轨迹 · 原理与操作</h2>
+      <h2 id="principleTitle" data-i18n="principleTitle">羽毛球击球运动轨迹 · 原理与操作</h2>
       <button class="modal-close" id="principleClose" type="button" aria-label="关闭">×</button>
     </div>
     <div class="modal-body" id="principleBody"></div>
@@ -406,7 +407,7 @@ const $ = id=>document.getElementById(id);
 let lang = 'zh';
 const I18N = {
   zh: {
-    pageTitle:'羽毛球运动轨迹',
+    pageTitle:'羽毛球击球运动轨迹',
     pageSub:'左侧角度盘拖动来球与球拍速度方向，右侧观察碰撞后的羽毛球轨迹。拖动空白处平移画布；拖动浅绿色球拍调整击球点；拖动绿色球网调整前后位置。',
     incomingSpeedLegend:'来球速度', racketSpeedLegend:'球拍速度',
     trajectory:'轨迹', unreachableTrajectory:'无法触达轨迹',
@@ -432,11 +433,11 @@ const I18N = {
     resetParams:'恢复默认参数',
     reachable:'可触达', netBlocked:'被球网阻挡', cannotReach:'无法到达对面场地',
     notCompleted:'未完成', ccw:'逆时针 ↺', cw:'顺时针 ↻',
-    drag:'↕ 拖', serviceLine:'发球线', rearServiceLine:'后发球线', baseline:'底线',
+    serviceLine:'发球线', rearServiceLine:'后发球线', baseline:'底线',
     netLabel:'网 · 1.55米',
     speedHint:'滚轮细调，长按或双击输入精确速度',
     collapseHide:'隐藏标题', collapseShow:'展开标题', langBtn:'EN',
-    principleTitle:'羽毛球运动轨迹 · 原理与操作',
+    principleTitle:'羽毛球击球运动轨迹 · 原理与操作',
     principleHTML:`
       <p class="lead"><b>一句话：</b>把来球速度、拍面法向速度和切向速度转换成碰撞后的羽毛球速度，再用空气阻力、升力、重力、自旋和球头翻转动力学计算轨迹。</p>
       <h3>一、坐标与视图</h3>
@@ -478,7 +479,7 @@ const I18N = {
     `
   },
   en: {
-    pageTitle:'Badminton Shuttlecock Trajectory',
+    pageTitle:'Badminton Shot Trajectory',
     pageSub:'Drag the left dial to set incoming and racket velocity directions, then inspect the post-impact trajectory on the right. Drag blank space to pan, the light-green racket to move the contact point, and the net to change its position.',
     incomingSpeedLegend:'Incoming', racketSpeedLegend:'Racket',
     trajectory:'Trajectory', unreachableTrajectory:'Unreachable trajectory',
@@ -504,11 +505,11 @@ const I18N = {
     resetParams:'Reset parameters',
     reachable:'Reachable', netBlocked:'Blocked by net', cannotReach:'Cannot reach opponent court',
     notCompleted:'Not settled', ccw:'Counter-clockwise ↺', cw:'Clockwise ↻',
-    drag:'↕ Drag', serviceLine:'Service line', rearServiceLine:'Rear service', baseline:'Baseline',
+    serviceLine:'Service line', rearServiceLine:'Rear service', baseline:'Baseline',
     netLabel:'Net · 1.55 m',
     speedHint:'Wheel to fine-tune; long-press or double-click for an exact speed',
     collapseHide:'Hide header', collapseShow:'Show header', langBtn:'中',
-    principleTitle:'Badminton Shuttlecock Trajectory · Method & Controls',
+    principleTitle:'Badminton Shot Trajectory · Method & Controls',
     principleHTML:`
       <p class="lead"><b>In short:</b> convert incoming velocity, racket normal velocity and tangential velocity into the post-impact shuttle velocity, then integrate drag, lift, gravity, spin and shuttle-head rotation.</p>
       <h3>1. Coordinates and view</h3>
@@ -1421,11 +1422,6 @@ function drawRacketTraj(){
   tctx.beginPath(); tctx.arc(cx,cy,4.5,0,Math.PI*2);
   tctx.fillStyle = '#73c18e'; tctx.fill();
   tctx.strokeStyle = '#fff'; tctx.lineWidth = 1.5; tctx.stroke();
-
-  tctx.font = '9px -apple-system';
-  tctx.fillStyle = '#4f9a70';
-  tctx.textAlign = 'center'; tctx.textBaseline = 'middle';
-  tctx.fillText(t('drag'), cx, cy - 28);
 
   const inLen = 42 + p.vInN * 4;
   drawArrowT(
