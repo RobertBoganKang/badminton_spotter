@@ -1516,7 +1516,6 @@
 
       function drawVelocityHandle(pt, vel, handlePos, isActive) {
         const mag = Math.hypot(vel.x, vel.y);
-        const p = w2c(pt);
         const h = w2c(handlePos);
         ctx.save();
 
@@ -1535,48 +1534,14 @@
           ctx.lineWidth = 2.4;
           ctx.stroke();
 
-          ctx.beginPath();
-          ctx.fillStyle = COLOR_VEL_TRI;
-          const ts = V_HANDLE_DOT * 0.42;
-          ctx.moveTo(h.x, h.y - ts);
-          ctx.lineTo(h.x - ts, h.y + ts * 0.7);
-          ctx.lineTo(h.x + ts, h.y + ts * 0.7);
-          ctx.closePath();
-          ctx.fill();
-
           ctx.font = `bold ${isTouch ? 12 : 10}px system-ui`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.fillStyle = COLOR_VEL_TXT;
-          ctx.fillText(t('speed'), h.x, h.y + V_HANDLE_DOT + 4);
+          ctx.fillText('初速度', h.x, h.y + V_HANDLE_DOT + 4);
           ctx.restore();
           return;
         }
-
-        ctx.strokeStyle = COLOR_VEL;
-        ctx.fillStyle = COLOR_VEL;
-        ctx.lineWidth = isTouch ? 3 : 2.2;
-
-        const ux = h.x - p.x, uy = h.y - p.y;
-        const ul = Math.hypot(ux, uy);
-        const sz = V_DEADZONE * SCALE;
-        const sx = p.x + ux / ul * sz;
-        const sy = p.y + uy / ul * sz;
-
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(h.x, h.y);
-        ctx.stroke();
-
-        const angle = Math.atan2(h.y - sy, h.x - sx);
-        const headLen = isTouch ? 11 : 9;
-        const headW = 0.42;
-        ctx.beginPath();
-        ctx.moveTo(h.x, h.y);
-        ctx.lineTo(h.x - headLen * Math.cos(angle - headW), h.y - headLen * Math.sin(angle - headW));
-        ctx.lineTo(h.x - headLen * Math.cos(angle + headW), h.y - headLen * Math.sin(angle + headW));
-        ctx.closePath();
-        ctx.fill();
 
         if (isActive) {
           ctx.beginPath();
@@ -1593,7 +1558,7 @@
         ctx.lineWidth = isTouch ? 2.4 : 2;
         ctx.stroke();
 
-        if (mag >= 0.1) {
+        if (mag > 0.01) {
           ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
@@ -1608,9 +1573,25 @@
       }
 
       // suffix：标签右侧的小号倍率文字，如 "x2" / "x0.5"
-      function drawDot(pt, color, label, radius, shrunk, suffix) {
+      function drawDot(pt, color, label, radius, shrunk, suffix, showHalo = true) {
         const p = w2c(pt);
         const r = radius * (shrunk ? 0.8 : 1);
+
+        if (showHalo) {
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(0,0,0,.10)';
+          ctx.arc(p.x, p.y, r * 2.25, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.save();
+          ctx.strokeStyle = 'rgba(0,0,0,.27)';
+          ctx.lineWidth = 1.1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r * 1.65, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         ctx.beginPath();
         ctx.fillStyle = color;
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -1622,8 +1603,8 @@
         if (!label) return;
 
         ctx.save();
-        const labelFont = `bold ${isTouch ? 16 : 17}px system-ui`;
-        const subFont = `bold ${isTouch ? 11 : 12}px system-ui`;
+        const labelFont = `bold ${isTouch ? 13 : 12}px system-ui`;
+        const subFont = `bold ${isTouch ? 10 : 10}px system-ui`;
         const baseY = p.y - (r + 6);
 
         ctx.textBaseline = 'alphabetic';
@@ -1704,7 +1685,7 @@
         ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1;
         ctx.stroke();
 
         const labelY = p.y - 10;
@@ -1772,8 +1753,10 @@
         if (state.showHeat && heatCanvas) drawHeat();
 
         // 场内线
+        ctx.save();
         ctx.strokeStyle = C_LINE;
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.68;
         ctx.setLineDash([]);
         for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]) {
           const a = w2c({x: sx, y: VIEW_Y_MIN});
@@ -1786,14 +1769,15 @@
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
         {
-          const a = w2c({x: 0, y: VIEW_Y_MIN});
+          const a = w2c({x: 0, y: NET_Y + 1.98});
           const b = w2c({x: 0, y: L});
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
+        ctx.restore();
 
         // 外框
         ctx.strokeStyle = C_FRAME;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(tl.x, br.y);
         ctx.lineTo(tl.x, tl.y);
@@ -1806,7 +1790,7 @@
         const n2 = w2c({x: HALF_W, y: NET_Y});
         ctx.beginPath();
         ctx.strokeStyle = C_NET;
-        ctx.lineWidth = 7;
+        ctx.lineWidth = 4;
         ctx.lineCap = 'round';
         ctx.moveTo(n1.x, n1.y);
         ctx.lineTo(n2.x, n2.y);
@@ -1816,7 +1800,7 @@
         ctx.save();
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.font = 'bold 14px system-ui';
+        ctx.font = 'bold 12px system-ui';
         ctx.fillStyle = C_NET;
         ctx.fillText(t('net'), n1.x + 8, n1.y + 9);
         ctx.restore();
@@ -1854,15 +1838,15 @@
 
         // 球员点（双打时半径随速度比缩放，标签右侧带倍率）
         if (state.mode === 'single') {
-          drawDot(a.pos, COLOR_PLAYER, t('opponent'), 10, aHot);
+          drawDot(a.pos, COLOR_PLAYER, t('opponent'), 9, aHot, '', !a.velVisible);
         } else {
           const mA = state.speedRatio;
           const mB = 1 / mA;
           const showMul = Math.abs(mA - 1) > 1e-6;
-          const rA = 10 * Math.sqrt(mA);
-          const rB = 10 * Math.sqrt(mB);
-          drawDot(a.pos, COLOR_PLAYER, 'A', rA, aHot, showMul ? 'x' + fmtNum(mA) : '');
-          drawDot(b.pos, COLOR_PLAYER, 'B', rB, bHot, showMul ? 'x' + fmtNum(mB) : '');
+          const rA = 9 * Math.sqrt(mA);
+          const rB = 9 * Math.sqrt(mB);
+          drawDot(a.pos, COLOR_PLAYER, '对手 A', rA, aHot, showMul ? 'x' + fmtNum(mA) : '', !a.velVisible);
+          drawDot(b.pos, COLOR_PLAYER, '对手 B', rB, bHot, showMul ? 'x' + fmtNum(mB) : '', !b.velVisible);
         }
 
         // 四角次优

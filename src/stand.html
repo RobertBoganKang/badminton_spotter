@@ -349,6 +349,36 @@
       color: #6c3ce1;
     }
 
+    .rank-cluster {
+      display: inline-flex;
+      align-items: stretch;
+      height: 20px;
+    }
+
+    .rank-cluster .pill-score {
+      height: 20px;
+      gap: 4px;
+      padding: 1px 8px;
+      cursor: ns-resize;
+    }
+
+    .rank-cluster .pill-score b {
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1;
+      color: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-left {
+      border-radius: 999px 4px 4px 999px !important;
+    }
+
+    .score-right {
+      margin-left: -1px;
+      border-radius: 4px 999px 999px 4px !important;
+    }
+
     .pill-score[hidden] {
       display: none !important;
     }
@@ -416,11 +446,40 @@
     }
 
     .canvas-wrap {
+      position: relative;
       padding: 9px 10px 8px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       gap: 8px;
+    }
+
+    .rank-legend {
+      position: static;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 3px;
+      border: 0;
+      border-radius: 0;
+      color: var(--text-3);
+      background: transparent;
+      box-shadow: none;
+      font-size: 9.5px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .rank-legend[hidden] {
+      display: none !important;
+    }
+
+    .rank-legend i {
+      display: block;
+      width: 30px;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #d73027, #fc8d59, #ffffbf, #91bfdb, #4575b4);
     }
 
     canvas {
@@ -444,6 +503,39 @@
       text-align: center;
       line-height: 1.6;
       font-variant-numeric: tabular-nums;
+    }
+
+    .candidate-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 12px 3px;
+      color: var(--text-3);
+      font-size: 10.5px;
+      line-height: 1.5;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .candidate-status-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #d6a128;
+      box-shadow: 0 0 0 3px rgba(214, 161, 40, .12);
+      transition: background .18s, box-shadow .18s;
+    }
+
+    .candidate-status-dot.is-ready {
+      background: #22a06b;
+      box-shadow: 0 0 0 3px rgba(34, 160, 107, .12);
+    }
+
+    .candidate-line b {
+      color: var(--text-2);
+      font-weight: 700;
     }
 
     .info-line b {
@@ -1019,9 +1111,16 @@
 
         <button class="mode-toggle" id="modeToggle" data-mode="double">双打</button>
 
+        <div class="rank-legend" id="rankLegend">
+          <span>优</span><i></i><span>劣</span>
+        </div>
+
         <div class="tb-right">
           <div class="pill-group" id="pillGroup">
-            <span class="pill pill-score" id="pillScore" hidden>优劣 1000</span>
+            <div class="rank-cluster">
+              <span class="pill pill-score score-left" id="pillScore">优劣 <b id="scoreValue">1</b></span>
+              <span class="pill pill-score score-right" id="pillTop">Top <b id="topValue">100</b></span>
+            </div>
             <span class="pill pill-height" id="pillHeight">击球高 2.8m</span>
             <div class="seg-group" role="group" aria-label="高吊杀概率">
               <span class="seg seg-clear" id="pillClear" data-label="高">高 22%</span>
@@ -1043,6 +1142,10 @@
       <div class="canvas-wrap">
         <canvas id="canvas"></canvas>
         <canvas id="sideCanvas"></canvas>
+      </div>
+      <div class="candidate-line">
+        <span class="candidate-status-dot" id="candidateStatusDot"></span>
+        <span id="candidateCount">合法候选计算中…</span>
       </div>
       <div class="info-line" id="infoLine"></div>
     </div>
@@ -1339,7 +1442,6 @@
           min: 6, max: 24, step: 1, gap: 1, def: [8, 18]
         },
 
-        { group: 'subopt', type: 's', key: 'suboptTop', min: 1, max: 1000, step: 1, def: 100 }
       ];
 
       const PRM = {};
@@ -1380,9 +1482,12 @@
       const SEP_PEN_K = 0.35;
 
       /* ---- 优劣评分 ---- */
-      const SCORE_LEVELS = 1000;
       const SCORE_SAMPLE_POW = 3.0;
-      let scoreLevel = SCORE_LEVELS;
+      let selectedRank = 1;
+      let topN = 100;
+      let topMax = 1000;
+      let topDefault = 100;
+      let legalCandidateCount = 0;
       let candidateList = [];
       let candidateItems = null;
 
@@ -1393,11 +1498,11 @@
       const C_REF_RED = 'rgba(192,57,43,0.16)';
       const C_NET = '#1e4d38';
 
-      const FONT_TAG_MAIN = 'bold 9px system-ui';
-      const FONT_TAG_SUB = 'bold 8px system-ui';
-      const FONT_PLAYER = 'bold 11px system-ui';
-      const FONT_OUR = 'bold 12px system-ui';
-      const TAG_PADX = 5;
+      const FONT_TAG_MAIN = 'bold 11px system-ui';
+      const FONT_TAG_SUB = 'bold 10px system-ui';
+      const FONT_PLAYER = 'bold 13px system-ui';
+      const FONT_OUR = 'bold 14px system-ui';
+      const TAG_PADX = 6;
       const HALO_W = 3.5;
 
       const C_PERSON = '#111';
@@ -1466,6 +1571,8 @@
       function markDirty(full) {
         quality = full ? 'full' : 'fast';
         needsSolve = true;
+        candidateStatusDot.classList.remove('is-ready');
+        candidateStatusDot.title = '快速预览 / 正在计算';
       }
 
       function randHeight() { return 1.60 + Math.random() * 0.25; }
@@ -1556,7 +1663,7 @@
         ctx.save();
         const tw = tagTextWidth(line1, line2);
 
-        const padX = TAG_PADX, padY = 3, lineH = 10;
+        const padX = TAG_PADX, padY = 4, lineH = 12;
         const rows = line2 ? 2 : 1;
         const w = tw + padX * 2;
         const h = lineH * rows + padY * 2;
@@ -1881,6 +1988,45 @@
         sctx.fillText(hLabel, lx, ly + 5);
       }
 
+      function drawSideHeightGuides() {
+        if (!showHeat) return;
+        const yTop = sideCourtTop - 2;
+        const yBot = sideCourtTop + L * sideScaleY + 2;
+        sctx.save();
+        sctx.strokeStyle = 'rgba(138,154,145,.32)';
+        sctx.lineWidth = 0.8;
+        sctx.setLineDash([3, 5]);
+        sctx.font = '9px system-ui';
+        sctx.fillStyle = '#8a9a91';
+        sctx.textAlign = 'left';
+        sctx.textBaseline = 'bottom';
+        sctx.lineWidth = 2.2;
+        for (let z = 2; z <= 10; z += 2) {
+          const x = sideGroundX + z * sideScaleZ;
+          sctx.strokeStyle = 'rgba(138,154,145,.32)';
+          sctx.lineWidth = 0.8;
+          sctx.beginPath();
+          sctx.moveTo(x, yTop);
+          sctx.lineTo(x, yBot);
+          sctx.stroke();
+          const text = z + ' m';
+          sctx.strokeStyle = 'rgba(255,255,255,.84)';
+          sctx.lineWidth = 2.2;
+          sctx.strokeText(text, x + 2, sideCourtTop - 6);
+          sctx.fillStyle = '#8a9a91';
+          sctx.fillText(text, x + 2, sideCourtTop - 6);
+        }
+        const maxText = '总高 ' + SIDE_Z_MAX_HEAT.toFixed(1) + ' m';
+        sctx.textAlign = 'right';
+        sctx.textBaseline = 'top';
+        sctx.strokeStyle = 'rgba(255,255,255,.84)';
+        sctx.lineWidth = 2.2;
+        sctx.strokeText(maxText, sideW - 2, sideCourtTop + 12);
+        sctx.fillStyle = '#8a9a91';
+        sctx.fillText(maxText, sideW - 2, sideCourtTop + 12);
+        sctx.restore();
+      }
+
       function drawSide() {
         if (!sideCanvas.width || !sideCanvas.height) return;
 
@@ -1905,6 +2051,7 @@
             sctx.drawImage(sideHeatCanvas, 0, 0, sideW, sideH);
           }
         }
+        drawSideHeightGuides();
 
         const yTop = sideCourtTop - 2;
         const yBot = sideCourtTop + L * sideScaleY + 2;
@@ -1940,7 +2087,22 @@
         sctx.stroke();
         sctx.lineCap = 'butt';
 
-        const ourColor = result.precise ? C_PERSON : C_PERSON_PENDING;
+        sctx.save();
+        sctx.font = '9px system-ui';
+        sctx.fillStyle = '#8a9a91';
+        sctx.textAlign = 'left';
+        sctx.textBaseline = 'bottom';
+        sctx.fillText('地面', sideGroundX + 3, sideCourtTop - 6);
+        sctx.textAlign = 'center';
+        sctx.fillText('网 1.55 m', sideGroundX + netLen / 2, netSy - 6);
+        sctx.textAlign = 'left';
+        sctx.textBaseline = 'top';
+        sctx.fillText('对手', sideGroundX + 3, sideCourtTop + 5);
+        sctx.textBaseline = 'bottom';
+        sctx.fillText('我方', sideGroundX + 3, sideCourtTop + L * sideScaleY - 4);
+        sctx.restore();
+
+        const ourColor = C_PERSON;
         drawSidePerson(opponents[0].y, C_PERSON, personHeights[0]);
 
         if (result.valid) {
@@ -2835,12 +2997,6 @@
         return out;
       }
 
-      function scoreIndex(score, n) {
-        if (n <= 1) return 0;
-        const idx = Math.round((SCORE_LEVELS - score) * (n - 1) / (SCORE_LEVELS - 1));
-        return Math.max(0, Math.min(n - 1, idx));
-      }
-
       function solve(fast) {
         const stepPos = fast ? 0.45 : 0.20;
 
@@ -2878,15 +3034,25 @@
           cands = r.cands;
         }
 
+        const totalCandidates = Math.max(1, cands.length);
+        legalCandidateCount = cands.length;
+        topMax = Math.max(1, Math.min(totalCandidates, Math.round(totalCandidates * 0.20)));
+        topDefault = Math.max(1, Math.min(topMax, Math.round(totalCandidates * 0.001)));
+        topN = topDefault;
+        selectedRank = 1;
+
         candidateItems = items;
-        candidateList = sampleCandidates(cands, SCORE_LEVELS);
+        candidateList = sampleCandidates(cands, topMax);
         if (candidateList.length) {
           candidateList[0] = { P1: bestP1, P2: bestP2, V: cands.length ? cands[0].V : 0 };
         } else {
           candidateList = [{ P1: bestP1, P2: bestP2, V: 0 }];
+          topMax = 1;
+          topDefault = 1;
+          topN = 1;
         }
 
-        const pick = candidateList[scoreIndex(scoreLevel, candidateList.length)];
+        const pick = candidateList[Math.min(selectedRank - 1, candidateList.length - 1)];
 
         const reachStats = mode === 'single'
           ? avgReachByType(items, pick.P1, null, ctxA, null)
@@ -2897,7 +3063,7 @@
 
       function applyScore() {
         if (!candidateList.length) return;
-        const c = candidateList[scoreIndex(scoreLevel, candidateList.length)];
+        const c = candidateList[Math.min(selectedRank - 1, candidateList.length - 1)];
         if (!c) return;
 
         result.P1 = c.P1;
@@ -2928,7 +3094,11 @@
         const tl = w2c({ x: -HW, y: HL }), br = w2c({ x: HW, y: -HL });
         const w = br.x - tl.x, h = br.y - tl.y;
 
-        ctx.strokeStyle = C_COURT_LINE; ctx.lineWidth = 1.3 / mainScale; ctx.setLineDash([]);
+        ctx.save();
+        ctx.strokeStyle = C_COURT_LINE;
+        ctx.lineWidth = 1 / mainScale;
+        ctx.globalAlpha = 0.68;
+        ctx.setLineDash([]);
         for (const yy of [HL, HL - LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL - LONG_SVC), -HL]) {
           lineStroke(w2c({ x: -HW, y: yy }), w2c({ x: HW, y: yy }));
         }
@@ -2938,12 +3108,13 @@
         for (const s of [-1, 1]) {
           lineStroke(w2c({ x: 0, y: s * SHORT_SVC }), w2c({ x: 0, y: s * HL }));
         }
+        ctx.restore();
 
-        ctx.strokeStyle = C_COURT_FRAME; ctx.lineWidth = 2.2 / mainScale;
+        ctx.strokeStyle = C_COURT_FRAME; ctx.lineWidth = 2 / mainScale;
         ctx.strokeRect(tl.x, tl.y, w, h);
 
         const n1 = w2c({ x: -HW, y: 0 }), n2 = w2c({ x: HW, y: 0 });
-        ctx.beginPath(); ctx.strokeStyle = C_NET; ctx.lineWidth = 5 / mainScale;
+        ctx.beginPath(); ctx.strokeStyle = C_NET; ctx.lineWidth = 4 / mainScale;
         ctx.lineCap = 'round';
         ctx.moveTo(n1.x, n1.y); ctx.lineTo(n2.x, n2.y); ctx.stroke();
         ctx.lineCap = 'butt';
@@ -2968,7 +3139,36 @@
         drawCourtTag(t('lblNearDrop'), nearDropLabel(), tagRightX, w2c({ x: 0, y: -DROP_NEAR_EDGE }).y, '#1f6f8b', 'right');
         drawCourtTag(t('lblFrontPen'), lineV, tagRightX, w2c({ x: 0, y: -PRM.clearLineY }).y - 8, '#c0392b', 'right');
         drawCourtTag(t('lblFarDrop'), farDropLabel(), tagRightX, w2c({ x: 0, y: -DROP_FAR_EDGE }).y + 8, '#1f6f8b', 'right');
-        drawCourtTag(t('net'), null, tagRightX, w2c({ x: 0, y: 0 }).y, C_NET, 'right');
+        drawCourtTag(
+          lang === 'zh' ? '球网' : 'Net',
+          null,
+          tagRightX,
+          w2c({ x: 0, y: 0 }).y,
+          C_NET,
+          'right'
+        );
+
+        const courtLeft = w2c({ x: -HW, y: HL }).x - 7;
+        const courtTop = w2c({ x: -HW, y: HL }).y + 15;
+        const courtBottom = w2c({ x: -HW, y: -HL }).y - 15;
+        drawLabelWithHalo(
+          lang === 'zh' ? '对手' : 'Opp',
+          courtLeft,
+          courtTop,
+          '#8a9a91',
+          FONT_TAG_MAIN,
+          'right',
+          'middle'
+        );
+        drawLabelWithHalo(
+          lang === 'zh' ? '我方' : 'Us',
+          courtLeft,
+          courtBottom,
+          '#8a9a91',
+          FONT_TAG_MAIN,
+          'right',
+          'middle'
+        );
       }
 
       /* ---- 主视图热力图 ---- */
@@ -3091,10 +3291,11 @@
       const suboptCanvas = document.createElement('canvas');
       const suboptCtx = suboptCanvas.getContext('2d');
       const CLOUD_GRAD = [
-        [108, 60, 225],
-        [74, 100, 214],
-        [40, 155, 155],
-        [31, 138, 91]
+        [215, 48, 39],
+        [252, 141, 89],
+        [255, 255, 191],
+        [145, 191, 219],
+        [69, 117, 180]
       ];
 
       function cloudColorAt(u) {
@@ -3156,7 +3357,7 @@
         }
         suboptDirty = false;
 
-        const N = Math.min(PRM.suboptTop, candidateList.length);
+        const N = Math.min(topN, candidateList.length);
         suboptCtx.setTransform(1, 0, 0, 1, 0, 0);
         suboptCtx.clearRect(0, 0, W, H);
         if (N <= 0) return;
@@ -3204,11 +3405,11 @@
           }
         };
 
-        const denom = Math.max(1, N - 1);
+        const denom = Math.max(1, topMax - 1);
         for (let k = 0; k < N; k++) {
           const c = candidateList[k];
           if (!c) continue;
-          const u = k / denom;
+          const u = Math.pow(Math.min(1, k / denom), 0.58);
           splatBinned(c.P1, u);
           splatBinned(c.P2, u);
         }
@@ -3227,19 +3428,22 @@
 
         let maxV = 0;
         for (let i = 0; i < GW * GH; i++) {
-          let sum = 0, r = 0, g = 0, b = 0;
+          let sum = 0, colorSum = 0, r = 0, g = 0, b = 0;
           for (let k = 0; k < BINS; k++) {
             const v = blurred[k][i];
             if (v <= 0) continue;
             sum += v;
+            const priority = 0.4 + 1.6 * (1 - k / Math.max(1, BINS - 1));
+            const vw = v * priority;
+            colorSum += vw;
             const c = binColor[k];
-            r += v * c[0];
-            g += v * c[1];
-            b += v * c[2];
+            r += vw * c[0];
+            g += vw * c[1];
+            b += vw * c[2];
           }
           totGrid[i] = sum;
-          if (sum > 1e-12) {
-            const inv = 1 / sum;
+          if (colorSum > 1e-12) {
+            const inv = 1 / colorSum;
             rGrid[i] = r * inv;
             gGrid[i] = g * inv;
             bGrid[i] = b * inv;
@@ -3341,8 +3545,8 @@
 
       function drawOurPoint(p, label, vRun) {
         const c = w2c(p);
-        const col = result.precise ? C_PERSON : C_PERSON_PENDING;
-        const lineCol = result.precise ? 'rgba(0,0,0,.30)' : C_PERSON_PENDING_LINE;
+        const col = C_PERSON;
+        const lineCol = 'rgba(0,0,0,.30)';
         const rad = speedDotRadius(vRun);
         const arm = rad * 1.9;
 
@@ -3365,7 +3569,9 @@
         if (!result.valid) return;
 
         if (mode === 'single') {
-          if (result.P1) drawOurPoint(result.P1, t('ourSolo'), PRM.v_run_a);
+          if (result.P1) {
+            drawOurPoint(result.P1, t('ourSolo'), PRM.v_run_a);
+          }
           return;
         }
 
@@ -3409,6 +3615,8 @@
          十、DOM 引用与 UI
          ============================================================ */
       const infoLine = $('infoLine');
+      const candidateCount = $('candidateCount');
+      const candidateStatusDot = $('candidateStatusDot');
       const pageSub = $('pageSub');
       const pageTitle = $('pageTitle');
       const modeToggle = $('modeToggle');
@@ -3417,6 +3625,10 @@
       const pillClear = $('pillClear');
       const pillHeight = $('pillHeight');
       const pillScore = $('pillScore');
+      const pillTop = $('pillTop');
+      const scoreValue = $('scoreValue');
+      const topValue = $('topValue');
+      const rankLegend = $('rankLegend');
       const footerText = $('footerText');
       const sidebarTitle = $('sidebarTitle');
       const resetBtn = $('resetBtn');
@@ -3444,17 +3656,34 @@
 
       function updateScorePill() {
         pillScore.removeAttribute('hidden');
+        scoreValue.textContent = String(selectedRank);
+        topValue.textContent = String(topN);
 
-        const k = scoreLevel / SCORE_LEVELS;
-        pillScore.textContent = t('pillScore') + ' ' + scoreLevel;
-        pillScore.style.background = `rgba(108,60,225, ${0.10 + 0.58 * k})`;
-        pillScore.style.borderColor = `rgba(108,60,225, ${0.20 + 0.34 * k})`;
-        pillScore.style.color = k > 0.45 ? '#ffffff' : '#6c3ce1';
+        const rankK = candidateList.length
+          ? 1 - clamp((selectedRank - 1) / Math.max(1, topN - 1), 0, 1)
+          : 0;
+        const topK = topMax > 1
+          ? clamp((topN - 1) / (topMax - 1), 0, 1)
+          : 1;
+        const tint = (el, k) => {
+          el.style.background = `rgba(108,60,225,${0.10 + 0.52 * k})`;
+          el.style.borderColor = `rgba(108,60,225,${0.20 + 0.32 * k})`;
+          el.style.color = k > 0.48 ? '#ffffff' : '#6c3ce1';
+        };
+        tint(pillScore, rankK);
+        tint(pillTop, topK);
       }
 
       function updateStats() {
         updateScorePill();
         updateHeightPill();
+        candidateCount.innerHTML =
+          `<b>${legalCandidateCount.toLocaleString('zh-CN')}</b> 条合法候选 · ` +
+          `显示 <b>${Math.min(topN, candidateList.length).toLocaleString('zh-CN')}</b> 条`;
+        const ready = !!result.precise && !needsSolve;
+        candidateStatusDot.classList.toggle('is-ready', ready);
+        candidateStatusDot.title = ready ? '完整计算完成' : '快速预览 / 正在计算';
+        rankLegend.hidden = !showSubopt || showHeat || !candidateList.length;
         if (!result.valid) return;
 
         const single = mode === 'single';
@@ -3473,7 +3702,7 @@
         let dispPart = '';
         if (showHeat) dispPart = ' · ' + t('infoHeatOn');
         else if (showSubopt && candidateList.length) {
-          dispPart = ' · ' + t('infoSuboptOn') + ' ' + Math.min(PRM.suboptTop, candidateList.length);
+          dispPart = ' · ' + t('infoSuboptOn') + ' ' + Math.min(topN, candidateList.length);
         }
 
         const clearPart = (result.clearTMin != null)
@@ -3882,8 +4111,8 @@
           ev.preventDefault();
           ev.stopPropagation();
           try { el.setPointerCapture(ev.pointerId); } catch (e) { }
-          if (scoreLevel !== SCORE_LEVELS) {
-            scoreLevel = SCORE_LEVELS;
+          if (selectedRank !== 1) {
+            selectedRank = 1;
             applyScore();
           }
 
@@ -3921,8 +4150,8 @@
           ev.preventDefault();
           ev.stopPropagation();
           try { el.setPointerCapture(ev.pointerId); } catch (e) { }
-          if (scoreLevel !== SCORE_LEVELS) {
-            scoreLevel = SCORE_LEVELS;
+          if (selectedRank !== 1) {
+            selectedRank = 1;
             applyScore();
           }
           drag = { startY: ev.clientY, startVal: PRM.hh };
@@ -3949,14 +4178,15 @@
         el.addEventListener('pointercancel', finish);
       }
 
-      function setupScoreDrag(el) {
+      function setupCompoundDrag(el, kind) {
         let drag = null;
         let lastTapTime = 0, lastTapX = 0, lastTapY = 0;
-        el.title = t('scoreHint');
+        el.title = kind === 'rank'
+          ? '向上拖动增加，向下拖动减小；双击恢复优劣 1'
+          : '向上拖动增加 Top 数量，向下拖动减小；双击恢复默认值';
 
         el.addEventListener('pointerdown', ev => {
           if (ev.button !== undefined && ev.button !== 0) return;
-          if (el.hasAttribute('hidden')) return;
 
           const now = performance.now();
           const dt = now - lastTapTime;
@@ -3965,8 +4195,13 @@
           if (lastTapTime > 0 && dt < DOUBLE_TAP_MS && dd < DOUBLE_TAP_DIST) {
             lastTapTime = 0;
             drag = null;
-            if (scoreLevel !== SCORE_LEVELS) {
-              scoreLevel = SCORE_LEVELS;
+            if (kind === 'rank') {
+              selectedRank = 1;
+              applyScore();
+            } else {
+              topN = topDefault;
+              selectedRank = Math.min(selectedRank, topN);
+              suboptDirty = true;
               applyScore();
             }
             ev.preventDefault();
@@ -3981,17 +4216,31 @@
           ev.preventDefault();
           ev.stopPropagation();
           try { el.setPointerCapture(ev.pointerId); } catch (e) { }
-          drag = { startY: ev.clientY, startVal: scoreLevel };
+          drag = {
+            startY: ev.clientY,
+            startRank: selectedRank,
+            startTop: topN
+          };
         });
 
         el.addEventListener('pointermove', ev => {
           if (!drag) return;
           ev.preventDefault();
-          const delta = Math.round((drag.startY - ev.clientY) * 2);
-          const nv = clamp(drag.startVal + delta, 1, SCORE_LEVELS);
-          if (nv === scoreLevel) return;
-          scoreLevel = nv;
-          applyScore();
+          const dy = drag.startY - ev.clientY;
+          if (kind === 'rank') {
+            const nv = clamp(drag.startRank + Math.round(dy * 2), 1, topN);
+            if (nv === selectedRank) return;
+            selectedRank = nv;
+            applyScore();
+          } else {
+            const sensitivity = Math.max(1, topMax / 600);
+            const nv = clamp(Math.round(drag.startTop + dy * sensitivity), 1, topMax);
+            if (nv === topN) return;
+            topN = nv;
+            if (selectedRank > topN) selectedRank = topN;
+            suboptDirty = true;
+            applyScore();
+          }
         });
 
         const finish = () => { if (!drag) return; drag = null; };
@@ -4031,7 +4280,8 @@
           }
         });
         PRM.hh = HH_DEFAULT;
-        scoreLevel = SCORE_LEVELS;
+        selectedRank = 1;
+        topN = topDefault;
         showHeat = false;
         showSubopt = true;
         suboptDirty = true;
@@ -4064,7 +4314,8 @@
         pillClear.dataset.label = t('pillLabelCl');
         [pillKill, pillDrop, pillClear].forEach(p => { p.title = t('pillHint'); });
         pillHeight.title = t('heightHint');
-        pillScore.title = t('scoreHint');
+        pillScore.title = '向上拖动增加，向下拖动减小；双击恢复优劣 1';
+        pillTop.title = '向上拖动增加 Top 数量，向下拖动减小；双击恢复默认值';
 
         const collapsed = appEl.classList.contains('collapsed');
         collapseBtn.setAttribute('aria-label', collapsed ? t('collapseShow') : t('collapseHide'));
@@ -4162,7 +4413,7 @@
           if (dragStarted) {
             opponents[dragIdx].x = clamp(w.x, -HW + .15, HW - .15);
             opponents[dragIdx].y = clamp(w.y, 0.25, HL - .15);
-            scoreLevel = SCORE_LEVELS;
+            selectedRank = 1;
             markDirty(false);
             ev.preventDefault();
           }
@@ -4186,6 +4437,96 @@
       canvas.addEventListener('pointerup', endDrag);
       canvas.addEventListener('pointercancel', endDrag);
       canvas.addEventListener('pointerleave', () => { if (dragIdx < 0) canvas.style.cursor = 'default'; });
+
+      /* 侧视图：拖动对手前后位置，拖动球拍调整击球高度与前后位置 */
+      let sideDrag = null;
+
+      function getSideLocal(ev) {
+        const r = sideCanvas.getBoundingClientRect();
+        return {
+          x: ev.clientX - r.left,
+          y: ev.clientY - r.top
+        };
+      }
+
+      function hitSideTarget(px, py) {
+        const sy = sideCourtTop + (HL - opponents[0].y) * sideScaleY;
+        const hx = sideGroundX + PRM.hh * sideScaleZ;
+        const racketHit = ((px - hx) / 16) ** 2 + ((py - sy) / 12) ** 2 <= 1;
+        if (racketHit) return 'racket';
+
+        const fullLen = Math.max(10, personHeights[0] * sideScaleZ);
+        const headR = clamp(fullLen * 0.13, 2.5, 4.5);
+        const headX = sideGroundX + fullLen - headR;
+        const onBody = px >= sideGroundX - 8 &&
+          px <= headX + headR + 8 &&
+          Math.abs(py - sy) <= 11;
+        const onHead = Math.hypot(px - headX, py - sy) <= headR + 6;
+        return onBody || onHead ? 'opponent' : null;
+      }
+
+      sideCanvas.addEventListener('pointerdown', ev => {
+        const p = getSideLocal(ev);
+        const target = hitSideTarget(p.x, p.y);
+        if (!target) return;
+        try { sideCanvas.setPointerCapture(ev.pointerId); } catch (e) { }
+        sideDrag = {
+          pointerId: ev.pointerId,
+          type: target,
+          moved: false,
+          startX: p.x,
+          startY: p.y
+        };
+        sideCanvas.style.cursor = 'grabbing';
+        ev.preventDefault();
+      });
+
+      sideCanvas.addEventListener('pointermove', ev => {
+        const p = getSideLocal(ev);
+        if (!sideDrag) {
+          sideCanvas.style.cursor = hitSideTarget(p.x, p.y) ? 'grab' : 'default';
+          return;
+        }
+        if (ev.pointerId !== sideDrag.pointerId) return;
+        if (Math.hypot(p.x - sideDrag.startX, p.y - sideDrag.startY) > 3) {
+          sideDrag.moved = true;
+        }
+        if (!sideDrag.moved) return;
+
+        const newY = clamp(
+          HL - (p.y - sideCourtTop) / sideScaleY,
+          0.25,
+          HL - 0.15
+        );
+        opponents[0].y = newY;
+        if (sideDrag.type === 'racket') {
+          PRM.hh = clamp(
+            Math.round(((p.x - sideGroundX) / sideScaleZ) * 20) / 20,
+            0.8,
+            3.5
+          );
+          updateHeightPill();
+        }
+        selectedRank = 1;
+        markDirty(false);
+        updateStats();
+        ev.preventDefault();
+      });
+
+      function endSideDrag(ev) {
+        if (!sideDrag) return;
+        if (sideDrag.moved) markDirty(true);
+        sideDrag = null;
+        sideCanvas.style.cursor = 'default';
+        if (ev && ev.pointerId !== undefined && sideCanvas.hasPointerCapture(ev.pointerId)) {
+          sideCanvas.releasePointerCapture(ev.pointerId);
+        }
+      }
+      sideCanvas.addEventListener('pointerup', endSideDrag);
+      sideCanvas.addEventListener('pointercancel', endSideDrag);
+      sideCanvas.addEventListener('pointerleave', () => {
+        if (!sideDrag) sideCanvas.style.cursor = 'default';
+      });
 
       /* ============================================================
          十六、计算方法弹窗
@@ -4248,7 +4589,8 @@
       setupPillDrag(pillDrop, 'p_drop');
       setupPillDrag(pillKill, 'p_smash');
       setupHeightDrag(pillHeight);
-      setupScoreDrag(pillScore);
+      setupCompoundDrag(pillScore, 'rank');
+      setupCompoundDrag(pillTop, 'top');
       requestAnimationFrame(loop);
 
       window.addEventListener('resize', () => {

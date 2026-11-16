@@ -1,0 +1,5231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>羽毛球最优出球轨迹</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #edf3ec;
+    --bg-2: #dfeade;
+    --surface: #fbfdf9;
+    --surface-2: #eef5ed;
+    --surface-3: #e5efe5;
+    --ink: #17332a;
+    --muted: #63786f;
+    --line: rgba(23, 51, 42, 0.15);
+    --line-strong: rgba(23, 51, 42, 0.3);
+    --court: #eaf4e9;
+    --court-opponent: #f2f8ef;
+    --court-line: #3c795e;
+    --court-frame: #1d503b;
+    --net: #173e31;
+    --accent: #e87a3d;
+    --accent-strong: #c55420;
+    --gold: #e1aa2d;
+    --smash: #d95242;
+    --clear: #4976ca;
+    --drop: #2a9c68;
+    --drive: #8c63c9;
+    --shadow: 0 18px 44px rgba(33, 68, 52, 0.11);
+    --radius: 20px;
+    --font: "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1814;
+      --bg-2: #13231d;
+      --surface: #17251f;
+      --surface-2: #1d3028;
+      --surface-3: #243a31;
+      --ink: #e8f2eb;
+      --muted: #9eb1a8;
+      --line: rgba(219, 237, 226, 0.13);
+      --line-strong: rgba(219, 237, 226, 0.27);
+      --court: #1b2e25;
+      --court-opponent: #20362b;
+      --court-line: #73aa8f;
+      --court-frame: #b4d2c1;
+      --net: #d8eadf;
+      --accent: #f28d4f;
+      --accent-strong: #ffb17e;
+      --gold: #f0c75e;
+      --smash: #ef7968;
+      --clear: #7899e7;
+      --drop: #58c991;
+      --drive: #b697e7;
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-width: 320px;
+    background: var(--bg);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    color: var(--ink);
+    font-family: var(--font);
+    background:
+      radial-gradient(circle at 8% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34rem),
+      radial-gradient(circle at 96% 12%, color-mix(in srgb, var(--drop) 13%, transparent), transparent 30rem),
+      linear-gradient(145deg, var(--bg), var(--bg-2));
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button {
+    color: inherit;
+  }
+
+  button:focus-visible,
+  input:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 66%, transparent);
+    outline-offset: 2px;
+  }
+
+  .app {
+    width: min(1220px, 100%);
+    margin: 0 auto;
+    padding: 18px 20px 28px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 16px;
+    color: #fff9ef;
+    font-weight: 700;
+    font-size: 20px;
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--accent) 92%, white), var(--accent-strong));
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(22px, 3vw, 31px);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+
+  .brand p {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .mode-switch {
+    display: inline-flex;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mode-btn,
+  .tool-btn,
+  .rank-pill,
+  .param-close,
+  .param-reset {
+    border: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mode-btn {
+    min-height: 38px;
+    padding: 0 15px;
+    border-radius: 10px;
+    color: var(--muted);
+    background: transparent;
+    font-weight: 600;
+  }
+
+  .mode-btn.is-active {
+    color: var(--surface);
+    background: var(--ink);
+    box-shadow: 0 5px 14px color-mix(in srgb, var(--ink) 16%, transparent);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .mode-btn.is-active {
+      color: #102019;
+      background: #dff0e7;
+    }
+  }
+
+  .tool-btn {
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+    font-weight: 600;
+    backdrop-filter: blur(12px);
+    transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+  }
+
+  .tool-btn:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
+  }
+
+  .tool-btn.is-active {
+    color: color-mix(in srgb, var(--accent-strong) 82%, var(--ink));
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  }
+
+  .solver-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    margin-bottom: 14px;
+    padding: 12px 15px;
+    border: 1px solid var(--line);
+    border-radius: 17px;
+    background: color-mix(in srgb, var(--surface) 73%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  .solver-copy {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .solver-copy strong {
+    color: var(--ink);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--drop);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--drop) 14%, transparent);
+  }
+
+  .status-dot.is-busy {
+    background: var(--accent);
+    animation: pulse 900ms ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse {
+    from { opacity: 0.45; transform: scale(0.82); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .topn-control {
+    display: flex;
+    min-width: min(390px, 100%);
+    flex: 1 1 300px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topn-control label {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .topn-control output {
+    min-width: 55px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    min-height: 26px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 650px) minmax(250px, 342px);
+    align-items: stretch;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .canvas-card,
+  .side-card,
+  .route-card {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 91%, transparent);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .canvas-card,
+  .side-card {
+    display: flex;
+    min-height: 600px;
+    flex-direction: column;
+    height: min(735px, calc(100vh - 184px));
+  }
+
+  .canvas-head {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    min-height: 67px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 16px 11px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .eyebrow {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .canvas-head h2 {
+    font-size: 17px;
+    line-height: 1.1;
+  }
+
+  .rank-pill {
+    position: relative;
+    display: grid;
+    min-width: 136px;
+    min-height: 48px;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 9px;
+    padding: 7px 12px;
+    border: 1px solid color-mix(in srgb, var(--gold) 60%, var(--line));
+    border-radius: 14px;
+    background:
+      linear-gradient(135deg,
+        color-mix(in srgb, var(--gold) 18%, var(--surface)),
+        color-mix(in srgb, var(--accent) 10%, var(--surface)));
+    touch-action: none;
+    user-select: none;
+  }
+
+  .rank-pill:hover {
+    border-color: var(--gold);
+  }
+
+  .rank-pill .rank-label {
+    grid-row: 1 / 3;
+    align-self: stretch;
+    padding-right: 9px;
+    border-right: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 34px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 0.08em;
+  }
+
+  .rank-pill strong {
+    align-self: end;
+    font-size: 17px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rank-pill small {
+    align-self: start;
+    color: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--court) 82%, transparent), transparent 80%);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  #mainCanvas {
+    cursor: default;
+  }
+
+  #sideCanvas {
+    cursor: default;
+  }
+
+  .canvas-legend {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: calc(100% - 24px);
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 24px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    font-size: 11px;
+    backdrop-filter: blur(10px);
+  }
+
+  .legend-swatch {
+    width: 13px;
+    height: 3px;
+    border-radius: 99px;
+    background: var(--legend-color, currentColor);
+  }
+
+  .heat-legend {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 3;
+    width: min(190px, calc(100% - 24px));
+    padding: 9px 10px 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 89%, transparent);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .heat-legend.hidden {
+    display: none;
+  }
+
+  .heat-bar {
+    height: 7px;
+    margin: 6px 0 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #376fc1, #68c7d5, #f0d65e, #ec8650, #c93d3d);
+  }
+
+  .heat-labels {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .busy-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    display: none;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    font-size: 12px;
+    transform: translate(-50%, -50%);
+    backdrop-filter: blur(12px);
+  }
+
+  .busy-badge.is-visible {
+    display: block;
+  }
+
+  .side-card canvas {
+    background:
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--court) 88%, transparent),
+        transparent 80%);
+  }
+
+  .side-note {
+    padding: 9px 14px 11px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .side-note strong {
+    color: var(--ink);
+  }
+
+  .route-card {
+    margin-top: 16px;
+    padding: 16px 18px 18px;
+  }
+
+  .route-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .route-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .type-dot {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--gold);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 14%, transparent);
+  }
+
+  .route-head h3 {
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  .route-subtitle {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .metric-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .metric {
+    min-width: 94px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    text-align: right;
+  }
+
+  .metric span {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .metric strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .param-chips {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .param-chip {
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--surface-2) 58%, transparent);
+  }
+
+  .param-chip span {
+    display: block;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .param-chip strong {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-top: 13px;
+    padding-top: 13px;
+    border-top: 1px solid var(--line);
+  }
+
+  .filter-row span {
+    margin-right: 4px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .filter-btn {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .filter-btn.is-active {
+    color: var(--surface);
+    border-color: var(--ink);
+    background: var(--ink);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .filter-btn.is-active {
+      color: #102019;
+      border-color: #dff0e7;
+      background: #dff0e7;
+    }
+  }
+
+  .footnote {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 20px;
+    padding: 16px 3px 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .params-dialog {
+    width: min(780px, calc(100vw - 28px));
+    max-height: min(88vh, 820px);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+  }
+
+  .params-dialog::backdrop {
+    background: rgba(5, 18, 13, 0.54);
+    backdrop-filter: blur(5px);
+  }
+
+  .params-inner {
+    display: flex;
+    max-height: min(88vh, 820px);
+    flex-direction: column;
+  }
+
+  .params-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px 15px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .params-head h2 {
+    font-size: 20px;
+  }
+
+  .params-head p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .param-close {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+    font-size: 22px;
+  }
+
+  .params-body {
+    overflow: auto;
+    padding: 18px 20px 24px;
+  }
+
+  .param-section {
+    margin-bottom: 22px;
+  }
+
+  .param-section h3 {
+    margin-bottom: 10px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .param-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+  }
+
+  .param-item {
+    min-width: 0;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface-2) 64%, transparent);
+  }
+
+  .param-item-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .param-item label {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .param-item output {
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .param-help {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .params-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 20px 17px;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .param-reset {
+    min-height: 42px;
+    padding: 0 15px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+  }
+
+  .param-done {
+    min-height: 42px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff7ef;
+    background: var(--accent-strong);
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  @media (max-width: 900px) {
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+
+    .canvas-card,
+    .side-card {
+      height: 600px;
+      min-height: 520px;
+    }
+
+    .side-card {
+      height: 470px;
+      min-height: 420px;
+    }
+
+    .param-chips {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 680px) {
+    .app {
+      padding: 12px 10px 22px;
+    }
+
+    .topbar {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .tool-btn,
+    .mode-btn {
+      min-height: 44px;
+    }
+
+    .solver-strip {
+      align-items: stretch;
+      padding: 11px 12px;
+    }
+
+    .topn-control {
+      min-width: 100%;
+    }
+
+    .canvas-card,
+    .side-card {
+      height: 525px;
+      min-height: 500px;
+      border-radius: 16px;
+    }
+
+    .side-card {
+      height: 430px;
+      min-height: 410px;
+    }
+
+    .canvas-head {
+      min-height: 62px;
+      padding: 10px 12px;
+    }
+
+    .rank-pill {
+      min-width: 126px;
+    }
+
+    .route-card {
+      padding: 14px 13px 16px;
+      border-radius: 16px;
+    }
+
+    .route-head {
+      flex-direction: column;
+    }
+
+    .metric-strip {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .metric {
+      min-width: calc(33.333% - 6px);
+      flex: 1;
+    }
+
+    .param-chips {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .param-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .params-dialog {
+      width: calc(100vw - 16px);
+      max-height: 92vh;
+    }
+
+    .params-inner {
+      max-height: 92vh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>
+<style id="stand-theme">
+  :root {
+    color-scheme: light;
+    --bg: #eef2f6;
+    --card: #fff;
+    --text: #1a2b22;
+    --text-2: #5b6b62;
+    --text-3: #8a9a91;
+    --border: #e4ebe6;
+    --shadow: 0 1px 2px rgba(20, 50, 35, .04), 0 8px 24px rgba(20, 50, 35, .05);
+    --primary: #166b46;
+    --primary-2: #1f8a5b;
+    --primary-bright: #22a06b;
+    --seg-clear: 45, 90, 200;
+    --seg-drop: 40, 170, 80;
+    --seg-kill: 192, 57, 43;
+    --smash: #c0392b;
+    --clear: #2d5ac8;
+    --drop: #28aa50;
+    --drive: #7a5ab5;
+    --gold: #1b241f;
+    --surface: #fff;
+    --surface-2: #f7fbf9;
+    --surface-3: #eef4f0;
+    --ink: #1a2b22;
+    --muted: #8a9a91;
+    --court: #f7fbf9;
+    --court-opponent: #f7fbf9;
+    --court-line: #3a7d5c;
+    --court-frame: #1e4d38;
+    --net: #1e4d38;
+    --accent: #1f8a5b;
+    --accent-strong: #166b46;
+    --font: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  html {
+    min-width: 320px;
+    background: var(--bg);
+  }
+
+  body {
+    margin: 0;
+    padding: 16px 12px;
+    min-height: 100vh;
+    background: radial-gradient(1000px 500px at 15% -5%, #d9ece1 0%, transparent 55%),
+      radial-gradient(800px 400px at 90% 0%, #e3e9f7 0%, transparent 50%), var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card,
+  .canvas-card,
+  .route-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: "";
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(31, 138, 91, .10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+  }
+
+  .header-left > div:last-child {
+    min-width: 0;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    background: linear-gradient(135deg, var(--primary-bright), var(--primary));
+    box-shadow: 0 4px 12px rgba(22, 107, 70, .28), inset 0 1px 0 rgba(255, 255, 255, .2);
+  }
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 16.5px;
+    line-height: 1.35;
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+
+  .header p {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+
+  .app.collapsed .header {
+    display: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .lang-btn {
+    appearance: none;
+    cursor: pointer;
+    padding: 3px 7px;
+    border: 0;
+    border-radius: 5px;
+    color: var(--text-3);
+    background: transparent;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    line-height: 1;
+    opacity: .85;
+  }
+
+  .lang-btn:hover {
+    color: var(--primary);
+    opacity: 1;
+  }
+
+  .canvas-card {
+    display: block;
+    height: auto;
+    min-height: 0;
+    flex: none;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .canvas-topbar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 9px 12px;
+    border-bottom: 1px solid #f0f4f1;
+    color: var(--text-2);
+    font-size: 11.5px;
+  }
+
+  .sidebar-btn {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-2);
+    background: #f0f5f2;
+    cursor: pointer;
+    transition: background .15s, color .15s, transform .12s;
+  }
+
+  .sidebar-btn:hover {
+    color: var(--primary);
+    background: #e6efe9;
+  }
+
+  .sidebar-btn:active {
+    transform: scale(.92);
+  }
+
+  .sidebar-btn svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .mode-toggle {
+    appearance: none;
+    min-width: 46px;
+    padding: 5px 13px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: var(--primary);
+    background: #e8eee9;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .3px;
+    cursor: pointer;
+    transition: background .15s, color .15s, transform .12s;
+  }
+
+  .mode-toggle:hover {
+    background: #dde6e0;
+  }
+
+  .mode-toggle:active {
+    transform: scale(.96);
+  }
+
+  .mode-toggle[data-mode="single"] {
+    color: #1e6bb8;
+    background: #e8f0f7;
+  }
+
+  .mode-toggle[data-mode="single"]:hover {
+    background: #dbe7f3;
+  }
+
+  .tb-right {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    margin-left: auto;
+  }
+
+  .pill-group {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  button.pill {
+    cursor: ns-resize;
+    touch-action: none;
+    user-select: none;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+  }
+
+  .canvas-topbar .rank-pill {
+    display: inline-flex;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns: none;
+    grid-template-rows: none;
+    gap: 4px;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(108, 60, 225, .12);
+    border-color: rgba(108, 60, 225, .28);
+    color: #6c3ce1;
+    line-height: 1.5;
+  }
+
+  .canvas-topbar .rank-pill .rank-label {
+    display: none;
+  }
+
+  .canvas-topbar .rank-pill strong {
+    align-self: auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .canvas-topbar .rank-pill .rank-word {
+    color: #6c3ce1;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .rank-cluster {
+    display: inline-flex;
+    align-items: stretch;
+    height: 25px;
+    min-width: 0;
+  }
+
+  .compound-segment {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 25px;
+    padding: 0 8px;
+    border: 1px solid rgba(108, 60, 225, .28);
+    color: #6c3ce1;
+    background: rgba(108, 60, 225, .12);
+    font-family: inherit;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: ns-resize;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .compound-segment span {
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .compound-segment strong {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .compound-left {
+    border-radius: 999px 4px 4px 999px;
+  }
+
+  .compound-right {
+    margin-left: -1px;
+    border-radius: 4px 999px 999px 4px;
+  }
+
+  .compound-segment:hover {
+    background: rgba(108, 60, 225, .18);
+  }
+
+  .compound-segment:active {
+    transform: scale(.97);
+  }
+
+  .canvas-topbar .rank-pill small {
+    align-self: auto;
+    color: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .pill-height {
+    color: #1f6f8b;
+    background: rgba(31, 111, 139, .12);
+    border-color: rgba(31, 111, 139, .28);
+  }
+
+  .height-pill {
+    height: 25px;
+    gap: 4px;
+    padding: 0 8px;
+    cursor: ns-resize;
+    touch-action: none;
+    user-select: none;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+  }
+
+  .height-pill span {
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .height-pill strong {
+    color: #1f6f8b;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .seg-group {
+    display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+  }
+
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .seg-kill {
+    color: rgb(var(--seg-kill));
+    background: rgba(var(--seg-kill), .12);
+    border-color: rgba(var(--seg-kill), .28);
+    border-radius: 999px;
+  }
+
+  .seg-clear {
+    color: rgb(var(--seg-clear));
+    background: rgba(var(--seg-clear), .12);
+    border-color: rgba(var(--seg-clear), .28);
+    border-radius: 999px;
+  }
+
+  .seg-drop {
+    color: rgb(var(--seg-drop));
+    background: rgba(var(--seg-drop), .12);
+    border-color: rgba(var(--seg-drop), .28);
+    border-radius: 999px;
+  }
+
+  .seg-drive {
+    color: #6c4aa5;
+    background: rgba(108, 74, 165, .12);
+    border-color: rgba(108, 74, 165, .28);
+    border-radius: 999px;
+  }
+
+  .topn-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    color: var(--text-3);
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .top-legend {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .top-legend .legend-chip {
+    pointer-events: none;
+    min-height: 0;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    font-size: 10.5px;
+  }
+
+  .heat-top-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-3);
+    font-size: 9.5px;
+    white-space: nowrap;
+  }
+
+  .heat-top-legend.hidden {
+    display: none;
+  }
+
+  .heat-legend-bar {
+    display: inline-block;
+    width: 28px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #d73027, #fc8d59, #ffffbf, #91bfdb, #4575b4);
+  }
+
+  .heat-top-legend .heat-opt {
+    color: #c8352d;
+    font-weight: 700;
+  }
+
+  .heat-top-legend .heat-bad {
+    color: #4778b5;
+    font-weight: 700;
+  }
+
+  .topn-field input {
+    width: 72px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .topn-field output {
+    min-width: 43px;
+    color: var(--text-2);
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-btn {
+    min-height: 25px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-2);
+    background: #f5f9f6;
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, color .15s, transform .12s;
+  }
+
+  .mini-btn:hover {
+    color: var(--primary);
+    background: #eaf2ed;
+  }
+
+  .mini-btn:active {
+    transform: scale(.96);
+  }
+
+  .mini-btn.is-active {
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .collapse-btn {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    color: var(--text-3);
+    background: transparent;
+    cursor: pointer;
+    opacity: .75;
+  }
+
+  .collapse-btn:hover {
+    color: var(--primary);
+    opacity: 1;
+  }
+
+  .collapse-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .collapse-btn .chev-down {
+    display: none;
+  }
+
+  .app.collapsed .collapse-btn .chev-up {
+    display: none;
+  }
+
+  .app.collapsed .collapse-btn .chev-down {
+    display: inline;
+  }
+
+  .canvas-wrap {
+    position: static;
+    display: flex;
+    flex: none;
+    height: auto;
+    min-height: 0;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 10px 8px;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .main-stage,
+  .side-stage {
+    position: relative;
+    height: min(620px, calc(100vh - 235px));
+    min-height: 470px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f7fbf9;
+    box-shadow: 0 1px 3px rgba(20, 50, 35, .06), 0 4px 14px rgba(20, 50, 35, .05);
+  }
+
+  .main-stage {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .side-stage {
+    flex: 0 0 min(500px, 58%);
+    min-width: 0;
+  }
+
+  .main-stage canvas,
+  .side-stage canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    background: #f7fbf9;
+    box-shadow: none;
+  }
+
+  .side-stage canvas {
+    cursor: default;
+  }
+
+  .side-stage #sideCanvas {
+    cursor: default;
+  }
+
+  .canvas-legend {
+    top: 9px;
+    left: 9px;
+    gap: 4px;
+  }
+
+  .legend-chip {
+    min-height: 21px;
+    padding: 2px 7px;
+    color: var(--text-3);
+    background: rgba(255, 255, 255, .87);
+    border-color: var(--border);
+    font-size: 9.5px;
+  }
+
+  .heat-legend {
+    right: 9px;
+    bottom: 9px;
+    padding: 7px 8px 6px;
+    border-color: var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .91);
+    color: var(--text-2);
+    font-size: 10px;
+    pointer-events: auto;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .heat-legend.is-dragging {
+    cursor: grabbing;
+  }
+
+  .heat-labels {
+    color: var(--text-3);
+    font-size: 9px;
+  }
+
+  .busy-badge {
+    border-color: var(--border);
+    color: var(--text-2);
+    background: rgba(255, 255, 255, .94);
+    box-shadow: var(--shadow);
+    font-size: 11px;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 26px;
+    padding: 0 12px 9px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    line-height: 1.6;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status-left,
+  .status-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .status-left {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .status-right {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary-bright);
+    box-shadow: none;
+  }
+
+  .status-dot.is-busy {
+    background: #d69c32;
+    animation: pulse 900ms ease-in-out infinite alternate;
+  }
+
+  .route-card {
+    margin-top: 0;
+    padding: 12px 14px 13px;
+    overflow: hidden;
+  }
+
+  .route-head {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .route-title {
+    gap: 8px;
+  }
+
+  .type-dot {
+    width: 8px;
+    height: 8px;
+    box-shadow: none;
+  }
+
+  .route-head h3 {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .route-subtitle {
+    margin-top: 2px;
+    color: var(--text-3);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .metric-strip {
+    gap: 4px;
+  }
+
+  .metric {
+    min-width: 82px;
+    padding: 4px 8px;
+    border-radius: 7px;
+    background: #f2f7f4;
+    text-align: right;
+  }
+
+  .metric span {
+    color: var(--text-3);
+    font-size: 9px;
+  }
+
+  .metric strong {
+    margin-top: 1px;
+    color: var(--text);
+    font-size: 11px;
+  }
+
+  .param-chips {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 9px;
+  }
+
+  .param-chip {
+    padding: 5px 7px;
+    border-color: var(--border);
+    border-radius: 7px;
+    background: #f7fbf9;
+  }
+
+  .param-chip span {
+    color: var(--text-3);
+    font-size: 9px;
+  }
+
+  .param-chip strong {
+    margin-top: 2px;
+    color: var(--text-2);
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .filter-row {
+    gap: 4px;
+    margin-top: 9px;
+    padding-top: 9px;
+    border-color: var(--border);
+    font-size: 10px;
+  }
+
+  .filter-row > span {
+    color: var(--text-3);
+    font-size: 10px;
+  }
+
+  .filter-btn {
+    min-height: 23px;
+    padding: 2px 8px;
+    border-color: var(--border);
+    color: var(--text-3);
+    background: #f5f9f6;
+    font-size: 10px;
+  }
+
+  .filter-btn.is-active {
+    color: #fff;
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+
+  .footnote {
+    display: block;
+    padding: 2px 8px 6px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    line-height: 1.7;
+    text-align: center;
+    letter-spacing: .1px;
+  }
+
+  .footnote span {
+    display: block;
+  }
+
+  .footer {
+    padding: 2px 8px 6px;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: .3px;
+    text-align: center;
+    user-select: none;
+  }
+
+  #credit {
+    cursor: pointer;
+  }
+
+  .footer b {
+    color: var(--text-2);
+    font-weight: 600;
+  }
+
+  .modal-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 26px 14px;
+    overflow: auto;
+    background: rgba(10, 30, 20, .46);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-mask.open {
+    display: flex;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 660px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+  }
+
+  .modal-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-2), var(--primary));
+  }
+
+  .modal-head h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .modal-close {
+    padding: 0 6px;
+    border: 0;
+    color: #fff;
+    background: transparent;
+    font-family: inherit;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .modal-body {
+    max-height: 76vh;
+    padding: 18px 22px 24px;
+    overflow: auto;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .modal-body h3 {
+    margin: 18px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e8f0ec;
+    color: var(--primary);
+    font-size: 14px;
+  }
+
+  .modal-body h3:first-child {
+    margin-top: 0;
+  }
+
+  .modal-body ul,
+  .modal-body ol {
+    margin: 6px 0;
+    padding-left: 22px;
+  }
+
+  .modal-body code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #eef2f6;
+    font-size: 12px;
+  }
+
+  .params-dialog {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(330px, 88vw);
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    color: var(--text);
+    background: #fff;
+    box-shadow: 4px 0 26px rgba(20, 50, 35, .14);
+  }
+
+  .params-dialog::backdrop {
+    background: rgba(10, 30, 20, .40);
+    backdrop-filter: blur(1px);
+  }
+
+  .params-inner {
+    height: 100%;
+    max-height: none;
+  }
+
+  .params-head {
+    padding: 13px 16px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-2), var(--primary));
+  }
+
+  .params-head h2 {
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+
+  .params-head p {
+    margin-top: 3px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9.5px;
+    line-height: 1.45;
+  }
+
+  .param-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 22px;
+  }
+
+  .params-body {
+    padding: 0;
+    background: #fff;
+  }
+
+  .param-section {
+    margin: 0;
+    padding: 9px 14px 10px;
+    border-bottom: 1px solid #f0f4f1;
+  }
+
+  .param-section h3 {
+    margin-bottom: 7px;
+    color: var(--text-2);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    display: block;
+  }
+
+  .param-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .param-item {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .param-item-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .param-item label {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .param-item output {
+    color: var(--primary);
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+
+  .param-item input[type="range"] {
+    width: 100%;
+    height: 16px;
+    min-height: 16px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .param-help {
+    margin-top: 8px;
+    color: var(--text-3);
+    font-size: 9.5px;
+    line-height: 1.5;
+  }
+
+  .params-foot {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    justify-content: stretch;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .param-reset {
+    width: auto;
+    flex: 1 1 0;
+    min-height: 34px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-2);
+    background: #f5f9f6;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .param-done {
+    flex: 1 1 0;
+    min-height: 34px;
+    padding: 0 16px;
+    border-radius: 8px;
+    color: #fff;
+    background: var(--primary);
+    font-size: 11px;
+  }
+
+  @media (max-width: 680px) {
+    body {
+      padding: 10px 8px;
+    }
+
+    .app {
+      gap: 10px;
+    }
+
+    .header {
+      padding: 11px 13px;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 14.5px;
+    }
+
+    .header p {
+      font-size: 10.5px;
+      line-height: 1.45;
+    }
+
+    .canvas-topbar {
+      padding: 8px 10px;
+      gap: 5px;
+      font-size: 11px;
+    }
+
+    .tb-right {
+      flex: 1 0 100%;
+      width: 100%;
+      margin-left: 0;
+      justify-content: flex-start;
+    }
+
+    .pill-group {
+      flex: 1 1 100%;
+    }
+
+    .topn-field {
+      flex: 1 1 145px;
+      justify-content: flex-start;
+    }
+
+    .sidebar-btn {
+      width: 24px;
+      height: 24px;
+    }
+
+    .mode-toggle {
+      min-width: 42px;
+      padding: 4px 11px;
+      font-size: 11.5px;
+    }
+
+    .pill {
+      padding: 1px 7px;
+      font-size: 10px;
+    }
+
+    .topn-field input {
+      width: 62px;
+    }
+
+    .canvas-wrap {
+      flex-wrap: wrap;
+      padding: 7px 6px 6px;
+      gap: 6px;
+    }
+
+    .main-stage,
+    .side-stage {
+      flex: 1 1 100%;
+      height: 436px;
+      min-height: 436px;
+    }
+
+    .canvas-legend {
+      gap: 3px;
+    }
+
+    .legend-chip {
+      font-size: 9px;
+    }
+
+    .route-card {
+      padding: 10px 10px 11px;
+      border-radius: 13px;
+    }
+
+    .route-head {
+      align-items: flex-start;
+    }
+
+    .metric {
+      min-width: 72px;
+      padding: 3px 6px;
+    }
+
+    .param-chips {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .params-dialog {
+      width: min(330px, 88vw);
+    }
+  }
+
+  @media (pointer: coarse) {
+    .compound-segment,
+    .height-pill {
+      min-height: 32px;
+      height: 32px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="card header">
+    <div class="header-left">
+      <div class="logo" aria-hidden="true">👋</div>
+      <div>
+        <h1 id="pageTitle">羽毛球最优出球轨迹</h1>
+        <p id="pageSub">拖动球员调整位置 · 长按对手调初速度 · 双击球场切换热力图 · 上下拖动“优劣 / Top”，向上增加、向下减小</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="langBtn" class="lang-btn" type="button" aria-label="Switch language">EN</button>
+    </div>
+  </header>
+
+  <div class="card canvas-card">
+    <div class="canvas-topbar">
+      <button class="sidebar-btn" id="paramsBtn" type="button" aria-label="参数">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <circle cx="9" cy="7" r="2.4"></circle>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+          <circle cx="15" cy="17" r="2.4"></circle>
+        </svg>
+      </button>
+
+      <button class="mode-toggle" id="modeToggle" data-mode="double" type="button" aria-label="切换单打或双打" aria-pressed="false">双打</button>
+
+      <div class="top-legend" aria-hidden="true">
+        <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--smash)"></i><span data-i18n="typeSmash">下压</span></span>
+        <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--drop)"></i><span data-i18n="typeDrop">吊球</span></span>
+        <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--clear)"></i><span data-i18n="typeClear">高球</span></span>
+        <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--drive)"></i><span data-i18n="typeDrive">平抽</span></span>
+        <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--gold)"></i><span data-i18n="selected">选中</span></span>
+      </div>
+
+      <div class="heat-top-legend hidden" id="heatLegend" aria-label="热力图标识：红色为优，蓝色为劣">
+        <span class="heat-legend-bar" aria-hidden="true"></span>
+        <span class="heat-opt" data-i18n="good">优</span>
+        <span class="heat-bad" data-i18n="bad">劣</span>
+      </div>
+
+      <div class="tb-right">
+        <div class="pill-group">
+          <div class="rank-cluster">
+            <button class="compound-segment compound-left" id="rankPill" type="button" title="向上拖动增加数字，向下拖动减小数字" aria-label="当前球路优劣值，向上拖动增加数字，向下拖动减小数字">
+              <span data-i18n="rank">优劣</span><strong id="rankScore">1</strong>
+              <small class="sr-only" id="rankLabel">1</small>
+            </button>
+            <button class="compound-segment compound-right" id="topPill" type="button" title="向上拖动增加显示数量，向下拖动减小显示数量" aria-label="显示轨迹数量，向上拖动增加，向下拖动减小">
+              <span>Top</span><strong id="topNValue">100</strong>
+            </button>
+          </div>
+          <button class="pill pill-height height-pill" id="heightPill" type="button" title="向上拖动增加击球高度，向下拖动减小击球高度" aria-label="当前击球高度，向上拖动增加，向下拖动减小">
+            <span data-i18n="contactHeightShort">击球高</span><strong id="heightValue">2.80m</strong>
+          </button>
+        </div>
+        <button class="collapse-btn" id="collapseBtn" type="button" aria-label="隐藏标题栏">
+          <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 10l4-4 4 4"></path>
+          </svg>
+          <svg class="chev-down" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 6l4 4 4-4"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <div class="main-stage">
+        <canvas id="mainCanvas" role="img" aria-label="羽毛球场俯视图，显示我方击球点、对手位置和 Top N 出球轨迹">
+          当前浏览器无法显示球场轨迹图。
+        </canvas>
+        <div class="busy-badge" id="busyBadge">正在计算球路…</div>
+      </div>
+      <div class="side-stage">
+        <canvas id="sideCanvas" role="img" aria-label="球场长度与高度侧视图，显示球路、球网和对手截击点">
+          当前浏览器无法显示侧视图。
+        </canvas>
+      </div>
+    </div>
+    <div class="status-line">
+      <span class="status-left">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText"><strong>拖动球员</strong> · 正在计算球路</span>
+      </span>
+      <span class="status-right">
+        <span class="pill pill-height" id="hitPill">接球 —</span>
+        <span class="seg seg-kill" id="typePill">下压</span>
+      </span>
+    </div>
+  </div>
+
+  <section class="card route-card" aria-labelledby="routeTitle">
+    <div class="route-head">
+      <div class="route-title">
+        <span class="type-dot" id="typeDot" aria-hidden="true"></span>
+        <div>
+          <h3 id="routeTitle" data-i18n="routeWaiting">等待球路</h3>
+          <p class="route-subtitle" id="routeSubtitle" data-i18n="routeGenerating">正在生成合法击球轨迹</p>
+        </div>
+      </div>
+      <div class="metric-strip">
+        <div class="metric"><span data-i18n="hitProbability">对手接球概率</span><strong id="metricHit">—</strong></div>
+        <div class="metric"><span data-i18n="missProbability">对手接不到</span><strong id="metricMiss">—</strong></div>
+        <div class="metric"><span data-i18n="expectedRate">我方期望得分率</span><strong id="metricExpected">—</strong></div>
+      </div>
+    </div>
+
+    <div class="param-chips">
+      <div class="param-chip"><span data-i18n="contactPoint">击球点</span><strong id="chipContact">—</strong></div>
+      <div class="param-chip"><span data-i18n="opponentA">对手 A 位置</span><strong id="chipOppA">—</strong></div>
+      <div class="param-chip"><span data-i18n="opponentB">对手 B 位置</span><strong id="chipOppB">—</strong></div>
+      <div class="param-chip"><span data-i18n="initialSpeed">初速度</span><strong id="chipSpeed">—</strong></div>
+      <div class="param-chip"><span data-i18n="hitAngle">击球角</span><strong id="chipElevation">—</strong></div>
+      <div class="param-chip"><span data-i18n="horizontalAngle">横向角</span><strong id="chipAzimuth">—</strong></div>
+      <div class="param-chip"><span data-i18n="velocityComponents">速度分量 x / y / z</span><strong id="chipVelocity">—</strong></div>
+      <div class="param-chip"><span data-i18n="netHeight">过网高度</span><strong id="chipNet">—</strong></div>
+      <div class="param-chip"><span data-i18n="landing">落点</span><strong id="chipLanding">—</strong></div>
+      <div class="param-chip"><span data-i18n="flightTime">飞行时间</span><strong id="chipTime">—</strong></div>
+      <div class="param-chip"><span data-i18n="interceptA">对手 A 截击坐标</span><strong id="chipInterceptA">—</strong></div>
+      <div class="param-chip"><span data-i18n="interceptB">对手 B 截击坐标</span><strong id="chipInterceptB">—</strong></div>
+    </div>
+
+    <div class="filter-row" aria-label="球路类型筛选">
+      <span data-i18n="showRoutes">显示球路</span>
+      <button class="filter-btn is-active" type="button" data-filter="all" data-i18n="all">全部</button>
+      <button class="filter-btn" type="button" data-filter="smash" data-i18n="typeSmash">下压</button>
+      <button class="filter-btn" type="button" data-filter="drop" data-i18n="typeDrop">吊球</button>
+      <button class="filter-btn" type="button" data-filter="clear" data-i18n="typeClear">高球</button>
+      <button class="filter-btn" type="button" data-filter="drive" data-i18n="typeDrive">平抽</button>
+    </div>
+  </section>
+
+  <footer class="footer" id="credit">
+    © <b>Robert Bogan Kang</b> <span id="footerText" data-i18n="footer">创作 · 保留所有权利</span>
+  </footer>
+</div>
+
+<dialog class="params-dialog" id="paramsDialog" aria-labelledby="paramsTitle">
+  <div class="params-inner">
+    <div class="params-head">
+      <div>
+        <h2 id="paramsTitle">模型参数</h2>
+        <p>所有修改都会重新计算合法球路；拖动球场中的球员后自动恢复“优劣 1”。</p>
+      </div>
+      <button class="param-close" id="paramsClose" type="button" aria-label="关闭参数面板">×</button>
+    </div>
+    <div class="params-body">
+      <section class="param-section">
+        <h3>出球能力</h3>
+        <div class="param-grid">
+          <div class="param-item">
+            <div class="param-item-head"><label for="contactHeight">击球高度</label><output id="contactHeightValue">2.80 m</output></div>
+            <input id="contactHeight" data-param="contactHeight" type="range" min="0.1" max="3.5" step="0.05" value="2.8">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="speedMax">最大初速度</label><output id="speedMaxValue">60 m/s</output></div>
+            <input id="speedMax" data-param="speedMax" type="range" min="15" max="80" step="1" value="60">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="thetaMax">最高上仰角</label><output id="thetaMaxValue">88°</output></div>
+            <input id="thetaMax" data-param="thetaMax" type="range" min="80" max="89" step="1" value="88">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="minClear">最低过网余量</label><output id="minClearValue">0.02 m</output></div>
+            <input id="minClear" data-param="minClear" type="range" min="0" max="0.3" step="0.01" value="0.02">
+          </div>
+        </div>
+      </section>
+
+      <section class="param-section">
+        <h3>对手 A</h3>
+        <div class="param-grid">
+          <div class="param-item">
+            <div class="param-item-head"><label for="t0a">反应下限 t0</label><output id="t0aValue">0.20 s</output></div>
+            <input id="t0a" data-param="t0a" type="range" min="0.05" max="1.2" step="0.01" value="0.2">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="t1a">反应上限 t1</label><output id="t1aValue">0.55 s</output></div>
+            <input id="t1a" data-param="t1a" type="range" min="0.1" max="1.6" step="0.01" value="0.55">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="speedA">跑动速度</label><output id="speedAValue">3.8 m/s</output></div>
+            <input id="speedA" data-param="speedA" type="range" min="2.5" max="7" step="0.1" value="3.8">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="touchA">触球半径</label><output id="touchAValue">0.90 m</output></div>
+            <input id="touchA" data-param="touchA" type="range" min="0.2" max="1.5" step="0.05" value="0.9">
+          </div>
+        </div>
+      </section>
+
+      <section class="param-section">
+        <h3>对手 B</h3>
+        <div class="param-grid">
+          <div class="param-item">
+            <div class="param-item-head"><label for="t0b">反应下限 t0</label><output id="t0bValue">0.20 s</output></div>
+            <input id="t0b" data-param="t0b" type="range" min="0.05" max="1.2" step="0.01" value="0.2">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="t1b">反应上限 t1</label><output id="t1bValue">0.55 s</output></div>
+            <input id="t1b" data-param="t1b" type="range" min="0.1" max="1.6" step="0.01" value="0.55">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="speedB">跑动速度</label><output id="speedBValue">3.8 m/s</output></div>
+            <input id="speedB" data-param="speedB" type="range" min="2.5" max="7" step="0.1" value="3.8">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="touchB">触球半径</label><output id="touchBValue">0.90 m</output></div>
+            <input id="touchB" data-param="touchB" type="range" min="0.2" max="1.5" step="0.05" value="0.9">
+          </div>
+        </div>
+      </section>
+
+      <section class="param-section">
+        <h3>截击与显示</h3>
+        <div class="param-grid">
+          <div class="param-item">
+            <div class="param-item-head"><label for="zMin">可接高度下限</label><output id="zMinValue">0.10 m</output></div>
+            <input id="zMin" data-param="zMin" type="range" min="0" max="2.4" step="0.05" value="0.1">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="zMax">可接高度上限</label><output id="zMaxValue">2.50 m</output></div>
+            <input id="zMax" data-param="zMax" type="range" min="0.5" max="3.5" step="0.05" value="2.5">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="k2">后退速度系数</label><output id="k2Value">1.30</output></div>
+            <input id="k2" data-param="k2" type="range" min="1" max="1.8" step="0.01" value="1.3">
+          </div>
+          <div class="param-item">
+            <div class="param-item-head"><label for="heatOpacity">热力图透明度</label><output id="heatOpacityValue">72%</output></div>
+            <input id="heatOpacity" data-param="heatOpacity" type="range" min="0.25" max="0.95" step="0.01" value="0.72">
+          </div>
+        </div>
+        <p class="param-help">反应曲线沿用 stand.html：t0 时约 2%，t1 时约 88%，上限 92%。对手只能在自己半场、且球处于指定高度范围时截击。</p>
+      </section>
+    </div>
+    <div class="params-foot">
+      <button class="param-reset" id="paramsReset" type="button">恢复默认参数</button>
+      <button class="param-done" id="paramsDone" type="button">完成</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="modal-mask" id="principleModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="principleTitle">
+    <div class="modal-head">
+      <h2 id="principleTitle">羽毛球最优出球轨迹 · 计算方法</h2>
+      <button class="modal-close" id="principleClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="principleBody"></div>
+  </div>
+</div>
+
+<div class="sr-only" id="liveStatus" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const fmt = (v, n) => Number.isFinite(v) ? v.toFixed(n).replace(/\.?0+$/, '') : '—';
+  const pct = (v) => Number.isFinite(v) ? Math.round(v * 100) + '%' : '—';
+  const DPR_CAP = 2;
+  const COARSE_POINTER = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  let lang = 'zh';
+
+  const I18N = {
+    zh: {
+      title: '羽毛球最优出球轨迹',
+      subtitle: '拖动球员调整位置 · 长按对手调初速度 · 双击球场切换热力图 · 上下拖动“优劣 / Top”，向上增加、向下减小',
+      rank: '优劣',
+      contactHeightShort: '击球高',
+      typeSmash: '下压',
+      typeDrop: '吊球',
+      typeClear: '高球',
+      typeDrive: '平抽',
+      selected: '选中',
+      good: '优',
+      bad: '劣',
+      all: '全部',
+      showRoutes: '显示球路',
+      routeWaiting: '等待球路',
+      routeGenerating: '正在生成合法击球轨迹',
+      hitProbability: '对手接球概率',
+      missProbability: '对手接不到',
+      expectedRate: '我方期望得分率',
+      contactPoint: '击球点',
+      opponentA: '对手 A 位置',
+      opponentB: '对手 B 位置',
+      initialSpeed: '初速度',
+      hitAngle: '击球角',
+      horizontalAngle: '横向角',
+      velocityComponents: '速度分量 x / y / z',
+      netHeight: '过网高度',
+      landing: '落点',
+      flightTime: '飞行时间',
+      interceptA: '对手 A 截击坐标',
+      interceptB: '对手 B 截击坐标',
+      footer: '创作 · 保留所有权利',
+      doubles: '双打',
+      singles: '单打',
+      paramsTitle: '模型参数',
+      paramsDesc: '所有修改都会重新计算合法球路；拖动球场中的球员后自动恢复“优劣 1”。',
+      ability: '出球能力',
+      opponentASection: '对手 A',
+      opponentBSection: '对手 B',
+      interceptDisplay: '截击与显示',
+      contactHeightParam: '击球高度',
+      maxSpeed: '最大初速度',
+      maxElevation: '最高上仰角',
+      minNetClear: '最低过网余量',
+      reactionLow: '反应下限 t0',
+      reactionHigh: '反应上限 t1',
+      runSpeed: '跑动速度',
+      touchRadius: '触球半径',
+      zMin: '可接高度下限',
+      zMax: '可接高度上限',
+      k2: '后退速度系数',
+      heatOpacity: '热力图透明度',
+      paramHelp: '反应曲线沿用 stand.html：t0 时约 2%，t1 时约 88%，上限 92%。对手只能在自己半场、且球处于指定高度范围时截击。',
+      resetParams: '恢复默认参数',
+      done: '完成',
+      methodTitle: '羽毛球最优出球轨迹 · 计算方法',
+      method: `
+        <h3>一、坐标与输入</h3>
+        <p>球场长 13.40 m，双打宽 6.10 m；球网位于 y=0，我方 y&lt;0，对手 y&gt;0。我方击球点为 (x, y, z)，对手 A/B 的位置均可拖动。</p>
+        <h3>二、轨迹生成</h3>
+        <p>从击球点枚举横向角度、击球角和多个初速度。每条轨迹都必须真实越过 1.55 m 球网、落在合法对手半场、飞行高度不超过 11 m，且初速度不超过设定上限。</p>
+        <h3>三、飞行仿真</h3>
+        <p>采用重力与速度相关空气阻力模型，仿真步长 0.005 s。通过相邻步插值获得过网位置、落点和飞行时间；主视图与侧视图使用同一组三维轨迹数据。</p>
+        <h3>四、对手反应和截击</h3>
+        <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、方向速度系数和触球半径计算接球概率。</p>
+        <h3>五、排序</h3>
+        <p>合法轨迹按对手接球概率从低到高排序，Top #1 为最优。<b>优劣</b>用于选择具体球路，<b>Top</b>用于调整显示和热力图使用的球路数量；默认取合法候选的 1%，上限为 20%。</p>
+        <h3>六、视图与热力图</h3>
+        <p>主视图显示俯视球路，侧视图显示场地长度与高度。双击球场开启热力图，红色表示对手接球概率较低（优），蓝色表示较高（劣）。</p>
+      `
+    },
+    en: {
+      title: 'Badminton Optimal Shuttlecock Trajectory',
+      subtitle: 'Drag players · Long-press an opponent for initial velocity · Double-tap court for heatmap · Drag “Rank / Top” up to increase, down to decrease',
+      rank: 'Rank',
+      contactHeightShort: 'Height',
+      typeSmash: 'Steep',
+      typeDrop: 'Drop',
+      typeClear: 'Clear',
+      typeDrive: 'Drive',
+      selected: 'Selected',
+      good: 'Good',
+      bad: 'Poor',
+      all: 'All',
+      showRoutes: 'Show shots',
+      routeWaiting: 'Waiting for shot',
+      routeGenerating: 'Generating legal trajectories',
+      hitProbability: 'Opponent reach',
+      missProbability: 'Opponent miss',
+      expectedRate: 'Expected point rate',
+      contactPoint: 'Contact point',
+      opponentA: 'Opponent A',
+      opponentB: 'Opponent B',
+      initialSpeed: 'Initial speed',
+      hitAngle: 'Hit angle',
+      horizontalAngle: 'Horizontal angle',
+      velocityComponents: 'Velocity x / y / z',
+      netHeight: 'Net clearance',
+      landing: 'Landing',
+      flightTime: 'Flight time',
+      interceptA: 'A intercept point',
+      interceptB: 'B intercept point',
+      footer: 'Created · All Rights Reserved',
+      doubles: 'Doubles',
+      singles: 'Singles',
+      paramsTitle: 'Model parameters',
+      paramsDesc: 'Changes trigger a new solution. Dragging players restores Rank 1.',
+      ability: 'Shot ability',
+      opponentASection: 'Opponent A',
+      opponentBSection: 'Opponent B',
+      interceptDisplay: 'Intercept & display',
+      contactHeightParam: 'Contact height',
+      maxSpeed: 'Maximum initial speed',
+      maxElevation: 'Maximum upward angle',
+      minNetClear: 'Minimum net clearance',
+      reactionLow: 'Reaction lower bound t0',
+      reactionHigh: 'Reaction upper bound t1',
+      runSpeed: 'Running speed',
+      touchRadius: 'Touch radius',
+      zMin: 'Reach height min',
+      zMax: 'Reach height max',
+      k2: 'Backward speed factor',
+      heatOpacity: 'Heatmap opacity',
+      paramHelp: 'The reaction curve follows stand.html: about 2% at t0, 88% at t1, and a 92% ceiling. Opponents may intercept only on their own side within the configured height range.',
+      resetParams: 'Reset parameters',
+      done: 'Done',
+      methodTitle: 'Optimal Badminton Shot · Method',
+      method: `
+        <h3>1. Coordinates and inputs</h3>
+        <p>The court is 13.40 m long and 6.10 m wide. The net is at y=0; our side is y&lt;0 and the opponent side is y&gt;0. Our 3D contact point and both opponent positions are draggable.</p>
+        <h3>2. Trajectory generation</h3>
+        <p>The solver enumerates horizontal azimuth, launch elevation and initial speed. Every shot must clear the 1.55 m net, land inside the legal opponent court, remain below 11 m in height and respect the maximum initial speed.</p>
+        <h3>3. Flight simulation</h3>
+        <p>The model uses gravity and speed-dependent air drag with a 0.005 s timestep. Net crossing, landing and flight time are interpolated between simulation steps. The top view and side view share the same 3D trajectory data.</p>
+        <h3>4. Reach and interception</h3>
+        <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, directional speed factors and touch radius into a reach probability.</p>
+        <h3>5. Ranking</h3>
+        <p>Legal shots are sorted from the lowest opponent reach probability to the highest. <b>Rank</b> selects a specific shot and <b>Top</b> controls how many shots are shown and used by the heatmap. Top defaults to 1% of legal candidates and is capped at 20%.</p>
+        <h3>6. Views and heatmap</h3>
+        <p>The top view shows the horizontal fan and the side view shows court length against height. Double-tap the court to toggle the heatmap: red means a lower opponent reach probability and blue means a higher probability.</p>
+      `
+    }
+  };
+
+  const t = (key) => (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;
+  const L = (zh, en) => lang === 'en' ? en : zh;
+
+  const COURT = Object.freeze({
+    L: 13.4,
+    W: 6.1,
+    HL: 6.7,
+    HW: 3.05,
+    SINGLES_HW: 2.59,
+    SHORT_SERVICE: 1.98,
+    LONG_SERVICE: 0.76,
+    NET_H: 1.55,
+    SAFE: 0.06
+  });
+
+  const AERO = Object.freeze({
+    dt: 0.005,
+    tMax: 6,
+    g: 9.81,
+    k: 0.36
+  });
+
+  const MAX_TRAJECTORY_Z = 11;
+
+  const REACH = Object.freeze({
+    p0: 0.02,
+    p1: 0.88,
+    pmax: 0.92,
+    lambdaRun: 0.6,
+    sideK: 0.95,
+    forwardK: 1.15
+  });
+
+  const TYPE_DELTA = Object.freeze({
+    smash: 0,
+    clear: 0.4,
+    drop: 0.15,
+    drive: 0.08
+  });
+
+  const TYPE_INFO = Object.freeze({
+    smash: { label: '下压', labelEn: 'Steep', colorVar: '--smash' },
+    clear: { label: '高球', labelEn: 'Clear', colorVar: '--clear' },
+    drop: { label: '吊球', labelEn: 'Drop', colorVar: '--drop' },
+    drive: { label: '平抽', labelEn: 'Drive', colorVar: '--drive' }
+  });
+
+  const DEFAULTS = Object.freeze({
+    speedMax: 60,
+    thetaMax: 88,
+    minClear: 0.02,
+    contactHeight: 2.8,
+    t0a: 0.2,
+    t1a: 0.55,
+    speedA: 3.8,
+    touchA: 0.9,
+    t0b: 0.2,
+    t1b: 0.55,
+    speedB: 3.8,
+    touchB: 0.9,
+    zMin: 0.1,
+    zMax: 2.5,
+    k2: 1.3,
+    heatOpacity: 0.72
+  });
+
+  const state = {
+    mode: 'double',
+    contact: { x: 0, y: -2.8, z: DEFAULTS.contactHeight },
+    opponents: [
+      { x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false },
+      { x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false }
+    ],
+    params: { ...DEFAULTS },
+    paths: [],
+    legalCount: 0,
+    selectedRank: 1,
+    topN: 100,
+    maxTop: 1000,
+    defaultTop: 100,
+    heatMaxPHit: 1,
+    filter: 'all',
+    heatOn: false,
+    busy: false,
+    lastSolveMs: 0,
+    heatDirty: true
+  };
+
+  const mainCanvas = $('mainCanvas');
+  const sideCanvas = $('sideCanvas');
+  const mainCtx = mainCanvas.getContext('2d');
+  const sideCtx = sideCanvas.getContext('2d');
+  const mainView = { w: 1, h: 1, left: 0, top: 0, scale: 1 };
+  const sideView = { w: 1, h: 1, left: 0, top: 0, scaleY: 1, scaleZ: 1, zMax: 11 };
+
+  let mainHeatCanvas = null;
+  let mainHeatMeta = null;
+  let solveTimer = 0;
+  let solveSequence = 0;
+  let pendingFast = false;
+  let renderQueued = false;
+  let drag = null;
+  let rankDrag = null;
+  let topDrag = null;
+  let heightDrag = null;
+  let longPressTimer = 0;
+  let lastTap = { time: 0, x: 0, y: 0 };
+  let lastRankTap = { time: 0 };
+  let lastTopTap = { time: 0 };
+
+  const els = {
+    pageTitle: $('pageTitle'),
+    pageSub: $('pageSub'),
+    langBtn: $('langBtn'),
+    footerText: $('footerText'),
+    credit: $('credit'),
+    principleModal: $('principleModal'),
+    principleTitle: $('principleTitle'),
+    principleBody: $('principleBody'),
+    principleClose: $('principleClose'),
+    collapseBtn: $('collapseBtn'),
+    mainCanvas,
+    sideCanvas,
+    statusDot: $('statusDot'),
+    statusText: $('statusText'),
+    liveStatus: $('liveStatus'),
+    busyBadge: $('busyBadge'),
+    topNValue: $('topNValue'),
+    rankPill: $('rankPill'),
+    topPill: $('topPill'),
+    rankScore: $('rankScore'),
+    rankLabel: $('rankLabel'),
+    heightPill: $('heightPill'),
+    heightValue: $('heightValue'),
+    routeTitle: $('routeTitle'),
+    routeSubtitle: $('routeSubtitle'),
+    typeDot: $('typeDot'),
+    metricHit: $('metricHit'),
+    metricMiss: $('metricMiss'),
+    metricExpected: $('metricExpected'),
+    chipContact: $('chipContact'),
+    chipOppA: $('chipOppA'),
+    chipOppB: $('chipOppB'),
+    chipSpeed: $('chipSpeed'),
+    chipElevation: $('chipElevation'),
+    chipAzimuth: $('chipAzimuth'),
+    chipVelocity: $('chipVelocity'),
+    chipNet: $('chipNet'),
+    chipLanding: $('chipLanding'),
+    chipTime: $('chipTime'),
+    chipInterceptA: $('chipInterceptA'),
+    chipInterceptB: $('chipInterceptB'),
+    heatLegend: $('heatLegend'),
+    modeToggle: $('modeToggle'),
+    hitPill: $('hitPill'),
+    typePill: $('typePill'),
+    paramsDialog: $('paramsDialog'),
+    paramsTitle: $('paramsTitle'),
+    paramsBtn: $('paramsBtn'),
+    paramsClose: $('paramsClose'),
+    paramsDone: $('paramsDone'),
+    paramsReset: $('paramsReset')
+  };
+
+  function cssColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function halfWidth() {
+    return state.mode === 'single' ? COURT.SINGLES_HW : COURT.HW;
+  }
+
+  function activeOpponents() {
+    return state.mode === 'single' ? state.opponents.slice(0, 1) : state.opponents;
+  }
+
+  function categoryColor(type) {
+    return cssColor(TYPE_INFO[type] ? TYPE_INFO[type].colorVar : '--ink');
+  }
+
+  function typeLabel(type) {
+    const info = TYPE_INFO[type];
+    if (!info) return '—';
+    return lang === 'en' ? info.labelEn : info.label;
+  }
+
+  function simulateShot(v0, thetaDeg, phiDeg, opts) {
+    opts = opts || {};
+    const keepTrace = !!opts.trace;
+    const keepCapture = !!opts.capture;
+    const captureStep = opts.captureStep || 10;
+    const theta = thetaDeg * Math.PI / 180;
+    const phi = phiDeg * Math.PI / 180;
+    const cosTheta = Math.cos(theta);
+
+    let px = state.contact.x;
+    let py = state.contact.y;
+    let pz = state.contact.z;
+    let vx = v0 * cosTheta * Math.sin(phi);
+    let vy = v0 * cosTheta * Math.cos(phi);
+    let vz = v0 * Math.sin(theta);
+    let t = 0;
+    let stepIndex = 0;
+    let crossedNet = false;
+    let netCross = null;
+    let maxZ = pz;
+    const trace = keepTrace ? [[px, py, pz, 0]] : null;
+    const capture = keepCapture ? [] : null;
+    const dt = AERO.dt;
+    const hw = halfWidth();
+
+    while (t < AERO.tMax) {
+      const speed = Math.hypot(vx, vy, vz);
+      const km = AERO.k * (0.5 + 0.3 / (1 + Math.pow(speed / 8, 2)));
+      vx += -km * speed * vx * dt;
+      vy += -km * speed * vy * dt;
+      vz += (-km * speed * vz - AERO.g) * dt;
+
+      const nx = px + vx * dt;
+      const ny = py + vy * dt;
+      const nz = pz + vz * dt;
+      const nt = t + dt;
+      stepIndex++;
+
+      if (pz > MAX_TRAJECTORY_Z || nz > MAX_TRAJECTORY_Z) return null;
+
+      if (!crossedNet && py < 0 && ny >= 0) {
+        const f = -py / (ny - py);
+        const ncx = px + (nx - px) * f;
+        const ncz = pz + (nz - pz) * f;
+        const nct = t + dt * f;
+        if (ncz < COURT.NET_H + state.params.minClear) return null;
+        crossedNet = true;
+        netCross = { x: ncx, y: 0, z: ncz, t: nct };
+        if (keepTrace) trace.push([ncx, 0, ncz, nct]);
+        if (keepCapture) capture.push({ x: ncx, y: 0, z: ncz, t: nct });
+      }
+
+      if (nz <= 0) {
+        if (!crossedNet) return null;
+        const f = pz / (pz - nz);
+        const rx = px + (nx - px) * f;
+        const ry = py + (ny - py) * f;
+        const rt = t + dt * f;
+        if (ry <= COURT.SAFE || ry > COURT.HL - COURT.SAFE || Math.abs(rx) > hw - COURT.SAFE) {
+          return null;
+        }
+        if (keepTrace) trace.push([rx, ry, 0, rt]);
+        if (keepCapture) capture.push({ x: rx, y: ry, z: 0, t: rt });
+        return {
+          valid: true,
+          v0,
+          theta: thetaDeg,
+          phi: phiDeg,
+          landing: { x: rx, y: ry, z: 0, t: rt },
+          net: netCross,
+          maxZ,
+          trace,
+          capture
+        };
+      }
+
+      if (crossedNet && keepCapture && stepIndex % captureStep === 0) {
+        capture.push({ x: nx, y: ny, z: nz, t: nt });
+      }
+      if (keepTrace && stepIndex % 24 === 0) {
+        trace.push([nx, ny, nz, nt]);
+      }
+
+      px = nx;
+      py = ny;
+      pz = nz;
+      t = nt;
+      if (pz > maxZ) maxZ = pz;
+    }
+    return null;
+  }
+
+  function classifyShot(shot) {
+    const depth = shot.landing.y;
+    const netClearance = shot.net.z - COURT.NET_H;
+    const maxZ = shot.maxZ;
+    if (netClearance >= 1.45 || maxZ >= 3.7) return 'clear';
+    if (depth <= 2.35) return 'drop';
+    if (shot.theta < 9 && netClearance < 1.05) return 'smash';
+    return 'drive';
+  }
+
+  function reachParams(t0, t1In) {
+    const t1 = Math.max(t1In, t0 + 0.05);
+    const l0 = Math.log(REACH.p0 / (REACH.pmax - REACH.p0));
+    const l1 = Math.log(REACH.p1 / (REACH.pmax - REACH.p1));
+    const k = (l1 - l0) / (t1 - t0);
+    const tMid = t0 - l0 / k;
+    return { t0, t1, k, tMid };
+  }
+
+  function reachProbability(tAvailable, rp) {
+    return REACH.pmax / (1 + Math.exp(-rp.k * (tAvailable - rp.tMid)));
+  }
+
+  function touchScale(type) {
+    if (type === 'smash') return 0.72;
+    if (type === 'drop') return 0.95;
+    return 1;
+  }
+
+  function opponentContext(index) {
+    const suffix = index === 0 ? 'a' : 'b';
+    return {
+      x: state.opponents[index].x,
+      y: state.opponents[index].y,
+      vx: state.opponents[index].vx || 0,
+      vy: state.opponents[index].vy || 0,
+      speed: state.params['speed' + suffix.toUpperCase()],
+      touch: state.params['touch' + suffix.toUpperCase()],
+      reaction: reachParams(
+        state.params['t0' + suffix],
+        state.params['t1' + suffix]
+      )
+    };
+  }
+
+  function runTimeToPoint(pos, point, type, ctx) {
+    const dx = point.x - pos.x;
+    const dy = point.y - pos.y;
+    const d = Math.hypot(dx, dy);
+    const touchRadius = ctx.touch * touchScale(type);
+    const runDistance = Math.max(0, d - touchRadius);
+    if (runDistance <= 0) return 0;
+
+    const ux = dx / d;
+    const uy = dy / d;
+    const lateralSpeed = ctx.speed * REACH.sideK;
+    const towardNetSpeed = ctx.speed * REACH.forwardK;
+    const backwardSpeed = ctx.speed / Math.max(1, state.params.k2);
+    const isTowardNet = point.y < pos.y;
+    const directionalSpeed = isTowardNet ? towardNetSpeed : backwardSpeed;
+    return runDistance * Math.hypot(ux / lateralSpeed, uy / directionalSpeed);
+  }
+
+  function interceptForOpponent(shot, oppIndex) {
+    const ctx = opponentContext(oppIndex);
+    const zMin = Math.min(state.params.zMin, state.params.zMax);
+    const zMax = Math.max(state.params.zMin, state.params.zMax);
+    const delta = TYPE_DELTA[shot.type] || 0;
+    const extra = shot.type === 'drop' ? 0.08 : 0;
+    let bestAvail = -Infinity;
+    let best = null;
+
+    const points = shot.capture || [];
+    for (let i = points.length - 1; i >= 0; i--) {
+      const p = points[i];
+      if (p.y < 0 || p.z < zMin || p.z > zMax) continue;
+      if (p.t <= bestAvail) break;
+      const leadTime = Math.min(ctx.reaction.t0, p.t);
+      const leadPos = {
+        x: clamp(ctx.x + ctx.vx * leadTime, -halfWidth() + 0.1, halfWidth() - 0.1),
+        y: clamp(ctx.y + ctx.vy * leadTime, 0.1, COURT.HL - 0.1)
+      };
+      const tau = runTimeToPoint(leadPos, p, shot.type, ctx);
+      const avail = p.t - tau;
+      if (avail > bestAvail) {
+        bestAvail = avail;
+        best = { x: p.x, y: p.y, z: p.z, t: p.t, tau, avail };
+      }
+    }
+
+    if (!best) {
+      return {
+        x: ctx.x,
+        y: ctx.y,
+        z: shot.landing.y,
+        point: shot.landing,
+        pHit: 0,
+        qRun: 0,
+        tau: Infinity,
+        tAvailable: -Infinity,
+        intercept: false
+      };
+    }
+
+    const tAvailable = bestAvail + delta + extra;
+    const reactionP = reachProbability(tAvailable, ctx.reaction);
+    const qRun = Math.exp(-REACH.lambdaRun * best.tau);
+    return {
+      x: best.x,
+      y: best.y,
+      z: best.z,
+      point: best,
+      pHit: reactionP * qRun,
+      reactionP,
+      qRun,
+      tau: best.tau,
+      tAvailable,
+      intercept: true
+    };
+  }
+
+  function smoothRamp(v, lo, hi) {
+    if (v <= lo) return 0;
+    if (v >= hi) return 1;
+    const u = (v - lo) / (hi - lo);
+    return u * u * (3 - 2 * u);
+  }
+
+  function returnQuality(type, landingY) {
+    const d = Math.max(0, landingY);
+    if (type === 'smash') return clamp(0.3 + 0.15 * (1 - smoothRamp(d, 1, 3)), 0, 1);
+    if (type === 'clear') return clamp(0.45 + 0.25 * clamp((d - 3) / 3, 0, 1), 0, 1);
+    if (type === 'drive') return clamp(0.32 + 0.22 * (1 - smoothRamp(d, 1, 4)), 0, 1);
+    return clamp(0.3 + 0.2 * (1 - smoothRamp(d, 1, 3)), 0, 1);
+  }
+
+  function enrichCandidate(base) {
+    const shot = simulateShot(base.v0, base.theta, base.phi, { trace: true, capture: true });
+    if (!shot) return null;
+    shot.type = classifyShot(shot);
+    const oppStats = activeOpponents().map((_, index) => interceptForOpponent(shot, index));
+    let pHit;
+    if (oppStats.length === 1) {
+      pHit = oppStats[0].pHit;
+    } else {
+      pHit = 1 - (1 - oppStats[0].pHit) * (1 - oppStats[1].pHit);
+    }
+    const qReturn = returnQuality(shot.type, shot.landing.y);
+    const eAttack = 1 - pHit * qReturn;
+    return {
+      ...shot,
+      oppStats,
+      pHit,
+      pMiss: 1 - pHit,
+      qReturn,
+      eAttack,
+      netMargin: shot.net.z - COURT.NET_H
+    };
+  }
+
+  function targetAzimuths(fast) {
+    const hw = halfWidth();
+    const angles = [];
+    const addLine = (y, count, margin) => {
+      for (let i = 0; i <= count; i++) {
+        const x = -hw - margin + (2 * hw + 2 * margin) * i / count;
+        const phi = Math.atan2(x - state.contact.x, y - state.contact.y) * 180 / Math.PI;
+        if (Math.abs(phi) <= 82) angles.push(phi);
+      }
+    };
+    addLine(COURT.HL - 0.12, fast ? 12 : 18, 0.45);
+    addLine(1.15, fast ? 8 : 12, 0.25);
+    angles.push(0);
+    angles.sort((a, b) => a - b);
+    const unique = [];
+    for (const a of angles) {
+      if (!unique.length || Math.abs(a - unique[unique.length - 1]) > 0.22) unique.push(a);
+    }
+    return unique;
+  }
+
+  function speedSamples(maxSpeed, fast) {
+    const ratios = fast
+      ? [0.1, 0.18, 0.3, 0.46, 0.67, 0.86, 1]
+      : [0.07, 0.11, 0.16, 0.23, 0.31, 0.41, 0.53, 0.67, 0.82, 1];
+    const values = [];
+    for (const r of ratios) {
+      const v = Math.max(3, maxSpeed * r);
+      if (!values.length || Math.abs(v - values[values.length - 1]) > 0.15) values.push(v);
+    }
+    return values;
+  }
+
+  function dedupeKey(shot) {
+    return [
+      shot.type,
+      Math.round(shot.landing.x / 0.14),
+      Math.round(shot.landing.y / 0.14),
+      Math.round(shot.theta / 3.5),
+      Math.round(shot.v0 / 7)
+    ].join('|');
+  }
+
+  function generateCandidates(fast) {
+    const azims = targetAzimuths(fast);
+    const speeds = speedSamples(state.params.speedMax, fast);
+    const thetaStep = fast ? 1.55 : 0.7;
+    const seen = new Set();
+    const baseCandidates = [];
+
+    for (const phi of azims) {
+      const cosPhi = Math.cos(phi * Math.PI / 180);
+      if (cosPhi <= 0.08) continue;
+      const distanceToNet = -state.contact.y / cosPhi;
+      const nominal = Math.atan2(
+        COURT.NET_H + state.params.minClear - state.contact.z,
+        Math.max(0.05, distanceToNet)
+      ) * 180 / Math.PI;
+      const start = Math.max(-80, nominal);
+      const count = Math.max(1, Math.ceil((state.params.thetaMax - start) / thetaStep));
+
+      for (let ti = 0; ti <= count; ti++) {
+        const theta = ti === count
+          ? state.params.thetaMax
+          : Math.min(state.params.thetaMax, start + ti * thetaStep);
+        for (const v0 of speeds) {
+          const shot = simulateShot(v0, theta, phi, {});
+          if (!shot) continue;
+          shot.type = classifyShot(shot);
+          const key = dedupeKey(shot);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          baseCandidates.push({
+            v0,
+            theta,
+            phi,
+            type: shot.type,
+            landing: shot.landing,
+            net: shot.net,
+            maxZ: shot.maxZ
+          });
+        }
+      }
+    }
+    return baseCandidates;
+  }
+
+  function performSolve(fast) {
+    const started = performance.now();
+    const base = generateCandidates(fast);
+    const candidates = [];
+    for (const item of base) {
+      const enriched = enrichCandidate(item);
+      if (enriched) candidates.push(enriched);
+    }
+    candidates.sort((a, b) => {
+      if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
+      if (Math.abs(a.eAttack - b.eAttack) > 1e-9) return b.eAttack - a.eAttack;
+      return b.netMargin - a.netMargin;
+    });
+
+    state.legalCount = candidates.length;
+    state.maxTop = candidates.length
+      ? Math.max(1, Math.min(candidates.length, Math.round(candidates.length * 0.2)))
+      : 1;
+    state.defaultTop = candidates.length
+      ? Math.max(1, Math.min(state.maxTop, Math.round(candidates.length * 0.01)))
+      : 1;
+    state.topN = state.defaultTop;
+    state.paths = candidates.slice(0, state.maxTop).map((path, index) => ({
+      ...path,
+      rank: index + 1,
+      score: state.maxTop + 1 - (index + 1)
+    }));
+    state.heatMaxPHit = state.paths.length
+      ? Math.max(1e-6, state.paths[state.paths.length - 1].pHit)
+      : 1;
+    state.selectedRank = 1;
+    state.lastSolveMs = Math.round(performance.now() - started);
+    state.heatDirty = true;
+    state.busy = false;
+    setBusy(false);
+    clampSelection();
+    updateAllText();
+    scheduleDraw();
+    if (state.heatOn && state.heatDirty) {
+      buildMainHeat();
+      state.heatDirty = false;
+    }
+    drawMain();
+    drawSide();
+  }
+
+  function requestSolve(fast, delay) {
+    clearTimeout(solveTimer);
+    pendingFast = !!fast;
+    const seq = ++solveSequence;
+    state.busy = true;
+    setBusy(true, fast);
+    solveTimer = window.setTimeout(() => {
+      if (seq !== solveSequence) return;
+      window.requestAnimationFrame(() => {
+        if (seq !== solveSequence) return;
+        performSolve(pendingFast);
+      });
+    }, delay == null ? 25 : delay);
+  }
+
+  function setBusy(on, fast) {
+    els.busyBadge.classList.toggle('is-visible', on);
+    els.busyBadge.textContent = fast
+      ? L('快速预览 · 计算球路…', 'Fast preview · solving…')
+      : L('完整计算 · 生成合法球路…', 'Full solve · generating shots…');
+    els.statusDot.classList.toggle('is-busy', on);
+    if (!on) updateStatus();
+  }
+
+  function updateStatus() {
+    if (!state.paths.length) {
+      els.statusText.innerHTML = L(
+        '<strong>无合法球路</strong> · 请调整击球点、速度上限或角度',
+        '<strong>No legal shots</strong> · adjust contact point, speed limit or angles'
+      );
+      return;
+    }
+    const shown = Math.min(state.topN, visiblePaths().length);
+    els.statusText.innerHTML =
+      L(
+        `<strong>${state.legalCount.toLocaleString('zh-CN')}</strong> 条合法候选 · 显示 <strong>${shown}</strong> 条`,
+        `<strong>${state.legalCount.toLocaleString('en-US')}</strong> legal candidates · showing <strong>${shown}</strong>`
+      );
+  }
+
+  function getSelectedPath() {
+    if (!state.paths.length) return null;
+    const path = state.paths[clamp(state.selectedRank - 1, 0, state.paths.length - 1)] || null;
+    if (path && state.filter !== 'all' && path.type !== state.filter) return null;
+    return path;
+  }
+
+  function visiblePaths() {
+    const top = state.paths.slice(0, Math.min(state.topN, state.paths.length));
+    return state.filter === 'all' ? top : top.filter((p) => p.type === state.filter);
+  }
+
+  function clampSelection() {
+    const maxRank = Math.max(1, Math.min(state.topN, state.paths.length));
+    state.selectedRank = clamp(state.selectedRank, 1, maxRank);
+    const shown = visiblePaths();
+    if (shown.length && !shown.some((p) => p.rank === state.selectedRank)) {
+      let nearest = shown[0];
+      let nearestDistance = Math.abs(nearest.rank - state.selectedRank);
+      for (const path of shown) {
+        const distance = Math.abs(path.rank - state.selectedRank);
+        if (distance < nearestDistance) {
+          nearest = path;
+          nearestDistance = distance;
+        }
+      }
+      state.selectedRank = nearest.rank;
+    }
+  }
+
+  function selectRank(rank) {
+    const maxRank = Math.max(1, Math.min(state.topN, state.paths.length));
+    state.selectedRank = clamp(rank, 1, maxRank);
+    clampSelection();
+    updateAllText();
+    scheduleDraw();
+  }
+
+  function resetTopDefault() {
+    state.topN = state.defaultTop;
+    state.selectedRank = 1;
+    state.heatDirty = true;
+    clampSelection();
+    updateAllText();
+    scheduleDraw();
+  }
+
+  function elevationText(deg) {
+    if (deg > 0.5) return '+' + fmt(deg, 1) + L('° 上仰', '° upward');
+    if (deg < -0.5) return fmt(deg, 1) + L('° 下压', '° downward');
+    return L('0° 水平', '0° level');
+  }
+
+  function azimuthText(deg) {
+    if (deg > 0.5) return '+' + fmt(deg, 1) + L('° 右', '° right');
+    if (deg < -0.5) return fmt(deg, 1) + L('° 左', '° left');
+    return L('0° 中路', '0° center');
+  }
+
+  function paintPillTint(el, level, rgb) {
+    const k = clamp(level, 0, 1);
+    el.style.background = `rgba(${rgb},${0.10 + 0.52 * k})`;
+    el.style.borderColor = `rgba(${rgb},${0.20 + 0.32 * k})`;
+    el.style.color = k > 0.48 ? '#ffffff' : `rgb(${rgb})`;
+    const value = el.querySelector('strong');
+    if (value) value.style.color = 'inherit';
+  }
+
+  function updateBubbleTints(path) {
+    const rankLevel = path
+      ? 1 - clamp((path.rank - 1) / Math.max(1, state.topN - 1), 0, 1)
+      : 0;
+    paintPillTint(els.rankPill, rankLevel, '108,60,225');
+
+    const topLevel = state.maxTop > 1
+      ? clamp((state.topN - 1) / (state.maxTop - 1), 0, 1)
+      : 1;
+    paintPillTint(els.topPill, topLevel, '108,60,225');
+
+    const heightLevel = clamp((state.contact.z - 0.8) / 2.7, 0, 1);
+    const heightRgb = heightLevel < 0.5 ? '192,57,43' : '31,111,139';
+    els.heightPill.style.background = `rgba(${heightRgb},${0.12 + 0.22 * heightLevel})`;
+    els.heightPill.style.borderColor = `rgba(${heightRgb},${0.28 + 0.28 * heightLevel})`;
+    els.heightPill.style.color = heightLevel > 0.6 ? '#1f6f8b' : `rgb(${heightRgb})`;
+    els.heightValue.style.color = 'inherit';
+  }
+
+  function updateAllText() {
+    els.topNValue.textContent = String(state.topN);
+    const path = getSelectedPath();
+    updateBubbleTints(path);
+    els.rankScore.textContent = path ? String(path.rank) : '—';
+    els.rankLabel.textContent = path ? String(path.rank) : '—';
+    const setPositionDetails = () => {
+      els.chipContact.textContent =
+        `${fmt(state.contact.x, 2)}, ${fmt(state.contact.y, 2)}, ${fmt(state.contact.z, 2)} m`;
+      els.chipOppA.textContent = `${fmt(state.opponents[0].x, 2)}, ${fmt(state.opponents[0].y, 2)} m`;
+      els.chipOppB.textContent = state.mode === 'single'
+        ? L('单打无 B', 'No B in singles')
+        : `${fmt(state.opponents[1].x, 2)}, ${fmt(state.opponents[1].y, 2)} m`;
+    };
+
+    if (!path) {
+      if (state.paths.length) {
+        const filterLabel = TYPE_INFO[state.filter] ? typeLabel(state.filter) : L('所选类型', 'selected type');
+        els.routeTitle.textContent = L(
+          `Top ${Math.min(state.topN, state.paths.length)} 中暂无${filterLabel}球路`,
+          `No ${filterLabel} shot in Top ${Math.min(state.topN, state.paths.length)}`
+        );
+        els.routeSubtitle.textContent = L(
+          '提高右侧 Top 数值，或切换到“全部”继续浏览',
+          'Increase Top or switch to All to continue'
+        );
+      } else {
+        els.routeTitle.textContent = L('暂无合法球路', 'No legal shots');
+        els.routeSubtitle.textContent = L(
+          '当前击球高度、角度或速度限制无法产生过网且不出界的轨迹',
+          'Current height, angle or speed limits produce no in-court shot that clears the net'
+        );
+      }
+      ['metricHit', 'metricMiss', 'metricExpected', 'chipContact', 'chipSpeed',
+        'chipElevation', 'chipAzimuth', 'chipVelocity', 'chipNet', 'chipLanding', 'chipTime',
+        'chipInterceptA', 'chipInterceptB'].forEach((key) => {
+        els[key].textContent = '—';
+      });
+      setPositionDetails();
+      els.hitPill.textContent = L('接球 —', 'Reach —');
+      els.typePill.textContent = '—';
+      els.typePill.className = 'seg seg-kill';
+      updateStatus();
+      return;
+    }
+
+    const typeName = typeLabel(path.type);
+    els.typeDot.style.background = categoryColor(path.type);
+    els.routeTitle.textContent = L(
+      `优劣 ${path.rank} · ${typeName}球路`,
+      `Rank ${path.rank} · ${typeName}`
+    );
+    const splitHit = path.oppStats.map((stat, index) =>
+      `${index === 0 ? 'A' : 'B'} ${pct(stat.pHit)}`
+    ).join(' / ');
+    els.routeSubtitle.textContent = L(
+      `按接球概率从低到高 · 当前 Top ${state.topN} / 可调至 ${state.maxTop} · ${splitHit}`,
+      `Sorted by opponent reach · Top ${state.topN} / max ${state.maxTop} · ${splitHit}`
+    );
+    els.metricHit.textContent = pct(path.pHit);
+    els.hitPill.textContent = L(`接球 ${pct(path.pHit)}`, `Reach ${pct(path.pHit)}`);
+    els.typePill.textContent = typeName;
+    const typeSeg = path.type === 'smash' ? 'kill'
+      : path.type === 'clear' ? 'clear'
+        : path.type === 'drop' ? 'drop' : 'drive';
+    els.typePill.className = `seg seg-${typeSeg}`;
+    els.metricMiss.textContent = pct(path.pMiss);
+    els.metricExpected.textContent = pct(path.eAttack);
+    setPositionDetails();
+    els.chipSpeed.textContent = `${fmt(path.v0, 1)} m/s`;
+    els.chipElevation.textContent = elevationText(path.theta);
+    els.chipAzimuth.textContent = azimuthText(path.phi);
+    const thetaRad = path.theta * Math.PI / 180;
+    const phiRad = path.phi * Math.PI / 180;
+    const vx = path.v0 * Math.cos(thetaRad) * Math.sin(phiRad);
+    const vy = path.v0 * Math.cos(thetaRad) * Math.cos(phiRad);
+    const vz = path.v0 * Math.sin(thetaRad);
+    els.chipVelocity.textContent =
+      `${fmt(vx, 1)} / ${fmt(vy, 1)} / ${fmt(vz, 1)} m/s`;
+    els.chipNet.textContent = `${fmt(path.net.z, 2)} m`;
+    els.chipLanding.textContent = `${fmt(path.landing.x, 2)}, ${fmt(path.landing.y, 2)} m`;
+    els.chipTime.textContent = `${fmt(path.landing.t, 2)} s`;
+    const interceptText = (stat) => stat && stat.intercept
+      ? `${fmt(stat.x, 2)}, ${fmt(stat.y, 2)}, ${fmt(stat.z, 2)} m`
+      : L('无法空中截击', 'No air intercept');
+    els.chipInterceptA.textContent = interceptText(path.oppStats[0]);
+    els.chipInterceptB.textContent = path.oppStats[1]
+      ? interceptText(path.oppStats[1])
+      : L('单打无 B', 'No B in singles');
+
+    els.liveStatus.textContent =
+      L(
+        `当前优劣 ${path.rank}，${typeName}，初速度 ${fmt(path.v0, 1)} 米每秒，接球概率 ${pct(path.pHit)}，接不到概率 ${pct(path.pMiss)}。`,
+        `Current rank ${path.rank}, ${typeName}, initial speed ${fmt(path.v0, 1)} meters per second, reach probability ${pct(path.pHit)}, miss probability ${pct(path.pMiss)}.`
+      );
+    updateStatus();
+  }
+
+  function updateParamsUI() {
+    for (const input of document.querySelectorAll('[data-param]')) {
+      const key = input.dataset.param;
+      const value = key === 'contactHeight' ? state.contact.z : state.params[key];
+      if (document.activeElement !== input) input.value = value;
+      const output = $(input.id + 'Value');
+      if (output) {
+        let text;
+        if (key === 'contactHeight' || key === 'minClear' || key === 'touchA' || key === 'touchB' ||
+            key === 'zMin' || key === 'zMax') {
+          text = fmt(value, 2) + ' m';
+        } else if (key === 'speedMax' || key === 'speedA' || key === 'speedB') {
+          text = fmt(value, value % 1 ? 1 : 0) + ' m/s';
+        } else if (key === 'thetaMax') {
+          text = fmt(value, 0) + '°';
+        } else if (key === 't0a' || key === 't1a' || key === 't0b' || key === 't1b') {
+          text = fmt(value, 2) + ' s';
+        } else if (key === 'heatOpacity') {
+          text = Math.round(value * 100) + '%';
+        } else {
+          text = fmt(value, 2);
+        }
+        output.textContent = text;
+      }
+    }
+    els.heightValue.textContent = fmt(state.contact.z, 2) + 'm';
+  }
+
+  function applyLanguage() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = t('title');
+    els.pageTitle.textContent = t('title');
+    els.pageSub.textContent = t('subtitle');
+    els.footerText.textContent = t('footer');
+    els.langBtn.textContent = lang === 'zh' ? 'EN' : '中';
+    els.modeToggle.textContent = state.mode === 'single' ? t('singles') : t('doubles');
+    els.paramsTitle.textContent = t('paramsTitle');
+    document.querySelector('.params-head p').textContent = t('paramsDesc');
+    document.querySelector('.param-help').textContent = t('paramHelp');
+    els.paramsReset.textContent = t('resetParams');
+    els.paramsDone.textContent = t('done');
+    els.principleTitle.textContent = t('methodTitle');
+    els.principleBody.innerHTML = t('method');
+
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.dataset.i18n);
+    });
+
+    const sectionKeys = ['ability', 'opponentASection', 'opponentBSection', 'interceptDisplay'];
+    document.querySelectorAll('.param-section h3').forEach((el, index) => {
+      if (sectionKeys[index]) el.textContent = t(sectionKeys[index]);
+    });
+
+    const labelKeys = {
+      contactHeight: 'contactHeightParam',
+      speedMax: 'maxSpeed',
+      thetaMax: 'maxElevation',
+      minClear: 'minNetClear',
+      t0a: 'reactionLow',
+      t1a: 'reactionHigh',
+      speedA: 'runSpeed',
+      touchA: 'touchRadius',
+      t0b: 'reactionLow',
+      t1b: 'reactionHigh',
+      speedB: 'runSpeed',
+      touchB: 'touchRadius',
+      zMin: 'zMin',
+      zMax: 'zMax',
+      k2: 'k2',
+      heatOpacity: 'heatOpacity'
+    };
+    document.querySelectorAll('.param-item label[for]').forEach((label) => {
+      const key = labelKeys[label.htmlFor];
+      if (key) label.textContent = t(key);
+    });
+
+    els.paramsBtn.setAttribute('aria-label', t('paramsTitle'));
+    els.paramsClose.setAttribute('aria-label', L('关闭参数面板', 'Close parameter panel'));
+    els.principleClose.setAttribute('aria-label', L('关闭', 'Close'));
+    els.rankPill.title = L('向上拖动增加数字，向下拖动减小数字；双击恢复优劣 1', 'Drag up to increase, down to decrease; double-click to reset Rank 1');
+    els.topPill.title = L('向上拖动增加显示数量，向下拖动减小显示数量；双击恢复默认值', 'Drag up to increase, down to decrease; double-click for default Top');
+    els.heightPill.title = L('向上拖动增加击球高度，向下拖动减小击球高度', 'Drag up to increase contact height, down to decrease');
+    els.heatLegend.setAttribute('aria-label', L('热力图标识：红色为优，蓝色为劣', 'Heatmap legend: red is good, blue is poor'));
+    els.mainCanvas.setAttribute('aria-label', L(
+      '羽毛球场俯视图，显示我方击球点、对手位置和 Top N 出球轨迹',
+      'Top view of the badminton court showing contact point, opponents and top trajectories'
+    ));
+    els.sideCanvas.setAttribute('aria-label', L(
+      '球场长度与高度侧视图，显示球路、球网和对手截击点',
+      'Side view of court length and height showing trajectories, net and intercept points'
+    ));
+    els.collapseBtn.setAttribute('aria-label', L('隐藏或展开标题栏', 'Hide or show header'));
+
+    updateParamsUI();
+    updateAllText();
+    updateStatus();
+    scheduleDraw();
+  }
+
+  function setMode(mode) {
+    if (state.mode === mode) return;
+    state.mode = mode;
+    const isSingle = mode === 'single';
+    if (isSingle) {
+      const hw = COURT.SINGLES_HW - 0.12;
+      state.contact.x = clamp(state.contact.x, -hw, hw);
+      state.opponents[0].x = clamp(state.opponents[0].x, -hw, hw);
+    }
+    els.modeToggle.dataset.mode = isSingle ? 'single' : 'double';
+    els.modeToggle.textContent = isSingle ? t('singles') : t('doubles');
+    els.modeToggle.setAttribute('aria-pressed', String(isSingle));
+    requestSolve(false, 10);
+  }
+
+  function setHeat(on) {
+    state.heatOn = !!on;
+    state.heatDirty = true;
+    els.heatLegend.classList.toggle('hidden', !state.heatOn);
+    updateAllText();
+    scheduleDraw();
+  }
+
+  function resetAll() {
+    state.mode = 'double';
+    state.contact = { x: 0, y: -2.8, z: DEFAULTS.contactHeight };
+    state.opponents = [
+      { x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false },
+      { x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false }
+    ];
+    state.params = { ...DEFAULTS };
+    state.topN = 1;
+    state.maxTop = 1;
+    state.defaultTop = 1;
+    state.filter = 'all';
+    state.heatOn = false;
+    state.selectedRank = 1;
+    state.heatDirty = true;
+    els.modeToggle.dataset.mode = 'double';
+    els.modeToggle.textContent = t('doubles');
+    els.modeToggle.setAttribute('aria-pressed', 'false');
+    els.heatLegend.classList.add('hidden');
+    document.querySelectorAll('.filter-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.filter === 'all');
+    });
+    updateParamsUI();
+    requestSolve(false, 10);
+  }
+
+  function mainLayout() {
+    const w = Math.max(120, mainCanvas.clientWidth);
+    const h = Math.max(120, mainCanvas.clientHeight);
+    const padX = Math.max(28, Math.min(64, w * 0.11));
+    const padY = 26;
+    const scale = Math.min(
+      (w - padX * 2) / COURT.W,
+      (h - padY * 2) / COURT.L
+    );
+    mainView.w = w;
+    mainView.h = h;
+    mainView.scale = scale;
+    mainView.left = (w - COURT.W * scale) / 2;
+    mainView.top = (h - COURT.L * scale) / 2;
+  }
+
+  function sideLayout() {
+    const w = Math.max(160, sideCanvas.clientWidth);
+    const h = Math.max(160, sideCanvas.clientHeight);
+    const padL = 16;
+    const scale = mainView.scale;
+    sideView.w = w;
+    sideView.h = h;
+    sideView.left = padL;
+    sideView.top = mainView.top;
+    sideView.scaleY = scale;
+    sideView.scaleZ = scale;
+  }
+
+  function w2m(x, y) {
+    return {
+      x: mainView.left + (x + COURT.HW) * mainView.scale,
+      y: mainView.top + (COURT.HL - y) * mainView.scale
+    };
+  }
+
+  function m2w(x, y) {
+    return {
+      x: (x - mainView.left) / mainView.scale - COURT.HW,
+      y: COURT.HL - (y - mainView.top) / mainView.scale
+    };
+  }
+
+  function displayJitterPoint(path, x, y) {
+    const noise = Math.sin(path.rank * 12.9898 + path.phi * 37.719 + path.theta * 1.337);
+    const jitterDeg = noise * 0.35;
+    const angle = jitterDeg * Math.PI / 180;
+    const dx = x - state.contact.x;
+    const dy = y - state.contact.y;
+    return {
+      x: state.contact.x + dx * Math.cos(angle) - dy * Math.sin(angle),
+      y: state.contact.y + dx * Math.sin(angle) + dy * Math.cos(angle)
+    };
+  }
+
+  function sidePoint(y, z) {
+    return {
+      x: sideView.left + z * sideView.scaleZ,
+      y: sideView.top + (COURT.HL - y) * sideView.scaleY
+    };
+  }
+
+  function resizeCanvases() {
+    const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+    for (const canvas of [mainCanvas, sideCanvas]) {
+      const w = Math.max(1, Math.floor(canvas.clientWidth));
+      const h = Math.max(1, Math.floor(canvas.clientHeight));
+      const cw = Math.round(w * dpr);
+      const ch = Math.round(h * dpr);
+      if (canvas.width !== cw || canvas.height !== ch) {
+        canvas.width = cw;
+        canvas.height = ch;
+      }
+    }
+    mainLayout();
+    sideLayout();
+    state.heatDirty = true;
+    scheduleDraw();
+  }
+
+  function courtRect() {
+    const tl = w2m(-COURT.HW, COURT.HL);
+    const br = w2m(COURT.HW, -COURT.HL);
+    return { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y };
+  }
+
+  function drawCourt() {
+    const ctx = mainCtx;
+    const rect = courtRect();
+    const ink = cssColor('--ink');
+    const muted = cssColor('--muted');
+    const frame = cssColor('--court-frame');
+    const line = cssColor('--court-line');
+
+    ctx.save();
+    ctx.fillStyle = cssColor('--court');
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
+    const oppTop = w2m(-COURT.HW, COURT.HL);
+    const net = w2m(COURT.HW, 0);
+    ctx.fillStyle = cssColor('--court-opponent');
+    ctx.fillRect(rect.x, oppTop.y, rect.w, net.y - oppTop.y);
+
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.68;
+    const hLines = [COURT.HL, COURT.HL - COURT.LONG_SERVICE, COURT.SHORT_SERVICE,
+      -COURT.SHORT_SERVICE, -(COURT.HL - COURT.LONG_SERVICE), -COURT.HL];
+    for (const y of hLines) {
+      const a = w2m(-COURT.HW, y);
+      const b = w2m(COURT.HW, y);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    const vLines = [-COURT.HW, -COURT.SINGLES_HW, COURT.SINGLES_HW, COURT.HW];
+    for (const x of vLines) {
+      const a = w2m(x, -COURT.HL);
+      const b = w2m(x, COURT.HL);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    for (const side of [-1, 1]) {
+      const a = w2m(0, side * COURT.SHORT_SERVICE);
+      const b = w2m(0, side * COURT.HL);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = frame;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+    const netA = w2m(-COURT.HW, 0);
+    const netB = w2m(COURT.HW, 0);
+    ctx.strokeStyle = cssColor('--net');
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(netA.x, netA.y);
+    ctx.lineTo(netB.x, netB.y);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    ctx.font = '600 11px ' + cssColor('--font').replace(/"/g, '');
+    ctx.fillStyle = muted;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(L('我方', 'Us'), rect.x + 4, rect.y + rect.h - 12);
+    ctx.fillText(L('对手', 'Opponent'), rect.x + 4, rect.y + 12);
+    ctx.textAlign = 'right';
+    ctx.fillText(L('球网', 'Net'), rect.x + rect.w - 4, netA.y - 10);
+    ctx.restore();
+  }
+
+  function drawLinePath(ctx, path, mapFn, color, width, alpha, blurPx) {
+    if (!path.trace || path.trace.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.filter = blurPx ? `blur(${blurPx}px)` : 'none';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < path.trace.length; i++) {
+      const p = path.trace[i];
+      const q = mapFn(p[0], p[1], p[2]);
+      if (i === 0) ctx.moveTo(q.x, q.y);
+      else ctx.lineTo(q.x, q.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTrajectories() {
+    const ctx = mainCtx;
+    const selected = getSelectedPath();
+    const shown = state.heatOn
+      ? (selected ? [selected] : [])
+      : visiblePaths();
+    for (let i = shown.length - 1; i >= 0; i--) {
+      const path = shown[i];
+      if (selected && path.rank === selected.rank) continue;
+      const topNth = shown.length - i;
+      if (topNth <= 250) {
+        drawLinePath(
+          ctx,
+          path,
+          (x, y) => {
+            const p = displayJitterPoint(path, x, y);
+            return w2m(p.x, p.y);
+          },
+          categoryColor(path.type),
+          shown.length > 180 ? 4.2 : 5.6,
+          shown.length > 180 ? 0.03 : 0.055,
+          shown.length > 180 ? 3.2 : 4.6
+        );
+      }
+    }
+    for (let i = shown.length - 1; i >= 0; i--) {
+      const path = shown[i];
+      if (selected && path.rank === selected.rank) continue;
+      const alpha = shown.length > 500
+        ? 0.018
+        : shown.length > 180 ? 0.035 : 0.055;
+      const width = shown.length > 500 ? 0.6 : shown.length > 180 ? 0.75 : 0.95;
+      const blur = shown.length > 500 ? 1.1 : shown.length > 180 ? 0.85 : 0.45;
+      drawLinePath(
+        ctx,
+        path,
+        (x, y) => {
+          const p = displayJitterPoint(path, x, y);
+          return w2m(p.x, p.y);
+        },
+        categoryColor(path.type),
+        width,
+        alpha,
+        blur
+      );
+    }
+  }
+
+  function drawSelectedTrajectoryMain() {
+    const selected = getSelectedPath();
+    if (!selected) return;
+    const ctx = mainCtx;
+    ctx.save();
+    drawLinePath(ctx, selected, (x, y) => w2m(x, y), cssColor('--gold'), 3.2, 1, 0);
+    for (const stat of selected.oppStats) {
+      if (!stat || !stat.intercept) continue;
+      const p = w2m(stat.x, stat.y);
+      ctx.beginPath();
+      ctx.fillStyle = cssColor('--surface');
+      ctx.strokeStyle = cssColor('--gold');
+      ctx.lineWidth = 1.8;
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function colorWithAlpha(color, alpha) {
+    const c = String(color).trim();
+    if (c.startsWith('#')) {
+      const hex = c.slice(1);
+      const full = hex.length === 3 ? hex.split('').map((x) => x + x).join('') : hex;
+      const r = parseInt(full.slice(0, 2), 16);
+      const g = parseInt(full.slice(2, 4), 16);
+      const b = parseInt(full.slice(4, 6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    if (c.startsWith('rgb(')) return c.replace('rgb(', 'rgba(').replace(')', `,${alpha})`);
+    return c;
+  }
+
+  function drawSideTrajectories() {
+    const ctx = sideCtx;
+    const shown = visiblePaths();
+    const selected = getSelectedPath();
+    for (let i = shown.length - 1; i >= 0; i--) {
+      const path = shown[i];
+      if (selected && path.rank === selected.rank) continue;
+      const topNth = shown.length - i;
+      if (topNth <= 250) {
+        drawLinePath(
+          ctx,
+          path,
+          (x, y, z) => {
+            const p = displayJitterPoint(path, x, y);
+            return sidePoint(p.y, z);
+          },
+          categoryColor(path.type),
+          shown.length > 180 ? 1.7 : 2.2,
+          shown.length > 180 ? 0.012 : 0.02,
+          shown.length > 180 ? 1.2 : 1.7
+        );
+      }
+    }
+    for (let i = shown.length - 1; i >= 0; i--) {
+      const path = shown[i];
+      if (selected && path.rank === selected.rank) continue;
+      const alpha = shown.length > 500
+        ? 0.018
+        : shown.length > 180 ? 0.035 : 0.055;
+      const width = shown.length > 500 ? 0.6 : shown.length > 180 ? 0.75 : 0.95;
+      const blur = shown.length > 500 ? 1.1 : shown.length > 180 ? 0.85 : 0.45;
+      drawLinePath(
+        ctx,
+        path,
+        (x, y, z) => {
+          const p = displayJitterPoint(path, x, y);
+          return sidePoint(p.y, z);
+        },
+        categoryColor(path.type),
+        width,
+        alpha,
+        blur
+      );
+    }
+  }
+
+  function drawSelectedTrajectorySide() {
+    const selected = getSelectedPath();
+    if (!selected) return;
+    const ctx = sideCtx;
+    ctx.save();
+    drawLinePath(ctx, selected, (x, y, z) => sidePoint(y, z), cssColor('--gold'), 3.2, 1, 0);
+    for (const stat of selected.oppStats) {
+      if (!stat || !stat.intercept) continue;
+      const p = sidePoint(stat.y, stat.z);
+      ctx.beginPath();
+      ctx.fillStyle = cssColor('--surface');
+      ctx.strokeStyle = cssColor('--gold');
+      ctx.lineWidth = 1.8;
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPathEndpointsMain() {
+    const ctx = mainCtx;
+    const shown = visiblePaths();
+    const selected = getSelectedPath();
+    ctx.save();
+    for (const path of shown) {
+      const isSelected = selected && selected.rank === path.rank;
+      const color = isSelected ? cssColor('--gold') : categoryColor(path.type);
+      ctx.globalAlpha = state.heatOn
+        ? (shown.length > 180 ? 0.055 : 0.09)
+        : (isSelected ? 0.82 : (shown.length > 180 ? 0.18 : 0.28));
+      ctx.fillStyle = color;
+      for (const stat of path.oppStats) {
+        if (!stat || !stat.intercept) continue;
+        if (isSelected) continue;
+        const p = w2m(stat.x, stat.y);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawPathEndpointsSide() {
+    const ctx = sideCtx;
+    const shown = visiblePaths();
+    const selected = getSelectedPath();
+    ctx.save();
+    for (const path of shown) {
+      const isSelected = selected && selected.rank === path.rank;
+      const color = isSelected ? cssColor('--gold') : categoryColor(path.type);
+      ctx.globalAlpha = isSelected ? 0.82 : (shown.length > 180 ? 0.18 : 0.28);
+      ctx.fillStyle = color;
+      for (const stat of path.oppStats) {
+        if (!stat || !stat.intercept) continue;
+        if (isSelected) continue;
+        const p = sidePoint(stat.y, stat.z);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  const VELOCITY_UI = Object.freeze({
+    max: 6,
+    deadzone: 0.55,
+    scale: 0.2,
+    gamma: 3,
+    color: '#1e88e5',
+    glow: 'rgba(30,136,229,.16)'
+  });
+
+  function opponentHandleScreen(index) {
+    const opp = state.opponents[index];
+    const center = w2m(opp.x, opp.y);
+    const speed = Math.hypot(opp.vx || 0, opp.vy || 0);
+    if (speed < 0.01) {
+      return { x: center.x, y: center.y + VELOCITY_UI.deadzone * mainView.scale };
+    }
+    const norm = Math.pow(Math.min(speed / VELOCITY_UI.max, 1), 1 / VELOCITY_UI.gamma);
+    const dist = (VELOCITY_UI.deadzone + norm * VELOCITY_UI.max * VELOCITY_UI.scale) * mainView.scale;
+    const screenLength = Math.hypot(opp.vx, -opp.vy);
+    return {
+      x: center.x + opp.vx / screenLength * dist,
+      y: center.y - opp.vy / screenLength * dist
+    };
+  }
+
+  function updateOpponentVelocity(index, w) {
+    const opp = state.opponents[index];
+    const nx = clamp(w.x, -halfWidth() + 0.1, halfWidth() - 0.1);
+    const ny = clamp(w.y, 0.15, COURT.HL - 0.1);
+    const dx = nx - opp.x;
+    const dy = ny - opp.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance <= VELOCITY_UI.deadzone) {
+      opp.vx = 0;
+      opp.vy = 0;
+      return;
+    }
+    const norm = clamp(
+      (distance - VELOCITY_UI.deadzone) / (VELOCITY_UI.max * VELOCITY_UI.scale),
+      0,
+      1
+    );
+    const speed = VELOCITY_UI.max * Math.pow(norm, VELOCITY_UI.gamma);
+    opp.vx = dx / distance * speed;
+    opp.vy = dy / distance * speed;
+  }
+
+  function toggleOpponentVelocity(index) {
+    const opp = state.opponents[index];
+    opp.velVisible = !opp.velVisible;
+    if (!opp.velVisible) {
+      opp.vx = 0;
+      opp.vy = 0;
+      requestSolve(false, 40);
+    } else {
+      scheduleDraw();
+    }
+  }
+
+  function drawVelocityHandles() {
+    const ctx = mainCtx;
+    const speedLabelFont = '700 10px ' + cssColor('--font').replace(/"/g, '');
+    activeOpponents().forEach((opp, index) => {
+      if (!opp.velVisible) return;
+      const center = w2m(opp.x, opp.y);
+      const handle = opponentHandleScreen(index);
+      const speed = Math.hypot(opp.vx || 0, opp.vy || 0);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(30,136,229,.10)';
+      ctx.arc(center.x, center.y, VELOCITY_UI.deadzone * mainView.scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(30,136,229,.22)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      const ux = handle.x - center.x;
+      const uy = handle.y - center.y;
+      const ul = Math.hypot(ux, uy) || 1;
+      const sx = center.x + ux / ul * VELOCITY_UI.deadzone * mainView.scale;
+      const sy = center.y + uy / ul * VELOCITY_UI.deadzone * mainView.scale;
+
+      if (speed >= 0.01) {
+        ctx.strokeStyle = VELOCITY_UI.color;
+        ctx.fillStyle = VELOCITY_UI.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(handle.x, handle.y);
+        ctx.stroke();
+        const angle = Math.atan2(handle.y - sy, handle.x - sx);
+        ctx.beginPath();
+        ctx.moveTo(handle.x, handle.y);
+        ctx.lineTo(handle.x - 9 * Math.cos(angle - .42), handle.y - 9 * Math.sin(angle - .42));
+        ctx.lineTo(handle.x - 9 * Math.cos(angle + .42), handle.y - 9 * Math.sin(angle + .42));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = VELOCITY_UI.color;
+      ctx.lineWidth = 2.2;
+      ctx.arc(handle.x, handle.y, speed >= 0.01 ? 7 : 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      if (speed >= 0.01) {
+        ctx.beginPath();
+        ctx.fillStyle = VELOCITY_UI.color;
+        ctx.arc(handle.x, handle.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.font = speedLabelFont;
+      const speedText = speed < 0.01 ? t('initialSpeed') : `${fmt(speed, 1)} m/s`;
+      const textWidth = ctx.measureText(speedText).width;
+      const labelX = clamp(handle.x + 12, 4, mainView.w - textWidth - 14);
+      const labelY = clamp(handle.y - 20, 4, mainView.h - 20);
+      ctx.fillStyle = 'rgba(255,255,255,.94)';
+      roundedRect(ctx, labelX, labelY, textWidth + 10, 17, 5);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(30,136,229,.24)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = VELOCITY_UI.color;
+      ctx.fillText(speedText, labelX + 5, labelY + 8.5);
+      ctx.restore();
+    });
+  }
+
+  function drawActor(ctx, c, radius, fill, outline, label, sublabel, showHalo = true, showLabel = true) {
+    ctx.save();
+    if (showHalo) {
+      ctx.beginPath();
+      ctx.fillStyle = colorWithAlpha(fill, 0.12);
+      ctx.arc(c.x, c.y, radius * 1.72, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.fillStyle = fill;
+    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (!showLabel) {
+      ctx.restore();
+      return;
+    }
+
+    const labelX = c.x;
+    const labelY = c.y - radius - 8;
+    ctx.font = '700 11px ' + cssColor('--font').replace(/"/g, '');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    const w = Math.max(ctx.measureText(label).width, sublabel ? ctx.measureText(sublabel).width : 0) + 12;
+    ctx.fillStyle = colorWithAlpha(cssColor('--surface'), 0.88);
+    roundedRect(ctx, labelX - w / 2, labelY - (sublabel ? 26 : 15), w, sublabel ? 28 : 17, 6);
+    ctx.fill();
+    ctx.fillStyle = cssColor('--ink');
+    ctx.fillText(label, labelX, labelY - (sublabel ? 12 : 1));
+    if (sublabel) {
+      ctx.font = '10px ' + cssColor('--font').replace(/"/g, '');
+      ctx.fillStyle = cssColor('--muted');
+      ctx.fillText(sublabel, labelX, labelY);
+    }
+    ctx.restore();
+  }
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function drawPlayersMain() {
+    const ctx = mainCtx;
+    const opps = activeOpponents();
+    opps.forEach((opp, index) => {
+      const c = w2m(opp.x, opp.y);
+      const runSpeed = index === 0 ? state.params.speedA : state.params.speedB;
+      const dotRadius = 6 * clamp(
+        0.45 + 0.55 * runSpeed / 3.8,
+        0.62,
+        1.60
+      );
+      drawActor(
+        ctx,
+        c,
+        dotRadius,
+        cssColor('--ink'),
+        cssColor('--surface'),
+        index === 0 ? L('对手 A', 'Opponent A') : L('对手 B', 'Opponent B'),
+        '',
+        !opp.velVisible
+      );
+    });
+
+    const cc = w2m(state.contact.x, state.contact.y);
+    ctx.save();
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = colorWithAlpha(cssColor('--ink'), 0.46);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cc.x, cc.y, 15, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    drawActor(
+      ctx,
+      cc,
+      7,
+      cssColor('--ink'),
+      cssColor('--surface'),
+      L('我方击球点', 'Contact point'),
+      `${fmt(state.contact.x, 1)}, ${fmt(state.contact.y, 1)}, ${fmt(state.contact.z, 1)} m`,
+      true,
+      false
+    );
+  }
+
+  function drawSelectedMarkersMain() {
+    const path = getSelectedPath();
+    if (!path) return;
+    const ctx = mainCtx;
+    const net = w2m(path.net.x, 0);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = cssColor('--gold');
+    ctx.arc(net.x, net.y, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    path.oppStats.forEach((stat, index) => {
+      if (!stat.intercept) return;
+      const p = w2m(stat.x, stat.y);
+      const opp = state.opponents[index];
+      const o = w2m(opp.x, opp.y);
+      ctx.save();
+      ctx.strokeStyle = colorWithAlpha(cssColor('--ink'), 0.35);
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(o.x, o.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function drawContactInfoLabel() {
+    const path = getSelectedPath();
+    const ctx = mainCtx;
+    const anchor = w2m(state.contact.x, state.contact.y);
+    const lines = [
+      L('我方击球点', 'Contact point'),
+      path
+        ? L(`优劣 ${path.rank} · 接到 ${pct(path.pHit)}`, `Rank ${path.rank} · Reach ${pct(path.pHit)}`)
+        : L('暂无合法球路', 'No legal shots')
+    ];
+    ctx.save();
+    const fontFamily = cssColor('--font').replace(/"/g, '');
+    ctx.font = '700 11px ' + fontFamily;
+    let tw = ctx.measureText(lines[0]).width;
+    ctx.font = '10px ' + fontFamily;
+    tw = Math.max(tw, ctx.measureText(lines[1]).width) + 14;
+    const boxH = 36;
+    const margin = 6;
+    const candidates = [
+      { x: anchor.x - tw / 2, y: anchor.y + 24 },
+      { x: anchor.x + 25, y: anchor.y - boxH / 2 },
+      { x: anchor.x - tw - 25, y: anchor.y - boxH / 2 },
+      { x: anchor.x - tw / 2, y: anchor.y - boxH - 24 }
+    ];
+    const chosen = candidates.find((p) =>
+      p.x >= margin &&
+      p.y >= margin &&
+      p.x + tw <= mainView.w - margin &&
+      p.y + boxH <= mainView.h - margin
+    ) || {
+      x: clamp(anchor.x - tw / 2, margin, mainView.w - tw - margin),
+      y: clamp(anchor.y + 24, margin, mainView.h - boxH - margin)
+    };
+    ctx.fillStyle = colorWithAlpha(cssColor('--surface'), 0.94);
+    roundedRect(ctx, chosen.x, chosen.y, tw, boxH, 7);
+    ctx.fill();
+    ctx.strokeStyle = colorWithAlpha(cssColor('--ink'), 0.12);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = '700 11px ' + fontFamily;
+    ctx.fillStyle = cssColor('--ink');
+    ctx.fillText(lines[0], chosen.x + 7, chosen.y + 9);
+    ctx.font = '10px ' + fontFamily;
+    ctx.fillStyle = path ? cssColor('--gold') : cssColor('--text-3');
+    ctx.font = '700 10px ' + fontFamily;
+    ctx.fillText(lines[1], chosen.x + 7, chosen.y + 25);
+    ctx.restore();
+  }
+
+  function drawMain() {
+    const ctx = mainCtx;
+    const dpr = mainCanvas.width / Math.max(1, mainCanvas.clientWidth);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, mainView.w, mainView.h);
+    drawCourt();
+    if (state.heatOn) drawMainHeat();
+    drawTrajectories();
+    drawPathEndpointsMain();
+    drawSelectedMarkersMain();
+    drawVelocityHandles();
+    drawPlayersMain();
+    drawSelectedTrajectoryMain();
+    drawContactInfoLabel();
+  }
+
+  function drawSideBase() {
+    const ctx = sideCtx;
+    const ink = cssColor('--ink');
+    const muted = cssColor('--muted');
+    const line = cssColor('--court-line');
+    const frame = cssColor('--court-frame');
+    const groundX = sideView.left;
+    const topY = sidePoint(COURT.HL, 0).y;
+    const bottomY = sidePoint(-COURT.HL, 0).y;
+    const netY = sidePoint(0, 0).y;
+
+    ctx.save();
+    ctx.strokeStyle = frame;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(groundX, topY);
+    ctx.lineTo(groundX, bottomY);
+    ctx.stroke();
+
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.65;
+    const ticks = [COURT.HL, COURT.HL - COURT.LONG_SERVICE, COURT.SHORT_SERVICE,
+      -COURT.SHORT_SERVICE, -(COURT.HL - COURT.LONG_SERVICE), -COURT.HL];
+    for (const y of ticks) {
+      const p = sidePoint(y, 0);
+      ctx.beginPath();
+      ctx.moveTo(groundX, p.y);
+      ctx.lineTo(groundX + 5, p.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    const netTop = sidePoint(0, COURT.NET_H);
+    ctx.strokeStyle = cssColor('--net');
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(groundX, netY);
+    ctx.lineTo(netTop.x, netTop.y);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    ctx.font = '600 10px ' + cssColor('--font').replace(/"/g, '');
+    ctx.fillStyle = muted;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(L('地面', 'Ground'), groundX, topY - 7);
+    ctx.fillText(L('网 1.55 m', 'Net 1.55 m'), groundX + 3, netY - 8);
+    ctx.textBaseline = 'top';
+    ctx.fillText(L('对手', 'Opponent'), groundX + 2, topY + 3);
+    ctx.fillText(L('我方', 'Us'), groundX + 2, bottomY - 17);
+
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 0.65;
+    ctx.globalAlpha = 0.22;
+    ctx.setLineDash([3, 5]);
+    for (let z = 2; z <= 10; z += 2) {
+      const x = sideView.left + z * sideView.scaleZ;
+      ctx.beginPath();
+      ctx.moveTo(x, topY);
+      ctx.lineTo(x, bottomY);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  const SIDE_PERSON_HEIGHTS = [1.72, 1.77, 1.75];
+
+  function drawSidePerson(y, label, heightM) {
+    const ctx = sideCtx;
+    const groundX = sideView.left;
+    const sy = sidePoint(y, 0).y;
+    const fullLen = Math.max(10, heightM * sideView.scaleZ);
+    const headR = clamp(fullLen * 0.13, 2.5, 5.2);
+    const bodyLen = Math.max(2, fullLen - headR * 2);
+    const headX = groundX + bodyLen + headR;
+
+    ctx.save();
+    ctx.strokeStyle = cssColor('--ink');
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(groundX, sy);
+    ctx.lineTo(groundX + bodyLen, sy);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    ctx.beginPath();
+    ctx.fillStyle = cssColor('--ink');
+    ctx.arc(headX, sy, headR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.9)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (label) {
+      ctx.font = '700 9px ' + cssColor('--font').replace(/"/g, '');
+      ctx.fillStyle = cssColor('--ink');
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, headX + headR + 3, sy - 7);
+    }
+    ctx.restore();
+  }
+
+  function drawSideRacketContact() {
+    const ctx = sideCtx;
+    const groundX = sideView.left;
+    const sy = sidePoint(state.contact.y, 0).y;
+    const hx = sidePoint(state.contact.y, state.contact.z).x;
+    const heightM = SIDE_PERSON_HEIGHTS[2];
+    const headRight = groundX + Math.max(10, heightM * sideView.scaleZ);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(31,111,139,.32)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(groundX + 2, sy);
+    ctx.lineTo(hx, sy);
+    ctx.stroke();
+    ctx.restore();
+
+    const rx = 11;
+    const ry = 7;
+    const fromX = headRight + 1;
+    const toX = Math.max(fromX, hx - rx);
+    ctx.save();
+    if (toX > fromX) {
+      ctx.strokeStyle = cssColor('--ink');
+      ctx.lineWidth = 1.8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(fromX, sy);
+      ctx.lineTo(toX, sy);
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+    }
+    ctx.beginPath();
+    ctx.ellipse(hx, sy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = cssColor('--surface');
+    ctx.fill();
+    ctx.strokeStyle = cssColor('--ink');
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = cssColor('--ink');
+    ctx.arc(hx, sy, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = cssColor('--surface');
+    ctx.lineWidth = .9;
+    ctx.stroke();
+    ctx.font = '700 8px ' + cssColor('--font').replace(/"/g, '');
+    ctx.fillStyle = cssColor('--ink');
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${L('击球点', 'Contact')} ${fmt(state.contact.z, 1)} m`, hx + rx + 3, sy - ry - 4);
+    ctx.restore();
+  }
+
+  function drawSidePlayers() {
+    activeOpponents().forEach((opp, index) => {
+      drawSidePerson(
+        opp.y,
+        index === 0 ? 'A' : 'B',
+        SIDE_PERSON_HEIGHTS[index]
+      );
+    });
+    drawSidePerson(state.contact.y, L('我', 'Me'), SIDE_PERSON_HEIGHTS[2]);
+    drawSideRacketContact();
+  }
+
+  function drawSideHeightLabels() {
+    const ctx = sideCtx;
+    const groundX = sideView.left;
+    const topY = sidePoint(COURT.HL, 0).y;
+    ctx.save();
+    ctx.font = '9px ' + cssColor('--font').replace(/"/g, '');
+    ctx.fillStyle = cssColor('--muted');
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = 'rgba(255,255,255,.82)';
+    for (let z = 2; z <= 10; z += 2) {
+      const x = sidePoint(0, z).x;
+      const text = `${z} m`;
+      ctx.strokeText(text, x + 2, topY + 3);
+      ctx.fillText(text, x + 2, topY + 3);
+    }
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    const totalText = `总高 ${fmt(sideView.zMax, 1)} m`;
+    ctx.strokeText(totalText, sideView.w - 2, topY + 14);
+    ctx.fillText(totalText, sideView.w - 2, topY + 14);
+    ctx.restore();
+  }
+
+  function drawSelectedMarkersSide() {
+    const path = getSelectedPath();
+    if (!path) return;
+    const ctx = sideCtx;
+    const net = sidePoint(0, path.net.z);
+    ctx.save();
+    ctx.fillStyle = cssColor('--gold');
+    ctx.beginPath();
+    ctx.arc(net.x, net.y, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function heatRamp(p, alpha) {
+    const relative = clamp(p / Math.max(1e-6, state.heatMaxPHit), 0, 1);
+    p = Math.pow(relative, 0.5);
+    const stops = [
+      [0, [201, 52, 52]],
+      [0.25, [234, 123, 72]],
+      [0.5, [238, 215, 112]],
+      [0.75, [119, 185, 209]],
+      [1, [57, 111, 181]]
+    ];
+    let a = stops[0];
+    let b = stops[stops.length - 1];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (p >= stops[i][0] && p <= stops[i + 1][0]) {
+        a = stops[i];
+        b = stops[i + 1];
+        break;
+      }
+    }
+    const span = b[0] - a[0] || 1;
+    const t = clamp((p - a[0]) / span, 0, 1);
+    return [
+      Math.round(lerp(a[1][0], b[1][0], t)),
+      Math.round(lerp(a[1][1], b[1][1], t)),
+      Math.round(lerp(a[1][2], b[1][2], t)),
+      alpha
+    ];
+  }
+
+  function buildMainHeat() {
+    if (!state.heatOn) return;
+    const cell = 0.1;
+    const GW = Math.ceil(COURT.W / cell) + 1;
+    const GH = Math.ceil(COURT.HL / cell) + 1;
+    const density = new Float32Array(GW * GH);
+    const hitSum = new Float32Array(GW * GH);
+    const sigma = 0.26;
+    const inv2s2 = 1 / (2 * sigma * sigma);
+    const radiusCells = 8;
+    const points = [];
+    const shown = visiblePaths();
+    for (const path of shown) {
+      for (const stat of path.oppStats) {
+        if (!stat || stat.y < 0) continue;
+        points.push(stat);
+      }
+    }
+    if (!points.length) {
+      mainHeatCanvas = null;
+      mainHeatMeta = null;
+      return;
+    }
+    for (const [index, point] of points.entries()) {
+      const gx = (point.x + COURT.HW) / cell;
+      const gy = point.y / cell;
+      const ci = Math.round(gx);
+      const cj = Math.round(gy);
+      const i0 = Math.max(0, ci - radiusCells);
+      const i1 = Math.min(GW - 1, ci + radiusCells);
+      const j0 = Math.max(0, cj - radiusCells);
+      const j1 = Math.min(GH - 1, cj + radiusCells);
+      const rankWeight = 0.55 + 0.45 * (1 - index / Math.max(1, points.length - 1));
+      for (let j = j0; j <= j1; j++) {
+        const dy = j * cell - point.y;
+        for (let i = i0; i <= i1; i++) {
+          const dx = (i * cell - COURT.HW) - point.x;
+          const w = Math.exp(-(dx * dx + dy * dy) * inv2s2) * rankWeight;
+          const index2 = j * GW + i;
+          density[index2] += w;
+          hitSum[index2] += w * (point.pHit || 0);
+        }
+      }
+    }
+    let maxDensity = 0;
+    for (let i = 0; i < density.length; i++) {
+      if (density[i] > maxDensity) maxDensity = density[i];
+    }
+    if (maxDensity <= 0) return;
+    if (!mainHeatCanvas) {
+      mainHeatCanvas = document.createElement('canvas');
+      mainHeatCanvas.width = GW;
+      mainHeatCanvas.height = GH;
+    }
+    if (mainHeatCanvas.width !== GW || mainHeatCanvas.height !== GH) {
+      mainHeatCanvas.width = GW;
+      mainHeatCanvas.height = GH;
+    }
+    const hctx = mainHeatCanvas.getContext('2d');
+    const img = hctx.createImageData(GW, GH);
+    for (let j = 0; j < GH; j++) {
+      const row = GH - 1 - j;
+      for (let i = 0; i < GW; i++) {
+        const idx = j * GW + i;
+        const d = density[idx] / maxDensity;
+        const p = density[idx] > 0 ? hitSum[idx] / density[idx] : 0;
+        const rgba = heatRamp(p, Math.min(220, 230 * Math.pow(d, 0.7)));
+        const out = (row * GW + i) * 4;
+        img.data[out] = rgba[0];
+        img.data[out + 1] = rgba[1];
+        img.data[out + 2] = rgba[2];
+        img.data[out + 3] = d < 0.018 ? 0 : rgba[3];
+      }
+    }
+    hctx.putImageData(img, 0, 0);
+    mainHeatMeta = { cell, GW, GH, points: points.length };
+  }
+
+  function drawMainHeat() {
+    if (!state.heatOn) return;
+    if (!mainHeatCanvas || mainHeatMeta == null) buildMainHeat();
+    if (!mainHeatCanvas) return;
+    const top = w2m(-COURT.HW, COURT.HL);
+    const bottom = w2m(COURT.HW, 0);
+    const ctx = mainCtx;
+    ctx.save();
+    ctx.globalAlpha = state.params.heatOpacity;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(mainHeatCanvas, top.x, top.y, bottom.x - top.x, bottom.y - top.y);
+    ctx.restore();
+  }
+
+  function drawSide() {
+    const ctx = sideCtx;
+    const dpr = sideCanvas.width / Math.max(1, sideCanvas.clientWidth);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, sideView.w, sideView.h);
+    drawSideBase();
+    drawSideTrajectories();
+    drawPathEndpointsSide();
+    drawSidePlayers();
+    drawSelectedMarkersSide();
+    drawSelectedTrajectorySide();
+    drawSideHeightLabels();
+  }
+
+  function scheduleDraw() {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => {
+      renderQueued = false;
+      if (state.heatDirty && state.heatOn) {
+        buildMainHeat();
+        state.heatDirty = false;
+      }
+      drawMain();
+      drawSide();
+    });
+  }
+
+  function mainEventPoint(event) {
+    const rect = mainCanvas.getBoundingClientRect();
+    return {
+      sx: event.clientX - rect.left,
+      sy: event.clientY - rect.top
+    };
+  }
+
+  function sideEventPoint(event) {
+    const rect = sideCanvas.getBoundingClientRect();
+    return {
+      sx: event.clientX - rect.left,
+      sy: event.clientY - rect.top
+    };
+  }
+
+  function hitActorAt(sx, sy) {
+    const points = [];
+    activeOpponents().forEach((opp, index) => {
+      if (opp.velVisible) {
+        const h = opponentHandleScreen(index);
+        points.push({
+          type: 'velocity',
+          index,
+          dist: Math.hypot(sx - h.x, sy - h.y),
+          maxDist: COARSE_POINTER ? 26 : 18
+        });
+      }
+      const c = w2m(opp.x, opp.y);
+      points.push({
+        type: 'opponent',
+        index,
+        dist: Math.hypot(sx - c.x, sy - c.y),
+        maxDist: COARSE_POINTER ? 36 : 25
+      });
+    });
+    const cc = w2m(state.contact.x, state.contact.y);
+    points.push({
+      type: 'contact',
+      index: 0,
+      dist: Math.hypot(sx - cc.x, sy - cc.y),
+      maxDist: COARSE_POINTER ? 36 : 25
+    });
+    points.sort((a, b) => a.dist - b.dist);
+    return points[0] && points[0].dist <= points[0].maxDist ? points[0] : null;
+  }
+
+  function clearLongPress() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = 0;
+    }
+  }
+
+  function updateContactFromWorld(w) {
+    const hw = halfWidth();
+    state.contact.x = clamp(w.x, -hw + 0.12, hw - 0.12);
+    state.contact.y = clamp(w.y, -COURT.HL + 0.18, -0.18);
+    updateParamsUI();
+    requestSolve(true, 75);
+  }
+
+  function updateOpponentFromWorld(index, w) {
+    const hw = halfWidth();
+    const opp = state.opponents[index];
+    opp.x = clamp(w.x, -hw + 0.12, hw - 0.12);
+    opp.y = clamp(w.y, 0.2, COURT.HL - 0.18);
+    requestSolve(true, 75);
+  }
+
+  mainCanvas.addEventListener('pointerdown', (event) => {
+    const p = mainEventPoint(event);
+    const hit = hitActorAt(p.sx, p.sy);
+    clearLongPress();
+    mainCanvas.setPointerCapture(event.pointerId);
+    drag = {
+      ...(hit || { type: 'blank', index: 0 }),
+      moved: false,
+      startX: p.sx,
+      startY: p.sy,
+      pointerId: event.pointerId
+    };
+    if (hit && hit.type === 'opponent') {
+      longPressTimer = setTimeout(() => {
+        if (!drag || drag.type !== 'opponent' || drag.index !== hit.index || drag.moved) return;
+        longPressTimer = 0;
+        toggleOpponentVelocity(hit.index);
+        drag = null;
+        mainCanvas.style.cursor = 'grab';
+      }, 500);
+    }
+    mainCanvas.style.cursor = hit ? 'grabbing' : 'default';
+    event.preventDefault();
+  });
+
+  mainCanvas.addEventListener('pointermove', (event) => {
+    const p = mainEventPoint(event);
+    if (!drag) {
+      mainCanvas.style.cursor = hitActorAt(p.sx, p.sy) ? 'grab' : 'default';
+      return;
+    }
+    if (drag.pointerId !== event.pointerId) return;
+    if (!drag.moved) {
+      if (Math.hypot(p.sx - drag.startX, p.sy - drag.startY) <= (COARSE_POINTER ? 7 : 4)) return;
+      drag.moved = true;
+      clearLongPress();
+    }
+    if (drag.type === 'blank') {
+      event.preventDefault();
+      return;
+    }
+    const w = m2w(p.sx, p.sy);
+    if (drag.type === 'opponent') updateOpponentFromWorld(drag.index, w);
+    else if (drag.type === 'velocity') {
+      updateOpponentVelocity(drag.index, w);
+      requestSolve(true, 75);
+    } else updateContactFromWorld(w);
+    event.preventDefault();
+  });
+
+  mainCanvas.addEventListener('pointerup', (event) => {
+    clearLongPress();
+    const p = mainEventPoint(event);
+    if (!drag || drag.pointerId !== event.pointerId) {
+      mainCanvas.style.cursor = hitActorAt(p.sx, p.sy) ? 'grab' : 'default';
+      return;
+    }
+    const wasMoved = drag.moved;
+    const draggedType = drag.type;
+    drag = null;
+    if (wasMoved) requestSolve(false, 40);
+    else {
+      const now = performance.now();
+      if (draggedType !== 'blank') {
+        lastTap.time = 0;
+      } else if (event.pointerType !== 'mouse' &&
+          now - lastTap.time < 330 &&
+          Math.hypot(p.sx - lastTap.x, p.sy - lastTap.y) < (COARSE_POINTER ? 38 : 26)) {
+        setHeat(!state.heatOn);
+        lastTap.time = 0;
+      } else {
+        lastTap = { time: now, x: p.sx, y: p.sy };
+      }
+    }
+    mainCanvas.style.cursor = hitActorAt(p.sx, p.sy) ? 'grab' : 'default';
+    event.preventDefault();
+  });
+
+  mainCanvas.addEventListener('pointercancel', () => {
+    clearLongPress();
+    if (drag) {
+      const shouldSolve = drag.type !== 'blank' && drag.moved;
+      drag = null;
+      if (shouldSolve) requestSolve(false, 30);
+    }
+    mainCanvas.style.cursor = 'default';
+  });
+
+  mainCanvas.addEventListener('dblclick', (event) => {
+    const p = mainEventPoint(event);
+    if (!hitActorAt(p.sx, p.sy)) setHeat(!state.heatOn);
+  });
+
+  mainCanvas.addEventListener('contextmenu', (event) => event.preventDefault());
+  mainCanvas.addEventListener('pointerleave', () => {
+    if (!drag) mainCanvas.style.cursor = 'default';
+  });
+
+  function sideActorAt(sx, sy) {
+    const candidates = [];
+    const groundX = sideView.left;
+    const contactBodyY = sidePoint(state.contact.y, 0).y;
+    const contactEndX = groundX + SIDE_PERSON_HEIGHTS[2] * sideView.scaleZ;
+    const contactBodyX = clamp(sx, groundX, contactEndX);
+    const contactRacket = sidePoint(state.contact.y, state.contact.z);
+    const contactBodyDistance = Math.hypot(sx - contactBodyX, sy - contactBodyY);
+    const contactRacketDistance = Math.hypot(sx - contactRacket.x, sy - contactRacket.y);
+    candidates.push({
+      type: 'sideContact',
+      index: 0,
+      distance: Math.min(contactBodyDistance, contactRacketDistance)
+    });
+    activeOpponents().forEach((opp, index) => {
+      const p = sidePoint(opp.y, 0);
+      const endX = groundX + SIDE_PERSON_HEIGHTS[index] * sideView.scaleZ;
+      const nearestX = clamp(sx, groundX, endX);
+      candidates.push({
+        type: 'sideOpponent',
+        index,
+        distance: Math.hypot(sx - nearestX, sy - p.y)
+      });
+    });
+    candidates.sort((a, b) => a.distance - b.distance);
+    return candidates[0] && candidates[0].distance <= (COARSE_POINTER ? 38 : 28) ? candidates[0] : null;
+  }
+
+  sideCanvas.addEventListener('pointerdown', (event) => {
+    const p = sideEventPoint(event);
+    const hit = sideActorAt(p.sx, p.sy);
+    if (!hit) return;
+    sideCanvas.setPointerCapture(event.pointerId);
+    drag = {
+      ...hit,
+      pointerId: event.pointerId,
+      startX: p.sx,
+      startY: p.sy,
+      moved: false
+    };
+    sideCanvas.style.cursor = 'grabbing';
+    event.preventDefault();
+  });
+
+  sideCanvas.addEventListener('pointermove', (event) => {
+    const p = sideEventPoint(event);
+    if (!drag) {
+      sideCanvas.style.cursor = sideActorAt(p.sx, p.sy) ? 'grab' : 'default';
+      return;
+    }
+    if ((drag.type !== 'sideContact' && drag.type !== 'sideOpponent') ||
+        drag.pointerId !== event.pointerId) return;
+    if (Math.hypot(p.sx - drag.startX, p.sy - drag.startY) > 2) drag.moved = true;
+    const worldY = COURT.HL - (p.sy - sideView.top) / sideView.scaleY;
+    if (drag.type === 'sideContact') {
+      state.contact.z = clamp((p.sx - sideView.left) / sideView.scaleZ, 0.1, 3.5);
+      state.contact.y = clamp(worldY, -COURT.HL + 0.18, -0.18);
+    } else {
+      state.opponents[drag.index].y = clamp(worldY, 0.2, COURT.HL - 0.18);
+    }
+    updateParamsUI();
+    requestSolve(true, 75);
+    event.preventDefault();
+  });
+
+  sideCanvas.addEventListener('pointerup', (event) => {
+    const p = sideEventPoint(event);
+    if (!drag ||
+        (drag.type !== 'sideContact' && drag.type !== 'sideOpponent') ||
+        drag.pointerId !== event.pointerId) {
+      sideCanvas.style.cursor = sideActorAt(p.sx, p.sy) ? 'grab' : 'default';
+      return;
+    }
+    const moved = drag.moved;
+    drag = null;
+    if (moved) requestSolve(false, 40);
+    sideCanvas.style.cursor = sideActorAt(p.sx, p.sy) ? 'grab' : 'default';
+    event.preventDefault();
+  });
+
+  sideCanvas.addEventListener('pointercancel', () => {
+    drag = null;
+    sideCanvas.style.cursor = 'default';
+  });
+  sideCanvas.addEventListener('pointerleave', () => {
+    if (!drag) sideCanvas.style.cursor = 'default';
+  });
+
+  els.rankPill.addEventListener('pointerdown', (event) => {
+    if (!state.paths.length) return;
+    els.rankPill.setPointerCapture(event.pointerId);
+    rankDrag = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startRank: state.selectedRank,
+      moved: false
+    };
+    event.preventDefault();
+  });
+
+  els.rankPill.addEventListener('pointermove', (event) => {
+    if (!rankDrag || event.pointerId !== rankDrag.pointerId) return;
+    const dy = rankDrag.startY - event.clientY;
+    if (Math.abs(dy) > 2) rankDrag.moved = true;
+    selectRank(rankDrag.startRank + Math.round(dy * 1.8));
+    event.preventDefault();
+  });
+
+  els.rankPill.addEventListener('pointerup', (event) => {
+    if (!rankDrag || event.pointerId !== rankDrag.pointerId) return;
+    const moved = rankDrag.moved;
+    rankDrag = null;
+    if (!moved && event.pointerType !== 'mouse') {
+      const now = performance.now();
+      if (now - lastRankTap.time < 330) {
+        selectRank(1);
+        lastRankTap.time = 0;
+      } else {
+        lastRankTap.time = now;
+      }
+    }
+    event.preventDefault();
+  });
+
+  els.rankPill.addEventListener('dblclick', () => selectRank(1));
+  els.rankPill.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+      selectRank(state.selectedRank + 1);
+      event.preventDefault();
+    } else if (event.key === 'ArrowDown') {
+      selectRank(state.selectedRank - 1);
+      event.preventDefault();
+    } else if (event.key === 'PageUp') {
+      selectRank(state.selectedRank + 10);
+      event.preventDefault();
+    } else if (event.key === 'PageDown') {
+      selectRank(state.selectedRank - 10);
+      event.preventDefault();
+    } else if (event.key === 'Home') {
+      selectRank(1);
+      event.preventDefault();
+    } else if (event.key === 'End') {
+      selectRank(state.topN);
+      event.preventDefault();
+    }
+  });
+
+  els.topPill.addEventListener('pointerdown', (event) => {
+    if (!state.paths.length) return;
+    els.topPill.setPointerCapture(event.pointerId);
+    topDrag = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startTop: state.topN,
+      moved: false
+    };
+    event.preventDefault();
+  });
+
+  els.topPill.addEventListener('pointermove', (event) => {
+    if (!topDrag || event.pointerId !== topDrag.pointerId) return;
+    const dy = topDrag.startY - event.clientY;
+    if (Math.abs(dy) > 2) topDrag.moved = true;
+    const sensitivity = Math.max(1, state.maxTop / 600);
+    state.topN = clamp(
+      Math.round(topDrag.startTop + dy * sensitivity),
+      1,
+      state.maxTop
+    );
+    state.heatDirty = true;
+    clampSelection();
+    updateAllText();
+    scheduleDraw();
+    event.preventDefault();
+  });
+
+  els.topPill.addEventListener('pointerup', (event) => {
+    if (!topDrag || event.pointerId !== topDrag.pointerId) return;
+    const moved = topDrag.moved;
+    topDrag = null;
+    if (!moved && event.pointerType !== 'mouse') {
+      const now = performance.now();
+      if (now - lastTopTap.time < 330) {
+        resetTopDefault();
+        lastTopTap.time = 0;
+      } else {
+        lastTopTap.time = now;
+      }
+    }
+    event.preventDefault();
+  });
+
+  els.topPill.addEventListener('dblclick', resetTopDefault);
+
+  els.topPill.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+      state.topN = clamp(state.topN + 1, 1, state.maxTop);
+    } else if (event.key === 'ArrowDown') {
+      state.topN = clamp(state.topN - 1, 1, state.maxTop);
+    } else if (event.key === 'PageUp') {
+      state.topN = clamp(state.topN + 10, 1, state.maxTop);
+    } else if (event.key === 'PageDown') {
+      state.topN = clamp(state.topN - 10, 1, state.maxTop);
+    } else if (event.key === 'Home') {
+      state.topN = 1;
+    } else if (event.key === 'End') {
+      state.topN = state.maxTop;
+    } else {
+      return;
+    }
+    state.heatDirty = true;
+    clampSelection();
+    updateAllText();
+    scheduleDraw();
+    event.preventDefault();
+  });
+
+  els.heightPill.addEventListener('pointerdown', (event) => {
+    els.heightPill.setPointerCapture(event.pointerId);
+    heightDrag = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startHeight: state.contact.z
+    };
+    event.preventDefault();
+  });
+
+  els.heightPill.addEventListener('pointermove', (event) => {
+    if (!heightDrag || event.pointerId !== heightDrag.pointerId) return;
+    const dy = heightDrag.startY - event.clientY;
+    state.contact.z = clamp(heightDrag.startHeight + dy * 0.012, 0.1, 3.5);
+    updateParamsUI();
+    requestSolve(true, 75);
+    event.preventDefault();
+  });
+
+  els.heightPill.addEventListener('pointerup', (event) => {
+    if (!heightDrag || event.pointerId !== heightDrag.pointerId) return;
+    heightDrag = null;
+    requestSolve(false, 30);
+    event.preventDefault();
+  });
+
+  els.heightPill.addEventListener('pointercancel', () => {
+    if (!heightDrag) return;
+    heightDrag = null;
+    requestSolve(false, 30);
+  });
+
+  els.heightPill.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') state.contact.z = clamp(state.contact.z + 0.05, 0.1, 3.5);
+    else if (event.key === 'ArrowDown') state.contact.z = clamp(state.contact.z - 0.05, 0.1, 3.5);
+    else if (event.key === 'PageUp') state.contact.z = clamp(state.contact.z + 0.5, 0.1, 3.5);
+    else if (event.key === 'PageDown') state.contact.z = clamp(state.contact.z - 0.5, 0.1, 3.5);
+    else return;
+    updateParamsUI();
+    requestSolve(false, 30);
+    event.preventDefault();
+  });
+
+  document.querySelectorAll('.filter-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.filter = button.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach((b) => {
+        b.classList.toggle('is-active', b === button);
+      });
+      state.heatDirty = true;
+      clampSelection();
+      updateAllText();
+      scheduleDraw();
+    });
+  });
+
+  els.modeToggle.addEventListener('click', () => {
+    setMode(state.mode === 'double' ? 'single' : 'double');
+  });
+  els.paramsReset.addEventListener('click', resetAll);
+  els.paramsBtn.addEventListener('click', () => {
+    updateParamsUI();
+    if (typeof els.paramsDialog.showModal === 'function') els.paramsDialog.showModal();
+    else els.paramsDialog.setAttribute('open', '');
+  });
+  els.paramsClose.addEventListener('click', () => els.paramsDialog.close());
+  els.paramsDone.addEventListener('click', () => els.paramsDialog.close());
+  els.paramsDialog.addEventListener('click', (event) => {
+    if (event.target === els.paramsDialog) els.paramsDialog.close();
+  });
+
+  function openPrinciple() {
+    applyLanguage();
+    els.principleModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePrinciple() {
+    els.principleModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  els.credit.addEventListener('dblclick', openPrinciple);
+  els.principleClose.addEventListener('click', closePrinciple);
+  els.principleModal.addEventListener('click', (event) => {
+    if (event.target === els.principleModal) closePrinciple();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && els.principleModal.classList.contains('open')) {
+      closePrinciple();
+    }
+  });
+
+  els.langBtn.addEventListener('click', () => {
+    lang = lang === 'zh' ? 'en' : 'zh';
+    applyLanguage();
+  });
+
+  els.collapseBtn.addEventListener('click', () => {
+    const collapsed = $('app').classList.toggle('collapsed');
+    els.collapseBtn.setAttribute(
+      'aria-label',
+      collapsed
+        ? L('展开标题栏', 'Show header')
+        : L('隐藏标题栏', 'Hide header')
+    );
+    requestAnimationFrame(() => {
+      resizeCanvases();
+      scheduleDraw();
+    });
+  });
+
+  document.querySelectorAll('[data-param]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const key = input.dataset.param;
+      const value = parseFloat(input.value);
+      if (key === 'contactHeight') {
+        state.contact.z = clamp(value, 0.1, 3.5);
+      } else {
+        state.params[key] = value;
+      }
+      if (key === 'zMin' && state.params.zMin > state.params.zMax - 0.05) {
+        state.params.zMax = Math.min(3.5, state.params.zMin + 0.05);
+      }
+      if (key === 'zMax' && state.params.zMax < state.params.zMin + 0.05) {
+        state.params.zMin = Math.max(0, state.params.zMax - 0.05);
+      }
+      if (key === 't0a' && state.params.t0a > state.params.t1a - 0.05) {
+        state.params.t1a = Math.min(1.6, state.params.t0a + 0.05);
+      }
+      if (key === 't1a' && state.params.t1a < state.params.t0a + 0.05) {
+        state.params.t0a = Math.max(0.05, state.params.t1a - 0.05);
+      }
+      if (key === 't0b' && state.params.t0b > state.params.t1b - 0.05) {
+        state.params.t1b = Math.min(1.6, state.params.t0b + 0.05);
+      }
+      if (key === 't1b' && state.params.t1b < state.params.t0b + 0.05) {
+        state.params.t0b = Math.max(0.05, state.params.t1b - 0.05);
+      }
+      updateParamsUI();
+      requestSolve(false, 130);
+    });
+  });
+
+  let resizeObserver = null;
+  if ('ResizeObserver' in window) {
+    resizeObserver = new ResizeObserver(() => resizeCanvases());
+    resizeObserver.observe($('app'));
+    resizeObserver.observe(mainCanvas.parentElement);
+    resizeObserver.observe(sideCanvas.parentElement);
+  } else {
+    window.addEventListener('resize', resizeCanvases);
+  }
+  window.addEventListener('orientationchange', () => setTimeout(resizeCanvases, 80));
+
+  const darkQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+  if (darkQuery) {
+    const handler = () => {
+      state.heatDirty = true;
+      scheduleDraw();
+    };
+    if (darkQuery.addEventListener) darkQuery.addEventListener('change', handler);
+    else if (darkQuery.addListener) darkQuery.addListener(handler);
+  }
+
+  resizeCanvases();
+  applyLanguage();
+  requestSolve(false, 30);
+})();
+</script>
+</body>
+</html>
