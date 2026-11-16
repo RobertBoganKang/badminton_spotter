@@ -1516,6 +1516,7 @@
 
       function drawVelocityHandle(pt, vel, handlePos, isActive) {
         const mag = Math.hypot(vel.x, vel.y);
+        const c = w2c(pt);
         const h = w2c(handlePos);
         ctx.save();
 
@@ -1543,6 +1544,14 @@
           return;
         }
 
+        ctx.beginPath();
+        ctx.moveTo(c.x, c.y);
+        ctx.lineTo(h.x, h.y);
+        ctx.strokeStyle = COLOR_VEL;
+        ctx.lineWidth = isTouch ? 2.4 : 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
         if (isActive) {
           ctx.beginPath();
           ctx.fillStyle = COLOR_VEL_GLOW;
@@ -1559,6 +1568,11 @@
         ctx.stroke();
 
         if (mag > 0.01) {
+          ctx.beginPath();
+          ctx.fillStyle = COLOR_VEL;
+          ctx.arc(h.x, h.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+
           ctx.font = `bold ${isTouch ? 12 : 11}px system-ui`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
