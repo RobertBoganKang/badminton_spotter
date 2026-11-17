@@ -493,27 +493,6 @@
     font-size: 10px;
   }
 
-  .busy-badge {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 5;
-    display: none;
-    padding: 8px 12px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    color: var(--ink);
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-    font-size: 12px;
-    transform: translate(-50%, -50%);
-    backdrop-filter: blur(12px);
-  }
-
-  .busy-badge.is-visible {
-    display: block;
-  }
-
   .side-card canvas {
     background:
       linear-gradient(90deg,
@@ -1643,14 +1622,6 @@
     font-size: 9px;
   }
 
-  .busy-badge {
-    border-color: var(--border);
-    color: var(--text-2);
-    background: rgba(255, 255, 255, .94);
-    box-shadow: var(--shadow);
-    font-size: 11px;
-  }
-
   .status-line {
     display: flex;
     align-items: center;
@@ -2215,6 +2186,86 @@
     }
   }
 </style>
+<style id="mobile-update-fixes">
+  .rank-cluster {
+    height: 20px;
+  }
+
+  .compound-segment,
+  .height-pill {
+    min-height: 20px;
+    height: 20px;
+    padding: 0 7px;
+  }
+
+  .compound-segment span,
+  .height-pill span {
+    font-size: 9.5px;
+  }
+
+  .compound-segment strong,
+  .height-pill strong {
+    font-size: 10px;
+  }
+
+  .manual-update-btn {
+    height: 24px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-2);
+    background: #eef2f0;
+    font: 700 10.5px system-ui;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    outline: none;
+  }
+
+  .manual-update-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .manual-update-btn[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 680px) {
+    .canvas-wrap {
+      flex-wrap: nowrap;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .main-stage {
+      flex: 1 1 60%;
+      width: 60%;
+      min-width: 0;
+    }
+
+    .side-stage {
+      flex: 0 0 40%;
+      width: 40%;
+      min-width: 0;
+    }
+
+    .main-stage,
+    .side-stage {
+      height: 390px;
+      min-height: 390px;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .compound-segment,
+    .height-pill {
+      min-height: 20px;
+      height: 20px;
+    }
+  }
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -2259,6 +2310,7 @@
       </div>
 
       <div class="tb-right">
+        <button class="manual-update-btn" id="updateBtn" type="button" hidden>更新</button>
         <div class="pill-group">
           <div class="rank-cluster">
             <button class="compound-segment compound-left" id="rankPill" type="button" title="向上拖动增加数字，向下拖动减小数字" aria-label="当前球路优劣值，向上拖动增加数字，向下拖动减小数字">
@@ -2289,7 +2341,6 @@
         <canvas id="mainCanvas" role="img" aria-label="羽毛球场俯视图，显示我方击球点、对手位置和 Top N 出球轨迹">
           当前浏览器无法显示球场轨迹图。
         </canvas>
-        <div class="busy-badge" id="busyBadge">正在计算球路…</div>
       </div>
       <div class="side-stage">
         <canvas id="sideCanvas" role="img" aria-label="球场长度与高度侧视图，显示球路、球网和对手截击点">
@@ -2712,8 +2763,13 @@
     heatOn: false,
     busy: false,
     lastSolveMs: 0,
+    slowMode: false,
+    manualNeeded: false,
+    manualResultsCleared: false,
     heatDirty: true
   };
+  const FAST_SLOW_MS = 500;
+  const FULL_SLOW_MS = 3000;
 
   const mainCanvas = $('mainCanvas');
   const sideCanvas = $('sideCanvas');
@@ -2727,6 +2783,7 @@
   let solveTimer = 0;
   let solveSequence = 0;
   let pendingFast = false;
+  let pendingManual = false;
   let renderQueued = false;
   let drag = null;
   let rankDrag = null;
@@ -2753,7 +2810,7 @@
     statusDot: $('statusDot'),
     statusText: $('statusText'),
     liveStatus: $('liveStatus'),
-    busyBadge: $('busyBadge'),
+    updateBtn: $('updateBtn'),
     topNValue: $('topNValue'),
     rankPill: $('rankPill'),
     topPill: $('topPill'),
@@ -3151,7 +3208,40 @@
     return baseCandidates;
   }
 
-  function performSolve(fast) {
+  function updateManualUpdateUI() {
+    els.updateBtn.hidden = !state.slowMode;
+    els.updateBtn.disabled = state.busy;
+    els.updateBtn.textContent = L('更新', 'Update');
+    els.updateBtn.classList.toggle('has-changes', state.manualNeeded);
+  }
+
+  function clearResultsForManualUpdate() {
+    if (!state.slowMode || state.manualResultsCleared) return;
+    state.manualResultsCleared = true;
+    state.paths = [];
+    state.legalCount = 0;
+    state.selectedRank = 1;
+    state.maxTop = 1;
+    state.defaultTop = 1;
+    state.topN = 1;
+    state.heatMaxPHit = 1;
+    state.heatDirty = true;
+    mainHeatCanvas = null;
+    mainHeatMeta = null;
+    state.manualNeeded = true;
+    updateAllText();
+    updateManualUpdateUI();
+    scheduleDraw();
+  }
+
+  function detectSlowSolve(fast, elapsed) {
+    if (state.slowMode) return;
+    state.slowMode = elapsed > (fast ? FAST_SLOW_MS : FULL_SLOW_MS);
+    if (state.slowMode) state.manualNeeded = false;
+    updateManualUpdateUI();
+  }
+
+  function performSolve(fast, manual = false) {
     const started = performance.now();
     const base = generateCandidates(fast);
     const candidates = [];
@@ -3183,8 +3273,12 @@
       : 1;
     state.selectedRank = 1;
     state.lastSolveMs = Math.round(performance.now() - started);
+    state.manualNeeded = false;
+    state.manualResultsCleared = false;
+    pendingManual = false;
     state.heatDirty = true;
     state.busy = false;
+    detectSlowSolve(fast, state.lastSolveMs);
     setBusy(false);
     clampSelection();
     updateAllText();
@@ -3197,27 +3291,34 @@
     drawSide();
   }
 
-  function requestSolve(fast, delay) {
+  function requestSolve(fast, delay, manual = false) {
     clearTimeout(solveTimer);
+    if (state.slowMode && !manual) {
+      state.manualNeeded = true;
+      clearResultsForManualUpdate();
+      state.busy = false;
+      setBusy(false);
+      updateManualUpdateUI();
+      return false;
+    }
     pendingFast = !!fast;
+    pendingManual = !!manual;
     const seq = ++solveSequence;
     state.busy = true;
     setBusy(true, fast);
+    updateManualUpdateUI();
     solveTimer = window.setTimeout(() => {
       if (seq !== solveSequence) return;
       window.requestAnimationFrame(() => {
         if (seq !== solveSequence) return;
-        performSolve(pendingFast);
+        performSolve(pendingFast, pendingManual);
       });
     }, delay == null ? 25 : delay);
   }
 
   function setBusy(on, fast) {
-    els.busyBadge.classList.toggle('is-visible', on);
-    els.busyBadge.textContent = fast
-      ? L('快速预览 · 计算球路…', 'Fast preview · solving…')
-      : L('完整计算 · 生成合法球路…', 'Full solve · generating shots…');
     els.statusDot.classList.toggle('is-busy', on);
+    updateManualUpdateUI();
     if (!on) updateStatus();
   }
 
@@ -3463,6 +3564,7 @@
     els.paramsReset.textContent = t('resetParams');
     els.principleTitle.textContent = t('methodTitle');
     els.principleBody.innerHTML = t('method');
+    updateManualUpdateUI();
 
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = t(el.dataset.i18n);
@@ -3978,6 +4080,7 @@
     if (distance <= VELOCITY_UI.deadzone) {
       opp.vx = 0;
       opp.vy = 0;
+      scheduleDraw();
       return;
     }
     const norm = clamp(
@@ -3988,6 +4091,7 @@
     const speed = VELOCITY_UI.max * Math.pow(norm, VELOCITY_UI.gamma);
     opp.vx = dx / distance * speed;
     opp.vy = dy / distance * speed;
+    scheduleDraw();
   }
 
   function toggleOpponentVelocity(index) {
@@ -4621,7 +4725,7 @@
     renderQueued = true;
     requestAnimationFrame(() => {
       renderQueued = false;
-      if (state.heatDirty && state.heatOn) {
+      if (state.heatDirty && state.heatOn && !topDrag) {
         buildMainHeat();
         state.heatDirty = false;
       }
@@ -4689,6 +4793,7 @@
     state.contact.x = clamp(w.x, -hw + 0.12, hw - 0.12);
     state.contact.y = clamp(w.y, -COURT.HL + 0.18, -0.18);
     updateParamsUI();
+    scheduleDraw();
     requestSolve(true, 75);
   }
 
@@ -4697,6 +4802,7 @@
     const opp = state.opponents[index];
     opp.x = clamp(w.x, -hw + 0.12, hw - 0.12);
     opp.y = clamp(w.y, 0.2, COURT.HL - 0.18);
+    scheduleDraw();
     requestSolve(true, 75);
   }
 
@@ -4704,7 +4810,7 @@
     const p = mainEventPoint(event);
     const hit = hitActorAt(p.sx, p.sy);
     clearLongPress();
-    mainCanvas.setPointerCapture(event.pointerId);
+    try { mainCanvas.setPointerCapture(event.pointerId); } catch (e) { }
     drag = {
       ...(hit || { type: 'blank', index: 0 }),
       moved: false,
@@ -4830,7 +4936,7 @@
     const p = sideEventPoint(event);
     const hit = sideActorAt(p.sx, p.sy);
     if (!hit) return;
-    sideCanvas.setPointerCapture(event.pointerId);
+    try { sideCanvas.setPointerCapture(event.pointerId); } catch (e) { }
     drag = {
       ...hit,
       pointerId: event.pointerId,
@@ -4859,6 +4965,7 @@
       state.opponents[drag.index].y = clamp(worldY, 0.2, COURT.HL - 0.18);
     }
     updateParamsUI();
+    scheduleDraw();
     requestSolve(true, 75);
     event.preventDefault();
   });
@@ -4887,15 +4994,17 @@
   });
 
   els.rankPill.addEventListener('pointerdown', (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
     if (!state.paths.length) return;
-    els.rankPill.setPointerCapture(event.pointerId);
     rankDrag = {
       pointerId: event.pointerId,
       startY: event.clientY,
       startRank: state.selectedRank,
       moved: false
     };
+    try { els.rankPill.setPointerCapture(event.pointerId); } catch (e) { }
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.rankPill.addEventListener('pointermove', (event) => {
@@ -4904,6 +5013,7 @@
     if (Math.abs(dy) > 2) rankDrag.moved = true;
     selectRank(rankDrag.startRank + Math.round(dy * 1.8));
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.rankPill.addEventListener('pointerup', (event) => {
@@ -4920,6 +5030,12 @@
       }
     }
     event.preventDefault();
+    event.stopPropagation();
+  });
+
+  els.rankPill.addEventListener('pointercancel', (event) => {
+    if (!rankDrag || event.pointerId !== rankDrag.pointerId) return;
+    rankDrag = null;
   });
 
   els.rankPill.addEventListener('dblclick', () => selectRank(1));
@@ -4946,15 +5062,17 @@
   });
 
   els.topPill.addEventListener('pointerdown', (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
     if (!state.paths.length) return;
-    els.topPill.setPointerCapture(event.pointerId);
     topDrag = {
       pointerId: event.pointerId,
       startY: event.clientY,
       startTop: state.topN,
       moved: false
     };
+    try { els.topPill.setPointerCapture(event.pointerId); } catch (e) { }
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.topPill.addEventListener('pointermove', (event) => {
@@ -4972,6 +5090,7 @@
     updateAllText();
     scheduleDraw();
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.topPill.addEventListener('pointerup', (event) => {
@@ -4987,7 +5106,17 @@
         lastTopTap.time = now;
       }
     }
+    state.heatDirty = true;
+    scheduleDraw();
     event.preventDefault();
+    event.stopPropagation();
+  });
+
+  els.topPill.addEventListener('pointercancel', (event) => {
+    if (!topDrag || event.pointerId !== topDrag.pointerId) return;
+    topDrag = null;
+    state.heatDirty = true;
+    scheduleDraw();
   });
 
   els.topPill.addEventListener('dblclick', resetTopDefault);
@@ -5016,13 +5145,15 @@
   });
 
   els.heightPill.addEventListener('pointerdown', (event) => {
-    els.heightPill.setPointerCapture(event.pointerId);
+    if (event.button !== undefined && event.button !== 0) return;
     heightDrag = {
       pointerId: event.pointerId,
       startY: event.clientY,
       startHeight: state.contact.z
     };
+    try { els.heightPill.setPointerCapture(event.pointerId); } catch (e) { }
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.heightPill.addEventListener('pointermove', (event) => {
@@ -5032,6 +5163,7 @@
     updateParamsUI();
     requestSolve(true, 75);
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.heightPill.addEventListener('pointerup', (event) => {
@@ -5039,6 +5171,7 @@
     heightDrag = null;
     requestSolve(false, 30);
     event.preventDefault();
+    event.stopPropagation();
   });
 
   els.heightPill.addEventListener('pointercancel', () => {
@@ -5181,6 +5314,7 @@
 
   resizeCanvases();
   applyLanguage();
+  els.updateBtn.addEventListener('click', () => requestSolve(false, 0, true));
   requestSolve(false, 30);
 })();
 </script>
