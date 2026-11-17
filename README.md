@@ -2,4 +2,4 @@
 
 ## Introduction
 
-Badminton Landing Point Recommender.
+A suite of tools for improving badminton performance.
