@@ -2232,6 +2232,54 @@
     display: none;
   }
 
+  .dual-range {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .dual-track,
+  .dual-fill {
+    position: absolute;
+    top: 50%;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 999px;
+  }
+
+  .dual-track {
+    left: 0;
+    right: 0;
+    background: #dfe8e2;
+  }
+
+  .dual-fill {
+    background: var(--primary);
+    opacity: .48;
+  }
+
+  .dual-thumb {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    padding: 0;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(20,50,35,.24);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .dual-thumb:active {
+    cursor: grabbing;
+    background: #e6f2ec;
+  }
+
   @media (max-width: 680px) {
     .canvas-wrap {
       flex-wrap: nowrap;
@@ -2425,7 +2473,7 @@
           </div>
           <div class="param-item">
             <div class="param-item-head"><label for="speedMax">最大初速度</label><output id="speedMaxValue">60 m/s</output></div>
-            <input id="speedMax" data-param="speedMax" type="range" min="15" max="80" step="1" value="60">
+            <input id="speedMax" data-param="speedMax" type="range" min="15" max="120" step="1" value="60">
           </div>
           <div class="param-item">
             <div class="param-item-head"><label for="thetaMax">最高上仰角</label><output id="thetaMaxValue">88°</output></div>
@@ -2442,12 +2490,8 @@
         <h3>对手 A</h3>
         <div class="param-grid">
           <div class="param-item">
-            <div class="param-item-head"><label for="t0a">反应下限 t0</label><output id="t0aValue">0.20 s</output></div>
-            <input id="t0a" data-param="t0a" type="range" min="0.05" max="1.2" step="0.01" value="0.2">
-          </div>
-          <div class="param-item">
-            <div class="param-item-head"><label for="t1a">反应上限 t1</label><output id="t1aValue">0.55 s</output></div>
-            <input id="t1a" data-param="t1a" type="range" min="0.1" max="1.6" step="0.01" value="0.55">
+            <div class="param-item-head"><label for="reactionA" data-i18n="reactionTime">反应时间</label><output id="reactionAValue">0.20 s</output></div>
+            <input id="reactionA" data-react="a" type="range" min="0.05" max="1.25" step="0.01" value="0.2">
           </div>
           <div class="param-item">
             <div class="param-item-head"><label for="speedA">跑动速度</label><output id="speedAValue">3.8 m/s</output></div>
@@ -2464,12 +2508,8 @@
         <h3>对手 B</h3>
         <div class="param-grid">
           <div class="param-item">
-            <div class="param-item-head"><label for="t0b">反应下限 t0</label><output id="t0bValue">0.20 s</output></div>
-            <input id="t0b" data-param="t0b" type="range" min="0.05" max="1.2" step="0.01" value="0.2">
-          </div>
-          <div class="param-item">
-            <div class="param-item-head"><label for="t1b">反应上限 t1</label><output id="t1bValue">0.55 s</output></div>
-            <input id="t1b" data-param="t1b" type="range" min="0.1" max="1.6" step="0.01" value="0.55">
+            <div class="param-item-head"><label for="reactionB" data-i18n="reactionTime">反应时间</label><output id="reactionBValue">0.20 s</output></div>
+            <input id="reactionB" data-react="b" type="range" min="0.05" max="1.25" step="0.01" value="0.2">
           </div>
           <div class="param-item">
             <div class="param-item-head"><label for="speedB">跑动速度</label><output id="speedBValue">3.8 m/s</output></div>
@@ -2485,13 +2525,14 @@
       <section class="param-section">
         <h3>截击与显示</h3>
         <div class="param-grid">
-          <div class="param-item">
-            <div class="param-item-head"><label for="zMin">可接高度下限</label><output id="zMinValue">0.10 m</output></div>
-            <input id="zMin" data-param="zMin" type="range" min="0" max="2.4" step="0.05" value="0.1">
-          </div>
-          <div class="param-item">
-            <div class="param-item-head"><label for="zMax">可接高度上限</label><output id="zMaxValue">2.50 m</output></div>
-            <input id="zMax" data-param="zMax" type="range" min="0.5" max="3.5" step="0.05" value="2.5">
+          <div class="param-item param-item-dual">
+            <div class="param-item-head"><label data-i18n="reachHeight">可接高度</label><output id="zRangeValue">0.10–2.50 m</output></div>
+            <div class="dual-range" id="zRange" role="group" aria-label="可接高度范围">
+              <div class="dual-track"></div>
+              <div class="dual-fill" id="zRangeFill"></div>
+              <button class="dual-thumb" id="zMinThumb" type="button" aria-label="可接高度下限"></button>
+              <button class="dual-thumb" id="zMaxThumb" type="button" aria-label="可接高度上限"></button>
+            </div>
           </div>
           <div class="param-item">
             <div class="param-item-head"><label for="k2">后退速度系数</label><output id="k2Value">1.30</output></div>
@@ -2529,7 +2570,11 @@
   const $ = (id) => document.getElementById(id);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const lerp = (a, b, t) => a + (b - a) * t;
-  const fmt = (v, n) => Number.isFinite(v) ? v.toFixed(n).replace(/\.?0+$/, '') : '—';
+  const fmt = (v, n) => {
+    if (!Number.isFinite(v)) return '—';
+    const text = v.toFixed(n);
+    return text.includes('.') ? text.replace(/0+$/, '').replace(/\.$/, '') : text;
+  };
   const pct = (v) => Number.isFinite(v) ? Math.round(v * 100) + '%' : '—';
   const DPR_CAP = 2;
   const COARSE_POINTER = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
@@ -2582,6 +2627,8 @@
       minNetClear: '最低过网余量',
       reactionLow: '反应下限 t0',
       reactionHigh: '反应上限 t1',
+      reactionTime: '反应时间',
+      reachHeight: '可接高度',
       runSpeed: '跑动速度',
       touchRadius: '触球半径',
       zMin: '可接高度下限',
@@ -2652,6 +2699,8 @@
       minNetClear: 'Minimum net clearance',
       reactionLow: 'Reaction lower bound t0',
       reactionHigh: 'Reaction upper bound t1',
+      reactionTime: 'Reaction time',
+      reachHeight: 'Reach height',
       runSpeed: 'Running speed',
       touchRadius: 'Touch radius',
       zMin: 'Reach height min',
@@ -3523,6 +3572,81 @@
     updateStatus();
   }
 
+  const Z_RANGE_MIN = 0;
+  const Z_RANGE_MAX = 3.5;
+  const Z_RANGE_GAP = 0.05;
+
+  function updateZRangeUI() {
+    const lo = clamp(Math.min(state.params.zMin, state.params.zMax), Z_RANGE_MIN, Z_RANGE_MAX);
+    const hi = clamp(Math.max(state.params.zMin, state.params.zMax), Z_RANGE_MIN, Z_RANGE_MAX);
+    const pct = v => (v - Z_RANGE_MIN) / (Z_RANGE_MAX - Z_RANGE_MIN) * 100;
+    const fill = $('zRangeFill');
+    const thumbMin = $('zMinThumb');
+    const thumbMax = $('zMaxThumb');
+    if (!fill || !thumbMin || !thumbMax) return;
+    thumbMin.style.left = pct(lo) + '%';
+    thumbMax.style.left = pct(hi) + '%';
+    fill.style.left = pct(lo) + '%';
+    fill.style.width = Math.max(0, pct(hi) - pct(lo)) + '%';
+    thumbMin.setAttribute('aria-valuenow', lo.toFixed(2));
+    thumbMax.setAttribute('aria-valuenow', hi.toFixed(2));
+    $('zRangeValue').textContent = `${fmt(lo, 2)}–${fmt(hi, 2)} m`;
+  }
+
+  function setReachHeight(which, value, final = false) {
+    const rounded = Math.round(clamp(value, Z_RANGE_MIN, Z_RANGE_MAX) / Z_RANGE_GAP) * Z_RANGE_GAP;
+    if (which === 'min') state.params.zMin = Math.min(rounded, state.params.zMax - Z_RANGE_GAP);
+    else state.params.zMax = Math.max(rounded, state.params.zMin + Z_RANGE_GAP);
+    state.params.zMin = clamp(state.params.zMin, Z_RANGE_MIN, Z_RANGE_MAX - Z_RANGE_GAP);
+    state.params.zMax = clamp(state.params.zMax, Z_RANGE_MIN + Z_RANGE_GAP, Z_RANGE_MAX);
+    updateZRangeUI();
+    requestSolve(false, final ? 30 : 130);
+  }
+
+  function setupReachHeightSlider() {
+    const wrap = $('zRange');
+    const thumbMin = $('zMinThumb');
+    const thumbMax = $('zMaxThumb');
+    if (!wrap || !thumbMin || !thumbMax) return;
+    const valueAt = clientX => {
+      const rect = wrap.getBoundingClientRect();
+      const u = clamp((clientX - rect.left) / Math.max(1, rect.width), 0, 1);
+      return Z_RANGE_MIN + u * (Z_RANGE_MAX - Z_RANGE_MIN);
+    };
+    const bind = (thumb, which) => {
+      thumb.addEventListener('pointerdown', event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        try { thumb.setPointerCapture(event.pointerId); } catch (e) { }
+        const move = e => {
+          e.preventDefault();
+          setReachHeight(which, valueAt(e.clientX), false);
+        };
+        const finish = e => {
+          thumb.removeEventListener('pointermove', move);
+          thumb.removeEventListener('pointerup', finish);
+          thumb.removeEventListener('pointercancel', finish);
+          setReachHeight(which, valueAt(e.clientX), true);
+        };
+        thumb.addEventListener('pointermove', move);
+        thumb.addEventListener('pointerup', finish);
+        thumb.addEventListener('pointercancel', finish);
+      });
+      thumb.addEventListener('keydown', event => {
+        const step = event.shiftKey ? 0.25 : 0.05;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+          setReachHeight(which, state.params[which === 'min' ? 'zMin' : 'zMax'] - step, true);
+        } else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+          setReachHeight(which, state.params[which === 'min' ? 'zMin' : 'zMax'] + step, true);
+        } else return;
+        event.preventDefault();
+      });
+    };
+    bind(thumbMin, 'min');
+    bind(thumbMax, 'max');
+  }
+
   function updateParamsUI() {
     for (const input of document.querySelectorAll('[data-param]')) {
       const key = input.dataset.param;
@@ -3549,6 +3673,14 @@
       }
     }
     els.heightValue.textContent = fmt(state.contact.z, 2) + 'm';
+    ['a', 'b'].forEach((side) => {
+      const input = $('reaction' + side.toUpperCase());
+      const output = $('reaction' + side.toUpperCase() + 'Value');
+      const value = state.params['t0' + side];
+      if (input) input.value = value;
+      if (output) output.textContent = fmt(value, 2) + ' s';
+    });
+    updateZRangeUI();
   }
 
   function applyLanguage() {
@@ -4427,9 +4559,9 @@
     ctx.fillText(L('对手', 'Opponent'), groundX + 2, topY + 3);
     ctx.fillText(L('我方', 'Us'), groundX + 2, bottomY - 17);
 
-    ctx.strokeStyle = line;
-    ctx.lineWidth = 0.65;
-    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = '#b7c9bf';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 1;
     ctx.setLineDash([3, 5]);
     for (let z = 2; z <= 10; z += 2) {
       const x = sideView.left + z * sideView.scaleZ;
@@ -4552,12 +4684,12 @@
     const groundX = sideView.left;
     const topY = sidePoint(COURT.HL, 0).y;
     ctx.save();
-    ctx.font = '9px ' + cssColor('--font').replace(/"/g, '');
-    ctx.fillStyle = cssColor('--muted');
+    ctx.font = '600 11.5px ' + cssColor('--font').replace(/"/g, '');
+    ctx.fillStyle = '#4d6256';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.lineWidth = 2.2;
-    ctx.strokeStyle = 'rgba(255,255,255,.82)';
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = 'rgba(255,255,255,.94)';
     for (let z = 2; z <= 10; z += 2) {
       const x = sidePoint(0, z).x;
       const text = `${z} m`;
@@ -5290,6 +5422,19 @@
       requestSolve(false, 130);
     });
   });
+
+  document.querySelectorAll('[data-react]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const side = input.dataset.react;
+      const t0 = clamp(parseFloat(input.value), 0.05, 1.25);
+      state.params['t0' + side] = t0;
+      state.params['t1' + side] = Math.min(1.6, t0 + 0.35);
+      updateParamsUI();
+      requestSolve(false, 130);
+    });
+  });
+
+  setupReachHeightSlider();
 
   let resizeObserver = null;
   if ('ResizeObserver' in window) {

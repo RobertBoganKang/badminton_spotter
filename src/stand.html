@@ -725,7 +725,7 @@
 
     .s-item {
       display: grid;
-      grid-template-columns: 74px 1fr 46px;
+      grid-template-columns: 74px minmax(0, 1fr);
       gap: 6px;
       align-items: center;
       font-size: 11px;
@@ -736,25 +736,35 @@
     }
 
     .s-item.dual {
-      grid-template-columns: 76px 1fr 58px;
+      grid-template-columns: 76px minmax(0, 1fr);
     }
 
-    .s-item span {
+    .s-meta {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .s-meta span {
       white-space: nowrap;
       overflow: hidden;
+      max-width: 100%;
       text-overflow: ellipsis;
     }
 
-    .s-item b {
+    .s-meta b {
       font-weight: 700;
       color: var(--primary);
-      text-align: right;
+      text-align: left;
       font-variant-numeric: tabular-nums;
-      font-size: 11px;
+      font-size: 9px;
     }
 
-    .s-item.dual b {
-      font-size: 10px;
+    .s-item.dual .s-meta b {
+      font-size: 9px;
     }
 
     .s-item input[type=range] {
@@ -2054,40 +2064,39 @@
       }
 
       function drawSideHeightGuides() {
-        if (!showHeat) return;
         const yTop = sideCourtTop - 2;
         const yBot = sideCourtTop + L * sideScaleY + 2;
         sctx.save();
-        sctx.strokeStyle = 'rgba(138,154,145,.32)';
-        sctx.lineWidth = 0.8;
+        sctx.strokeStyle = '#b7c9bf';
+        sctx.lineWidth = 1;
         sctx.setLineDash([3, 5]);
-        sctx.font = '9px system-ui';
-        sctx.fillStyle = '#8a9a91';
+        sctx.font = '600 11.5px system-ui';
+        sctx.fillStyle = '#4d6256';
         sctx.textAlign = 'left';
         sctx.textBaseline = 'bottom';
         sctx.lineWidth = 2.2;
         for (let z = 2; z <= 10; z += 2) {
           const x = sideGroundX + z * sideScaleZ;
-          sctx.strokeStyle = 'rgba(138,154,145,.32)';
-          sctx.lineWidth = 0.8;
+          sctx.strokeStyle = '#b7c9bf';
+          sctx.lineWidth = 1;
           sctx.beginPath();
           sctx.moveTo(x, yTop);
           sctx.lineTo(x, yBot);
           sctx.stroke();
           const text = z + ' m';
-          sctx.strokeStyle = 'rgba(255,255,255,.84)';
-          sctx.lineWidth = 2.2;
+          sctx.strokeStyle = 'rgba(255,255,255,.94)';
+          sctx.lineWidth = 2.6;
           sctx.strokeText(text, x + 2, sideCourtTop - 6);
-          sctx.fillStyle = '#8a9a91';
+          sctx.fillStyle = '#4d6256';
           sctx.fillText(text, x + 2, sideCourtTop - 6);
         }
         const maxText = '总高 ' + SIDE_Z_MAX_HEAT.toFixed(1) + ' m';
         sctx.textAlign = 'right';
         sctx.textBaseline = 'top';
-        sctx.strokeStyle = 'rgba(255,255,255,.84)';
-        sctx.lineWidth = 2.2;
+        sctx.strokeStyle = 'rgba(255,255,255,.94)';
+        sctx.lineWidth = 2.6;
         sctx.strokeText(maxText, sideW - 2, sideCourtTop + 12);
-        sctx.fillStyle = '#8a9a91';
+        sctx.fillStyle = '#4d6256';
         sctx.fillText(maxText, sideW - 2, sideCourtTop + 12);
         sctx.restore();
       }
@@ -3953,6 +3962,10 @@
 
         const val = document.createElement('b');
         val.textContent = fmtSliderVal(PRM[d.key], d.step, gname === 'prob');
+        const meta = document.createElement('div');
+        meta.className = 's-meta';
+        meta.appendChild(label);
+        meta.appendChild(val);
 
         sliderInputs[d.key] = input;
         sliderVals[d.key] = val;
@@ -3983,9 +3996,8 @@
           markDirty(true);
         });
 
-        item.appendChild(label);
+        item.appendChild(meta);
         item.appendChild(input);
-        item.appendChild(val);
         return item;
       }
 
@@ -4085,9 +4097,13 @@
 
         render();
 
-        item.appendChild(label);
+        const meta = document.createElement('div');
+        meta.className = 's-meta';
+        meta.appendChild(label);
+        meta.appendChild(val);
+
+        item.appendChild(meta);
         item.appendChild(wrap);
-        item.appendChild(val);
         return item;
       }
 

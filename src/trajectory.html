@@ -465,7 +465,7 @@ const I18N = {
       <h3>四、角度盘与速度控制</h3>
       <ul>
         <li>蓝色：来球；橙色：拍面法向；深红：拍面切向。</li>
-        <li>法向速度和切向速度使用对数刻度：低速区域获得更长手柄行程，高速仍可到 <code>80 m/s</code>。</li>
+        <li>法向速度和切向速度使用对数刻度：低速区域获得更长手柄行程，高速仍可到 <code>120 m/s</code>。</li>
         <li>拖动手柄选择方向和速度；滚轮落在手柄上可细调，<code>Shift + 滚轮</code> 更精细。</li>
         <li>长按或双击角度盘下方的数值，可以直接输入精确速度。</li>
       </ul>
@@ -537,7 +537,7 @@ const I18N = {
       <h3>4. Angle dial and speed control</h3>
       <ul>
         <li>Blue: incoming; orange: racket normal; dark crimson: racket tangential.</li>
-        <li>Normal and tangential speeds use logarithmic radial scales. Low speeds get useful handle travel while the maximum remains <code>80 m/s</code>.</li>
+        <li>Normal and tangential speeds use logarithmic radial scales. Low speeds get useful handle travel while the maximum remains <code>120 m/s</code>.</li>
         <li>Drag a handle to set angle and speed. Wheel over the handle for fine tuning; <code>Shift + wheel</code> is finer.</li>
         <li>Long-press or double-click a speed readout below the dial to enter an exact value.</li>
       </ul>
@@ -559,8 +559,8 @@ function t(key){ return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key; 
 
 // ==================== 手柄状态 ====================
 const HSIZE = 500;
-const VIN_MAX = 8, VN_MAX = 80, VT_MAX = 80;
-const SPEED_MIN = 0.1, SPEED_ZERO_BAND = 0.03;
+const VIN_MAX = 8, VN_MAX = 120, VT_MAX = 120;
+const SPEED_MIN = 0.1, SPEED_ZERO_BAND = 0.14;
 const COURT_HALF_LENGTH = 6.70;
 const HR_MAX = HSIZE * 0.40;
 
@@ -571,7 +571,7 @@ const handles = {
 };
 let dragging = null;
 let dialHandleScale = 1;
-const DIAL_HANDLE_MIN = 0.60;
+const DIAL_HANDLE_MIN = 0.32;
 const DIAL_HANDLE_MAX = 1.18;
 
 function activeHandleRadius(){ return HR_MAX * dialHandleScale; }
@@ -856,18 +856,18 @@ hc.addEventListener('wheel', e=>{
   }
   dialZoomMode = 'manual';
   updateDialZoomButtons();
-  setDialHandleScale(dialHandleScale * (e.deltaY < 0 ? 1.08 : 1/1.08));
+  setDialHandleScale(dialHandleScale * (e.deltaY < 0 ? 1.12 : 1/1.12));
 }, {passive:false});
 $('dialZoomAuto').addEventListener('click', applyDialAuto);
 $('dialZoomOut').addEventListener('click', ()=>{
   dialZoomMode = 'manual';
   updateDialZoomButtons();
-  setDialHandleScale(dialHandleScale / 1.08);
+  setDialHandleScale(dialHandleScale / 1.12);
 });
 $('dialZoomIn').addEventListener('click', ()=>{
   dialZoomMode = 'manual';
   updateDialZoomButtons();
-  setDialHandleScale(dialHandleScale * 1.08);
+  setDialHandleScale(dialHandleScale * 1.12);
 });
 
 const speedEditor = $('speedEditor');
