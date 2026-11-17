@@ -1095,6 +1095,7 @@
           <div class="detail-chip"><span data-i18n="incomingAngle">来球角度</span><b id="dInAngle">—</b></div>
           <div class="detail-chip"><span data-i18n="normalSpeed">球拍法向速度</span><b id="dNormalSpeed">—</b></div>
           <div class="detail-chip"><span data-i18n="tangentSpeed">球拍切向速度</span><b id="dTangentSpeed">—</b></div>
+          <div class="detail-chip"><span data-i18n="racketSpeed">球拍合成速度</span><b id="dRacketSpeed">—</b></div>
           <div class="detail-chip"><span data-i18n="contactX">击球点横向坐标</span><b id="dRx">—</b></div>
           <div class="detail-chip"><span data-i18n="netX">球网坐标</span><b id="dNx">—</b></div>
           <div class="detail-chip"><span data-i18n="outSpeed">出球速度</span><b id="dOutSpeed">—</b></div>
@@ -1222,7 +1223,7 @@
       const NET_HEIGHT = 1.55;
       const D2R = Math.PI / 180;
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-      const normAngle = a => {while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a;};
+      const normAngle = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
       const angleDeg = a => Math.round((((a / D2R) % 360) + 360) % 360);
       const GUIDE_LINE_COLOR = '#b7c9bf';
       const GUIDE_LABEL_COLOR = '#4d6256';
@@ -1242,7 +1243,7 @@
           ballHeight: '球头高度', restitution: '恢复系数', stringFriction: '拍线摩擦',
           liftPeak: '升力峰值', spinDecay: '自旋衰减',
           incomingSpeed: '来球速度', incomingAngle: '来球角度',
-          normalSpeed: '球拍法向速度', tangentSpeed: '球拍切向速度',
+          normalSpeed: '球拍法向速度', tangentSpeed: '球拍切向速度', racketSpeed: '球拍合成速度',
           contactX: '击球点横向坐标', netX: '球网坐标',
           outSpeed: '出球速度', outAngle: '出球角度',
           currentSpeed: '当前球速', currentAngle: '当前空间角度',
@@ -1314,7 +1315,7 @@
           ballHeight: 'Contact height', restitution: 'Restitution', stringFriction: 'String friction',
           liftPeak: 'Lift peak', spinDecay: 'Spin decay',
           incomingSpeed: 'Incoming speed', incomingAngle: 'Incoming angle',
-          normalSpeed: 'Racket normal speed', tangentSpeed: 'Racket tangential speed',
+          normalSpeed: 'Racket normal speed', tangentSpeed: 'Racket tangential speed', racketSpeed: 'Racket speed',
           contactX: 'Contact x', netX: 'Net x',
           outSpeed: 'Outgoing speed', outAngle: 'Outgoing angle',
           currentSpeed: 'Current speed', currentAngle: 'Current flight angle',
@@ -1375,7 +1376,7 @@
     `
         }
       };
-      function t(key) {return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;}
+      function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key; }
 
       // ==================== 手柄状态 ====================
       const HSIZE = 500;
@@ -1385,16 +1386,16 @@
       const HR_MAX = HSIZE * 0.40;
 
       const handles = {
-        incoming: {angle: Math.PI + 30 * D2R, mag: 1.2},
-        normal: {angle: 65 * D2R, mag: 3.5},
-        tangent: {mag: 2.5}
+        incoming: { angle: Math.PI + 30 * D2R, mag: 1.2 },
+        normal: { angle: 65 * D2R, mag: 3.5 },
+        tangent: { mag: 2.5 }
       };
       let dragging = null;
       let dialHandleScale = 1;
       const DIAL_HANDLE_MIN = 0.32;
       const DIAL_HANDLE_MAX = 1.18;
 
-      function activeHandleRadius() {return HR_MAX * dialHandleScale;}
+      function activeHandleRadius() { return HR_MAX * dialHandleScale; }
       function speedFromLogPosition(position, max = VN_MAX) {
         const u = clamp(Math.abs(position), 0, 1);
         if (u <= SPEED_ZERO_BAND) return SPEED_MIN * u / SPEED_ZERO_BAND;
@@ -1414,7 +1415,7 @@
         const sign = signed && value > 0 ? '+' : '';
         return sign + (Math.abs(value) < 10 ? value.toFixed(2) : value.toFixed(1));
       }
-      function tangentPhysAngle() {return handles.normal.angle - Math.PI / 2;}
+      function tangentPhysAngle() { return handles.normal.angle - Math.PI / 2; }
       function handlePos(physAngle, normMag) {
         const cAng = -physAngle;
         const r = normMag * activeHandleRadius();
@@ -1600,9 +1601,9 @@
         const nPos = handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX));
         const tPos = tangentHandlePos();
         const cands = [
-          {name: 'incoming', pos: iPos},
-          {name: 'normal', pos: nPos},
-          {name: 'tangent', pos: tPos}
+          { name: 'incoming', pos: iPos },
+          { name: 'normal', pos: nPos },
+          { name: 'tangent', pos: tPos }
         ];
         for (const c of cands) {
           if (Math.hypot(p.x - c.pos[0], p.y - c.pos[1]) < 20) {
@@ -1637,23 +1638,23 @@
         requestCompute();
       });
       hc.addEventListener('pointerup', () => {
-        if (dragging) {dragging = null; compute();}
+        if (dragging) { dragging = null; compute(); }
       });
       hc.addEventListener('pointercancel', () => {
-        if (dragging) {dragging = null; compute();}
+        if (dragging) { dragging = null; compute(); }
       });
       hc.addEventListener('wheel', e => {
         e.preventDefault();
         const p = getHandlePointer(e);
         const candidates = [
-          {name: 'incoming', pos: handlePos(handles.incoming.angle, handles.incoming.mag / VIN_MAX)},
-          {name: 'normal', pos: handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX))},
-          {name: 'tangent', pos: tangentHandlePos()}
+          { name: 'incoming', pos: handlePos(handles.incoming.angle, handles.incoming.mag / VIN_MAX) },
+          { name: 'normal', pos: handlePos(handles.normal.angle, logPositionFromSpeed(handles.normal.mag, VN_MAX)) },
+          { name: 'tangent', pos: tangentHandlePos() }
         ];
         let target = null, best = 26;
         for (const item of candidates) {
           const dist = Math.hypot(p.x - item.pos[0], p.y - item.pos[1]);
-          if (dist < best) {best = dist; target = item.name;}
+          if (dist < best) { best = dist; target = item.name; }
         }
         if (target) {
           const direction = e.deltaY < 0 ? 1 : -1;
@@ -1677,7 +1678,7 @@
         dialZoomMode = 'manual';
         updateDialZoomButtons();
         setDialHandleScale(dialHandleScale * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
-      }, {passive: false});
+      }, { passive: false });
       $('dialZoomAuto').addEventListener('click', applyDialAuto);
       $('dialZoomOut').addEventListener('click', () => {
         dialZoomMode = 'manual';
@@ -1698,15 +1699,15 @@
       const speedEditorConfig = {
         incoming: {
           labelKey: 'incomingSpeed', min: 0, max: VIN_MAX, get: () => handles.incoming.mag,
-          set: v => {handles.incoming.mag = clamp(v, 0, VIN_MAX);}
+          set: v => { handles.incoming.mag = clamp(v, 0, VIN_MAX); }
         },
         normal: {
           labelKey: 'normalSpeed', min: 0, max: VN_MAX, get: () => handles.normal.mag,
-          set: v => {handles.normal.mag = clamp(v, 0, VN_MAX);}
+          set: v => { handles.normal.mag = clamp(v, 0, VN_MAX); }
         },
         tangent: {
           labelKey: 'tangentSpeed', min: -VT_MAX, max: VT_MAX, get: () => handles.tangent.mag,
-          set: v => {handles.tangent.mag = clamp(v, -VT_MAX, VT_MAX);}
+          set: v => { handles.tangent.mag = clamp(v, -VT_MAX, VT_MAX); }
         }
       };
       function openSpeedEditor(target) {
@@ -1718,7 +1719,7 @@
         speedEditorInput.max = cfg.max;
         speedEditorInput.value = cfg.get().toFixed(3);
         speedEditor.hidden = false;
-        requestAnimationFrame(() => {speedEditorInput.focus(); speedEditorInput.select();});
+        requestAnimationFrame(() => { speedEditorInput.focus(); speedEditorInput.select(); });
       }
       function closeSpeedEditor() {
         speedEditor.hidden = true;
@@ -1734,11 +1735,11 @@
         compute();
       }
       document.querySelectorAll('.vector-readout').forEach(button => {
-        const clearLongPress = () => {if (longPressTimer) {clearTimeout(longPressTimer); longPressTimer = null;} };
+        const clearLongPress = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
         button.addEventListener('pointerdown', () => {
           clearLongPress();
           const target = button.dataset.speedTarget;
-          longPressTimer = setTimeout(() => {longPressTimer = null; openSpeedEditor(target);}, 650);
+          longPressTimer = setTimeout(() => { longPressTimer = null; openSpeedEditor(target); }, 650);
         });
         button.addEventListener('pointerup', clearLongPress);
         button.addEventListener('pointercancel', clearLongPress);
@@ -1769,7 +1770,7 @@
         }
         const smoothSign = Math.tanh(phi / (12 * D2R));
         const Cl = magnitude * smoothSign;
-        return {Cd, Cl, deg};
+        return { Cd, Cl, deg };
       }
 
       // ==================== 碰撞 ====================
@@ -1794,6 +1795,9 @@
         const vOutT = vInT - mu * vRelT;
         const vOut = [vOutN * n[0] + vOutT * t[0], vOutN * n[1] + vOutT * t[1]];
         const thetaOut = Math.atan2(vOut[1], vOut[0]);
+        const vRacket = [vn * n[0] + vt * t[0], vn * n[1] + vt * t[1]];
+        const thetaRacket = Math.atan2(vRacket[1], vRacket[0]);
+        const vRacketMag = Math.hypot(vRacket[0], vRacket[1]);
 
         let phi0 = normAngle(thetaIn - thetaOut);
         if (Math.abs(Math.abs(phi0) - Math.PI) < 0.02) phi0 -= 0.02 * Math.sign(phi0);
@@ -1818,7 +1822,8 @@
           state: [cmX0, cmY0, vOut[0], vOut[1], psi0, omega0, omegaSpin0, 0],
           info: {
             vIn, vOut, thetaIn, thetaOut, vInN, vInT, vOutN, vOutT, vRelT,
-            phi0, psi0, omega0, omegaSpin0, flipDir, slipNorm, n, t, beta, headH
+            phi0, psi0, omega0, omegaSpin0, flipDir, slipNorm, n, t, beta, headH,
+            vn, vt, vRacket, thetaRacket, vRacketMag          // ← 新增
           }
         };
       }
@@ -1899,7 +1904,7 @@
       }
 
       function compute(skipFitView) {
-        if (animId) {cancelAnimationFrame(animId); animId = null;}
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
         playing = false;
         updatePlayButton();
 
@@ -1925,7 +1930,7 @@
           }
           s[4] = normAngle(s[4]);
           if (t > 0.015) {
-            const hp = headPosOf({x: s[0], y: s[1], vx: s[2], vy: s[3], psi: s[4]});
+            const hp = headPosOf({ x: s[0], y: s[1], vx: s[2], vy: s[3], psi: s[4] });
             if (hp.y <= 0) break;
           }
           traj.push(trajectoryPoint(t, s, previousTheta, dt));
@@ -1975,15 +1980,15 @@
           const a = heads[i - 1], b = heads[i];
           if ((a.x - netX) * (b.x - netX) <= 0 && Math.abs(b.x - a.x) > 1e-9) {
             const u = (netX - a.x) / (b.x - a.x);
-            netCross = {x: netX, y: a.y + (b.y - a.y) * u};
+            netCross = { x: netX, y: a.y + (b.y - a.y) * u };
             break;
           }
         }
         let failureReason = null;
         let failureKey = null;
-        if (netCross && netCross.y < NET_HEIGHT) {failureReason = '被球网阻挡'; failureKey = 'netBlocked';}
-        if (!failureReason && lastHead.x <= netX + 0.03) {failureReason = '无法到达对面场地'; failureKey = 'cannotReach';}
-        return {netCross, reachable: !failureReason, failureReason, failureKey};
+        if (netCross && netCross.y < NET_HEIGHT) { failureReason = '被球网阻挡'; failureKey = 'netBlocked'; }
+        if (!failureReason && lastHead.x <= netX + 0.03) { failureReason = '无法到达对面场地'; failureKey = 'cannotReach'; }
+        return { netCross, reachable: !failureReason, failureReason, failureKey };
       }
 
       function refreshReachability() {
@@ -2067,7 +2072,7 @@
         drawHandlePanel();
       }
 
-      function toT(x, y) {return [oxT + x * scaleT, oyT - y * scaleT];}
+      function toT(x, y) { return [oxT + x * scaleT, oyT - y * scaleT]; }
 
       function updateView(idx) {
         if (idx == null) idx = +$('time').value;
@@ -2097,7 +2102,7 @@
 
       function updateDetailChips(idx) {
         const q = traj[idx];
-        const set = (id, value) => {const el = $(id); if (el) el.textContent = value;};
+        const set = (id, value) => { const el = $(id); if (el) el.textContent = value; };
         const deg = a => (((a / D2R) % 360) + 360) % 360;
         set('dH', (+$('h').value).toFixed(2) + ' m');
         set('dE', (+$('e').value).toFixed(2));
@@ -2108,6 +2113,10 @@
         set('dInAngle', deg(handles.incoming.angle).toFixed(1) + '°');
         set('dNormalSpeed', handles.normal.mag.toFixed(1) + ' m/s');
         set('dTangentSpeed', handles.tangent.mag.toFixed(1) + ' m/s');
+        if (colInfo) {
+          set('dRacketSpeed',
+            colInfo.vRacketMag.toFixed(2) + ' m/s · ' + angleDeg(colInfo.thetaRacket) + '°');
+        }
         set('dRx', (racketX - netX).toFixed(2) + ' m');
         set('dNx', '0.00 m');
         if (meta) {
@@ -2163,9 +2172,9 @@
         tctx.strokeStyle = '#73aa8f'; tctx.lineWidth = 1.5; tctx.stroke();
 
         const markers = [
-          {d: 1.98, label: t('serviceLine')},
-          {d: 5.94, label: t('rearServiceLine')},
-          {d: 6.70, label: t('baseline')}
+          { d: 1.98, label: t('serviceLine') },
+          { d: 5.94, label: t('rearServiceLine') },
+          { d: 6.70, label: t('baseline') }
         ];
         tctx.save();
         tctx.font = '9px system-ui';
@@ -2260,6 +2269,33 @@
           cy - Math.sin(p.thetaIn) * inLen,
           '#2563eb', 2
         );
+
+        // ===== 球拍速度（法向 + 切向合成）=====
+        const vnR = p.vn || 0, vtR = p.vt || 0;
+        const vRacketMag = Math.hypot(vnR, vtR);
+        if (vRacketMag > 0.02) {
+          const scaleLen = m => 30 + 7 * Math.sqrt(Math.min(m, 160));
+
+          if (Math.abs(vnR) > 0.02) {
+            const l = scaleLen(Math.abs(vnR)) * (vnR < 0 ? -1 : 1);
+            drawDashedArrowT(cx, cy,
+              cx + Math.cos(beta) * l,
+              cy - Math.sin(beta) * l,
+              'rgba(239,125,34,.60)');
+          }
+          if (Math.abs(vtR) > 0.02) {
+            const l = scaleLen(Math.abs(vtR)) * (vtR < 0 ? -1 : 1);
+            drawDashedArrowT(cx, cy,
+              cx + Math.cos(tAng) * l,
+              cy - Math.sin(tAng) * l,
+              'rgba(148,29,61,.55)');
+          }
+          const L = scaleLen(vRacketMag);
+          drawArrowT(cx, cy,
+            cx + Math.cos(p.thetaRacket) * L,
+            cy - Math.sin(p.thetaRacket) * L,
+            '#d94b3d', 2.8);
+        }
       }
 
       function drawTrajLine(idx) {
@@ -2389,14 +2425,29 @@
         tctx.closePath(); tctx.fillStyle = color; tctx.fill();
       }
 
+      function drawDashedArrowT(x1, y1, x2, y2, color) {
+        tctx.save();
+        tctx.beginPath(); tctx.moveTo(x1, y1); tctx.lineTo(x2, y2);
+        tctx.setLineDash([5, 4]);
+        tctx.strokeStyle = color; tctx.lineWidth = 1.6;
+        tctx.lineCap = 'round'; tctx.stroke();
+        tctx.setLineDash([]);
+        const ang = Math.atan2(y2 - y1, x2 - x1), hl = 7;
+        tctx.beginPath(); tctx.moveTo(x2, y2);
+        tctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+        tctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45));
+        tctx.closePath(); tctx.fillStyle = color; tctx.fill();
+        tctx.restore();
+      }
+
       function drawStatusCard(W) {
         if (!meta || !traj.length) return;
         const q = traj[+$('time').value];
         const phiDeg = q.phi / D2R;
         let status, sc;
-        if (Math.abs(phiDeg) < 10) {status = '已翻正'; sc = '#34c759';}
-        else if (Math.abs(phiDeg) > 140) {status = '朝来球'; sc = '#ff3b30';}
-        else {status = '翻转中'; sc = '#af52de';}
+        if (Math.abs(phiDeg) < 10) { status = '已翻正'; sc = '#34c759'; }
+        else if (Math.abs(phiDeg) > 140) { status = '朝来球'; sc = '#ff3b30'; }
+        else { status = '翻转中'; sc = '#af52de'; }
         const dirText = meta.flipDir > 0 ? '逆时针 ↺' : '顺时针 ↻';
 
         const lines = [
@@ -2463,7 +2514,7 @@
           return;
         }
         trajDragging = 'pan';
-        panState = {startX: p.x, startY: p.y, originX: oxT, originY: oyT};
+        panState = { startX: p.x, startY: p.y, originX: oxT, originY: oyT };
         tc.setPointerCapture(e.pointerId);
         tc.style.cursor = 'grabbing';
       });
@@ -2523,7 +2574,7 @@
           panState = null;
           tc.style.cursor = (wasPan || wasRacket) ? 'grab' : 'default';
           if (wasRacket) {
-            if (dragTimer) {clearTimeout(dragTimer); dragTimer = null;}
+            if (dragTimer) { clearTimeout(dragTimer); dragTimer = null; }
             compute();
           }
         }
@@ -2537,7 +2588,7 @@
           panState = null;
           tc.style.cursor = (wasPan || wasRacket) ? 'grab' : 'default';
           if (wasRacket) {
-            if (dragTimer) {clearTimeout(dragTimer); dragTimer = null;}
+            if (dragTimer) { clearTimeout(dragTimer); dragTimer = null; }
             compute();
           }
         }
@@ -2639,12 +2690,12 @@
         e.preventDefault();
         const p = getTrajPointer(e);
         applyZoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, p);
-      }, {passive: false});
+      }, { passive: false });
 
       // ==================== 事件绑定 ====================
       const ids = ['h', 'e', 'mu', 'cl', 'spindamp'];
-      const disp = {h: 'vH', e: 'vE', mu: 'vMu', cl: 'vCl', spindamp: 'vSpin'};
-      const defaults = {h: 1.5, e: 0.5, mu: 0.6, cl: 0.5, spindamp: 0.6};
+      const disp = { h: 'vH', e: 'vE', mu: 'vMu', cl: 'vCl', spindamp: 'vSpin' };
+      const defaults = { h: 1.5, e: 0.5, mu: 0.6, cl: 0.5, spindamp: 0.6 };
       const fmt = {
         h: v => v.toFixed(2),
         e: v => v.toFixed(2),
@@ -2662,11 +2713,11 @@
       });
 
       const vectorControls = {
-        vin: v => {handles.incoming.mag = v;},
-        ain: v => {handles.incoming.angle = v * D2R;},
-        vn: v => {handles.normal.mag = speedFromLogPosition(v, VN_MAX);},
-        an: v => {handles.normal.angle = v * D2R;},
-        vt: v => {handles.tangent.mag = signedSpeedFromLogPosition(v, VT_MAX);}
+        vin: v => { handles.incoming.mag = v; },
+        ain: v => { handles.incoming.angle = v * D2R; },
+        vn: v => { handles.normal.mag = speedFromLogPosition(v, VN_MAX); },
+        an: v => { handles.normal.angle = v * D2R; },
+        vt: v => { handles.tangent.mag = signedSpeedFromLogPosition(v, VT_MAX); }
       };
       Object.keys(vectorControls).forEach(id => {
         $(id).addEventListener('input', () => {
@@ -2715,9 +2766,9 @@
           $(id).value = defaults[id];
           $(disp[id]).textContent = fmt[id](defaults[id]);
         });
-        handles.incoming = {angle: Math.PI + 30 * D2R, mag: 1.2};
-        handles.normal = {angle: 65 * D2R, mag: 3.5};
-        handles.tangent = {mag: 2.5};
+        handles.incoming = { angle: Math.PI + 30 * D2R, mag: 1.2 };
+        handles.normal = { angle: 65 * D2R, mag: 3.5 };
+        handles.tangent = { mag: 2.5 };
         netX = 0;
         racketX = -2.0;
         drawHandlePanel();
@@ -2781,9 +2832,9 @@
       let lastCreditTap = 0;
       credit.addEventListener('touchend', e => {
         const now = Date.now();
-        if (now - lastCreditTap < 350) {e.preventDefault(); openPrinciple(); lastCreditTap = 0;}
+        if (now - lastCreditTap < 350) { e.preventDefault(); openPrinciple(); lastCreditTap = 0; }
         else lastCreditTap = now;
-      }, {passive: false});
+      }, { passive: false });
       $('principleClose').addEventListener('click', closePrinciple);
       principleModal.addEventListener('click', e => {
         if (e.target === principleModal) closePrinciple();
@@ -2798,7 +2849,7 @@
       });
       ro.observe(trajWrap);
       // ==================== 初始化 ====================
-      ids.forEach(id => {$(disp[id]).textContent = fmt[id](+$(id).value);});
+      ids.forEach(id => { $(disp[id]).textContent = fmt[id](+$(id).value); });
       applyDialAuto();
       syncVectorControls();
       sizeTrajCanvas();
