@@ -1011,16 +1011,26 @@
       /* =========================================================
        * 2. 常量
        * ========================================================= */
-      const L = 13.40, W = 5.18;
-      const HALF_W = W / 2, NET_Y = L / 2;
+      const L = 13.40;
+      const W_DOUBLE = 6.10;                 // 双打宽（外线）
+      const W_SINGLE = 5.18;                 // 单打宽（内线）
+      const HALF_W = W_DOUBLE / 2;           // 3.05 画布/外框基准
+      const HALF_W_SINGLE = W_SINGLE / 2;    // 2.59 单打边线
+      const NET_Y = L / 2;
       const SAFE_DELTA = 0.20;
       const OPP_SIDE_Y_MIN = NET_Y, OPP_SIDE_Y_MAX = L;
 
-      // 网格 / 落点合法边界（computeGrid / buildHeatCanvas / computeGapPoints 共用）
-      const GRID_X_MIN = -HALF_W + SAFE_DELTA;
-      const GRID_X_MAX = HALF_W - SAFE_DELTA;
+      // Y 边界与模式无关，保留常量
       const GRID_Y_MIN = OPP_SIDE_Y_MIN + SAFE_DELTA;
       const GRID_Y_MAX = OPP_SIDE_Y_MAX - SAFE_DELTA;
+
+      // 根据模式返回半宽和网格边界
+      const halfWidthOf = (mode) => (mode === 'single' ? HALF_W_SINGLE : HALF_W);
+
+      function gridBounds(mode) {
+        const hw = halfWidthOf(mode);
+        return { xMin: -hw + SAFE_DELTA, xMax: hw - SAFE_DELTA, yMin: GRID_Y_MIN, yMax: GRID_Y_MAX };
+      }
 
       const W_X = 1.0, W_BACK = 1.7, W_FWD = 1.15;
       const K_REV = 1.8, K_ADV = 0.7;
@@ -1028,7 +1038,7 @@
       const BODY_R = 0.45, K_BODY = 1.6;
       const MIN_GAP_DIST = 1.0;
 
-      const SINGLE_RETURN = {x: 0, y: 3.35};
+      const SINGLE_RETURN = { x: 0, y: 3.35 };
       const W_ME_SINGLE = 0.3;
 
       const GRID_STEP_FAST = 0.25, GRID_STEP_FINE = 0.10;
@@ -1039,16 +1049,19 @@
       const ALREADY_BEST = 0.15;
 
       // 四角种子点（角点筛选的起点）
-      const CORNER_SEEDS = [
-        {x: GRID_X_MIN, y: GRID_Y_MAX},
-        {x: GRID_X_MAX, y: GRID_Y_MAX},
-        {x: GRID_X_MIN, y: GRID_Y_MIN},
-        {x: GRID_X_MAX, y: GRID_Y_MIN},
-      ];
+      function cornerSeeds(mode) {
+        const b = gridBounds(mode);
+        return [
+          { x: b.xMin, y: b.yMax },
+          { x: b.xMax, y: b.yMax },
+          { x: b.xMin, y: b.yMin },
+          { x: b.xMax, y: b.yMin },
+        ];
+      }
 
       const SCALE = 90, PAD = 50;
       const EXPOSE_M = 0.8, VIEW_Y_MIN = NET_Y - EXPOSE_M;
-      const LOGICAL_W = W * SCALE + PAD * 2;
+      const LOGICAL_W = W_DOUBLE * SCALE + PAD * 2;
       const LOGICAL_H = (L - VIEW_Y_MIN) * SCALE + PAD * 2;
 
       const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
@@ -1090,8 +1103,8 @@
       const C_FRAME = '#1e4d38';
       const C_NET = '#1e4d38';
 
-      const ZERO_V = {x: 0, y: 0};
-      const TARGET = {A_POS: 1, B_POS: 2, A_VEL: 3, B_VEL: 4};
+      const ZERO_V = { x: 0, y: 0 };
+      const TARGET = { A_POS: 1, B_POS: 2, A_VEL: 3, B_VEL: 4 };
 
       /* =========================================================
        * 3. 状态
@@ -1102,10 +1115,10 @@
         hover: null,
         speedRatio: 1,
         players: {
-          a: {pos: {x: -1.2, y: 9.2}, vel: {x: 0, y: 0}, velVisible: false},
-          b: {pos: {x: 1.2, y: 9.2}, vel: {x: 0, y: 0}, velVisible: false},
+          a: { pos: { x: -1.2, y: 9.2 }, vel: { x: 0, y: 0 }, velVisible: false },
+          b: { pos: { x: 1.2, y: 9.2 }, vel: { x: 0, y: 0 }, velVisible: false },
         },
-        best: {pt: null, J: 0},
+        best: { pt: null, J: 0 },
         heat: [],
         heatMeta: null,
         corners: [],
@@ -1123,11 +1136,11 @@
         longPressFired: false,
       };
 
-      const dirty = {locus: true, grid: true};
-      const markDirty = () => {dirty.locus = true; dirty.grid = true;};
+      const dirty = { locus: true, grid: true };
+      const markDirty = () => { dirty.locus = true; dirty.grid = true; };
 
       let lastGridCompute = 0;
-      let lastTap = {time: 0, x: 0, y: 0};
+      let lastTap = { time: 0, x: 0, y: 0 };
 
       // 热力图离屏画布（唯一来源）
       let heatCanvas = null, heatCtx = null;
@@ -1201,20 +1214,20 @@
         return base / mul;
       }
 
-      function bodyEdgeFactor(x, y, opp) {
+      function bodyEdgeFactor(x, y, opp, halfW = HALF_W) {
         const dx = x - opp.x, dy = y - opp.y;
         let f = 1;
         if (Math.hypot(dx, dy) < BODY_R) f *= K_BODY;
         const dEdge = Math.min(
-          HALF_W - SAFE_DELTA - Math.abs(x),
+          halfW - SAFE_DELTA - Math.abs(x),  // 使用传入的 halfW
           y - OPP_SIDE_Y_MIN,
           OPP_SIDE_Y_MAX - y
         );
         return f * (1 + K_EDGE * Math.exp(-Math.max(0, dEdge) / B0));
       }
 
-      function difficulty(x, y, opp, v, vmag, mul = 1) {
-        return evalAt(x, y, opp, v, vmag, mul) * bodyEdgeFactor(x, y, opp);
+      function difficulty(x, y, opp, v, vmag, mul = 1, halfW = HALF_W) {
+        return evalAt(x, y, opp, v, vmag, mul) * bodyEdgeFactor(x, y, opp, halfW);
       }
 
       // 当前模式下的速度倍率
@@ -1225,8 +1238,10 @@
       }
 
       function computeGrid(o1, o2, v1, vm1, v2, vm2, step, mode) {
-        const nX = Math.max(1, Math.round((GRID_X_MAX - GRID_X_MIN) / step));
-        const nY = Math.max(1, Math.round((GRID_Y_MAX - GRID_Y_MIN) / step));
+        const b = gridBounds(mode);
+        const hw = halfWidthOf(mode);
+        const nX = Math.max(1, Math.round((b.xMax - b.xMin) / step));
+        const nY = Math.max(1, Math.round((b.yMax - b.yMin) / step));
 
         const m1 = mulOf('a', mode);
         const m2 = mulOf('b', mode);
@@ -1236,48 +1251,48 @@
         let minTime = Infinity, maxTime = -Infinity;
 
         for (let i = 0; i <= nX; i++) {
-          const x = GRID_X_MIN + (GRID_X_MAX - GRID_X_MIN) * i / nX;
+          const x = b.xMin + (b.xMax - b.xMin) * i / nX;
           for (let j = 0; j <= nY; j++) {
-            const y = GRID_Y_MIN + (GRID_Y_MAX - GRID_Y_MIN) * j / nY;
+            const y = b.yMin + (b.yMax - b.yMin) * j / nY;
             const base1 = evalAt(x, y, o1, v1, vm1, m1);
 
             let jv, time;
             if (mode === 'single') {
-              const oppScore = base1 * bodyEdgeFactor(x, y, o1);
+              const oppScore = base1 * bodyEdgeFactor(x, y, o1, hw);
               const dx = x - SINGLE_RETURN.x, dy = y - SINGLE_RETURN.y;
               jv = oppScore - W_ME_SINGLE * Math.sqrt(dx * dx + dy * dy);
               time = base1;
             } else {
               const base2 = evalAt(x, y, o2, v2, vm2, m2);
               jv = Math.min(
-                base1 * bodyEdgeFactor(x, y, o1),
-                base2 * bodyEdgeFactor(x, y, o2)
+                base1 * bodyEdgeFactor(x, y, o1, hw),
+                base2 * bodyEdgeFactor(x, y, o2, hw)
               );
               time = Math.min(base1, base2);
             }
 
-            heat.push({x, y, val: jv, time});
-            if (jv > bestJ) {bestJ = jv; bestPt = {x, y};}
+            heat.push({ x, y, val: jv, time });
+            if (jv > bestJ) { bestJ = jv; bestPt = { x, y }; }
             if (time < minTime) minTime = time;
             if (time > maxTime) maxTime = time;
           }
         }
 
-        const raw = CORNER_SEEDS.map((s) => {
+        const raw = cornerSeeds(mode).map((s) => {
           let bx = s.x, by = s.y, bj = -Infinity;
           for (const h of heat) {
             if (Math.abs(h.x - s.x) <= CORNER_R + 1e-9 &&
               Math.abs(h.y - s.y) <= CORNER_R + 1e-9 &&
-              h.val > bj) {bj = h.val; bx = h.x; by = h.y;}
+              h.val > bj) { bj = h.val; bx = h.x; by = h.y; }
           }
-          return {x: bx, y: by, val: bj, distToSeed: Math.hypot(bx - s.x, by - s.y), rank: null};
+          return { x: bx, y: by, val: bj, distToSeed: Math.hypot(bx - s.x, by - s.y), rank: null };
         });
 
         // 过滤后剥掉 distToSeed（渲染不需要）
         const visible = raw
           .filter((c) => c.distToSeed <= CORNER_SHOW_R)
           .sort((a, b) => b.val - a.val)
-          .map(({distToSeed, ...rest}) => rest);
+          .map(({ distToSeed, ...rest }) => rest);
 
         let cursor = 2;
         for (const cb of visible) {
@@ -1286,9 +1301,9 @@
 
         const span = (maxTime - minTime) || 1;
         // 只保留热力图需要的字段
-        const heatOut = heat.map((h) => ({x: h.x, y: h.y, norm: (h.time - minTime) / span}));
+        const heatOut = heat.map((h) => ({ x: h.x, y: h.y, norm: (h.time - minTime) / span }));
 
-        return {best: {pt: bestPt, J: bestJ}, heat: heatOut, step, corners: visible};
+        return { best: { pt: bestPt, J: bestJ }, heat: heatOut, step, corners: visible };
       }
 
       function equiLocus(o1, o2, v1, vm1, v2, vm2, m1, m2) {
@@ -1374,12 +1389,12 @@
         let bestPos = null, bestNeg = null;
         for (const c of cands) {
           const s = (c.x - midX) * perpX + (c.y - midY) * perpY;
-          if (s >= 0) {if (!bestPos || c.s > bestPos.s) bestPos = c;}
-          else {if (!bestNeg || c.s > bestNeg.s) bestNeg = c;}
+          if (s >= 0) { if (!bestPos || c.s > bestPos.s) bestPos = c; }
+          else { if (!bestNeg || c.s > bestNeg.s) bestNeg = c; }
         }
         return [
-          bestPos ? {x: bestPos.x, y: bestPos.y} : null,
-          bestNeg ? {x: bestNeg.x, y: bestNeg.y} : null,
+          bestPos ? { x: bestPos.x, y: bestPos.y } : null,
+          bestNeg ? { x: bestNeg.x, y: bestNeg.y } : null,
         ];
       }
 
@@ -1417,7 +1432,7 @@
         ];
         let a = stops[0], b = stops[stops.length - 1];
         for (let i = 0; i < stops.length - 1; i++) {
-          if (tv >= stops[i][0] && tv <= stops[i + 1][0]) {a = stops[i]; b = stops[i + 1]; break;}
+          if (tv >= stops[i][0] && tv <= stops[i + 1][0]) { a = stops[i]; b = stops[i + 1]; break; }
         }
         const span = b[0] - a[0];
         const f = span > 0 ? (tv - a[0]) / span : 0;
@@ -1428,10 +1443,10 @@
         ];
       }
 
-      function buildHeatCanvas(step) {
-        if (!state.heat.length) {state.heatMeta = null; return;}
-        const cols = Math.round((GRID_X_MAX - GRID_X_MIN) / step) + 1;
-        const rows = Math.round((GRID_Y_MAX - GRID_Y_MIN) / step) + 1;
+      function buildHeatCanvas(step, bounds) {
+        if (!state.heat.length) { state.heatMeta = null; return; }
+        const cols = Math.round((bounds.xMax - bounds.xMin) / step) + 1;
+        const rows = Math.round((bounds.yMax - bounds.yMin) / step) + 1;
 
         if (!heatCanvas) {
           heatCanvas = document.createElement('canvas');
@@ -1443,16 +1458,20 @@
         const img = heatCtx.createImageData(cols, rows);
         const data = img.data;
         for (const h of state.heat) {
-          const ix = Math.round((h.x - GRID_X_MIN) / (GRID_X_MAX - GRID_X_MIN) * (cols - 1));
-          const iy = Math.round((h.y - GRID_Y_MIN) / (GRID_Y_MAX - GRID_Y_MIN) * (rows - 1));
+          const ix = Math.round((h.x - bounds.xMin) / (bounds.xMax - bounds.xMin) * (cols - 1));
+          const iy = Math.round((h.y - bounds.yMin) / (bounds.yMax - bounds.yMin) * (rows - 1));
           if (ix < 0 || ix >= cols || iy < 0 || iy >= rows) continue;
-          const [r, g, b] = rampColor(h.norm);
+          const [r, g, bb] = rampColor(h.norm);       // ✅ 改名避开冲突
           const idx = ((rows - 1 - iy) * cols + ix) * 4;
-          data[idx] = r; data[idx + 1] = g; data[idx + 2] = b; data[idx + 3] = 255;
+          data[idx] = r; data[idx + 1] = g; data[idx + 2] = bb; data[idx + 3] = 255;
         }
         heatCtx.putImageData(img, 0, 0);
 
-        state.heatMeta = {xMin: GRID_X_MIN, xMax: GRID_X_MAX, yMin: GRID_Y_MIN, yMax: GRID_Y_MAX, step};
+        state.heatMeta = {
+          xMin: bounds.xMin, xMax: bounds.xMax,
+          yMin: bounds.yMin, yMax: bounds.yMax,
+          step
+        };
       }
 
       /* =========================================================
@@ -1471,7 +1490,7 @@
         state.best = result.best;
         state.heat = result.heat;
         state.corners = result.corners;
-        buildHeatCanvas(step);
+        buildHeatCanvas(step, gridBounds(state.mode));
       }
 
       /* =========================================================
@@ -1479,17 +1498,17 @@
        * ========================================================= */
       function getHandlePos(pt, vel) {
         const mag = Math.hypot(vel.x, vel.y);
-        if (mag < 0.01) return {x: pt.x, y: pt.y + V_DEADZONE};
+        if (mag < 0.01) return { x: pt.x, y: pt.y + V_DEADZONE };
         const norm = Math.pow(Math.min(mag / V_MAX, 1), 1 / V_GAMMA);
         const dist = V_DEADZONE + norm * V_MAX * V_SCALE;
-        return {x: pt.x + vel.x / mag * dist, y: pt.y + vel.y / mag * dist};
+        return { x: pt.x + vel.x / mag * dist, y: pt.y + vel.y / mag * dist };
       }
 
       function drawHeat() {
         const m = state.heatMeta;
         if (!m || !heatCanvas) return;
-        const tl = w2c({x: m.xMin - m.step / 2, y: m.yMax + m.step / 2});
-        const br = w2c({x: m.xMax + m.step / 2, y: m.yMin - m.step / 2});
+        const tl = w2c({ x: m.xMin - m.step / 2, y: m.yMax + m.step / 2 });
+        const br = w2c({ x: m.xMax + m.step / 2, y: m.yMin - m.step / 2 });
         ctx.save();
         ctx.globalAlpha = 0.55;
         ctx.imageSmoothingEnabled = true;
@@ -1652,7 +1671,7 @@
         ctx.lineWidth = 1.4;
         ctx.setLineDash([6, 6]);
         for (const [a, b] of segs) {
-          const ca = w2c({x: a[0], y: a[1]}), cb = w2c({x: b[0], y: b[1]});
+          const ca = w2c({ x: a[0], y: a[1] }), cb = w2c({ x: b[0], y: b[1] });
           ctx.beginPath();
           ctx.moveTo(ca.x, ca.y);
           ctx.lineTo(cb.x, cb.y);
@@ -1756,8 +1775,8 @@
       function render() {
         ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-        const tl = w2c({x: -HALF_W, y: L});
-        const br = w2c({x: HALF_W, y: VIEW_Y_MIN});
+        const tl = w2c({ x: -HALF_W, y: L });
+        const br = w2c({ x: HALF_W, y: VIEW_Y_MIN });
 
         // 地面
         ctx.fillStyle = C_GROUND;
@@ -1772,26 +1791,39 @@
         ctx.lineWidth = 1;
         ctx.globalAlpha = 0.68;
         ctx.setLineDash([]);
-        for (const sx of [-HALF_W + 0.46, HALF_W - 0.46]) {
-          const a = w2c({x: sx, y: VIEW_Y_MIN});
-          const b = w2c({x: sx, y: L});
+
+        const SHORT_SERVICE_Y = NET_Y + 1.98;   // 前发球线
+        const LONG_SERVICE_Y = L - 0.76;       // 双打后发球线
+
+        // 1. 单打边线（内线）：始终画在 ±HALF_W_SINGLE
+        for (const sx of [-HALF_W_SINGLE, HALF_W_SINGLE]) {
+          const a = w2c({ x: sx, y: VIEW_Y_MIN });
+          const b = w2c({ x: sx, y: L });
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
-        for (const yy of [NET_Y + 1.98, L - 0.76]) {
-          const a = w2c({x: -HALF_W, y: yy});
-          const b = w2c({x: HALF_W, y: yy});
+        // 2. 前发球线和双打后发球线：横贯整个双打宽度
+        for (const yy of [SHORT_SERVICE_Y, LONG_SERVICE_Y]) {
+          const a = w2c({ x: -HALF_W, y: yy });
+          const b = w2c({ x: HALF_W, y: yy });
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
+        // 3. 中线：从前发球线到底线
         {
-          const a = w2c({x: 0, y: NET_Y + 1.98});
-          const b = w2c({x: 0, y: L});
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          const a = w2c({ x: 0, y: SHORT_SERVICE_Y });
+          const b = w2c({ x: 0, y: L });
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
         }
         ctx.restore();
 
-        // 外框
+        // 外框（双打边线）：网 → 底线
+        const fA = w2c({ x: -HALF_W, y: NET_Y });
+        const fB = w2c({ x: HALF_W, y: L });
         ctx.strokeStyle = C_FRAME;
         ctx.lineWidth = 2;
+        ctx.strokeRect(fA.x, fB.y, fB.x - fA.x, fA.y - fB.y);
         ctx.beginPath();
         ctx.moveTo(tl.x, br.y);
         ctx.lineTo(tl.x, tl.y);
@@ -1800,8 +1832,8 @@
         ctx.stroke();
 
         // 球网
-        const n1 = w2c({x: -HALF_W, y: NET_Y});
-        const n2 = w2c({x: HALF_W, y: NET_Y});
+        const n1 = w2c({ x: -HALF_W, y: NET_Y });
+        const n2 = w2c({ x: HALF_W, y: NET_Y });
         ctx.beginPath();
         ctx.strokeStyle = C_NET;
         ctx.lineWidth = 4;
@@ -1833,7 +1865,7 @@
         // 速度手柄
         const aHot = isHot(TARGET.A_POS) || isHot(TARGET.A_VEL);
         const bHot = isHot(TARGET.B_POS) || isHot(TARGET.B_VEL);
-        const {a, b} = state.players;
+        const { a, b } = state.players;
 
         if (a.velVisible) {
           drawDeadzone(a.pos);
@@ -1925,7 +1957,7 @@
        * 11. 交互（Pointer Events 统一鼠标/触摸）
        * ========================================================= */
       function hitTest(w) {
-        const {a, b} = state.players;
+        const { a, b } = state.players;
         if (a.velVisible) {
           const h = getHandlePos(a.pos, a.vel);
           if (Math.hypot(w.x - h.x, w.y - h.y) < V_HANDLE_HIT) return TARGET.A_VEL;
@@ -1950,7 +1982,7 @@
         const key = target === TARGET.A_POS ? 'a' : 'b';
         const p = state.players[key];
         p.velVisible = !p.velVisible;
-        if (!p.velVisible) {p.vel.x = 0; p.vel.y = 0;}
+        if (!p.velVisible) { p.vel.x = 0; p.vel.y = 0; }
         markDirty();
         updateSubtitle();
         updateLegend();
@@ -1969,7 +2001,7 @@
         const p = state.players[key];
         const nx = clamp(w.x, -HALF_W + 0.1, HALF_W - 0.1);
         const ny = clamp(w.y, VIEW_Y_MIN, L - 0.1);
-        pointer.dragHandlePos = {x: nx, y: ny};
+        pointer.dragHandlePos = { x: nx, y: ny };
 
         const dx = nx - p.pos.x, dy = ny - p.pos.y;
         const dist = Math.hypot(dx, dy);
@@ -1994,7 +2026,7 @@
           state.showHeat = !state.showHeat;
           updateLegend();
         } else {
-          lastTap = {time: now, x: clientX, y: clientY};
+          lastTap = { time: now, x: clientX, y: clientY };
         }
       }
 
@@ -2006,13 +2038,13 @@
         const target = hitTest(w);
 
         pointer.id = e.pointerId;
-        pointer.startClient = {x: e.clientX, y: e.clientY};
+        pointer.startClient = { x: e.clientX, y: e.clientY };
         pointer.dragTarget = target;
         pointer.dragActive = false;
         pointer.dragHandlePos = null;
         pointer.longPressFired = false;
 
-        try {canvas.setPointerCapture(e.pointerId);} catch (_) { }
+        try { canvas.setPointerCapture(e.pointerId); } catch (_) { }
 
         if (target === TARGET.A_POS || target === TARGET.B_POS) {
           pointer.longPressTimer = setTimeout(() => {
@@ -2099,7 +2131,7 @@
        * 11b. A/B 速度比控件
        * ========================================================= */
       let ratioPointer = null;
-      let lastRatioTap = {time: 0, y: 0};
+      let lastRatioTap = { time: 0, y: 0 };
 
       function setSpeedRatio(v) {
         const inv = 1 / RATIO_STEP;
@@ -2119,7 +2151,7 @@
           startRatio: state.speedRatio,
           moved: false,
         };
-        try {ratioBtnEl.setPointerCapture(e.pointerId);} catch (_) { }
+        try { ratioBtnEl.setPointerCapture(e.pointerId); } catch (_) { }
       });
 
       ratioBtnEl.addEventListener('pointermove', (e) => {
@@ -2143,7 +2175,7 @@
           lastRatioTap.time = 0;
           setSpeedRatio(1);
         } else {
-          lastRatioTap = {time: now, y: e.clientY};
+          lastRatioTap = { time: now, y: e.clientY };
         }
       }
 
@@ -2248,22 +2280,22 @@
       // 首段脚本启动时 modal 的 principleBody 尚未解析，这里补一次填充
       if (typeof window.__applyLang === 'function') window.__applyLang();
 
-      function openM() {mask.classList.add('open'); document.body.style.overflow = 'hidden';}
-      function closeM() {mask.classList.remove('open'); document.body.style.overflow = '';}
+      function openM() { mask.classList.add('open'); document.body.style.overflow = 'hidden'; }
+      function closeM() { mask.classList.remove('open'); document.body.style.overflow = ''; }
 
       if (credit) {
         credit.addEventListener('dblclick', openM);
         var lastTap = 0;
         credit.addEventListener('touchend', function (e) {
           var now = Date.now();
-          if (now - lastTap < 350) {e.preventDefault(); openM(); lastTap = 0;}
-          else {lastTap = now;}
-        }, {passive: false});
+          if (now - lastTap < 350) { e.preventDefault(); openM(); lastTap = 0; }
+          else { lastTap = now; }
+        }, { passive: false });
       }
 
       document.getElementById('principleClose').addEventListener('click', closeM);
-      mask.addEventListener('click', function (e) {if (e.target === mask) closeM();});
-      document.addEventListener('keydown', function (e) {if (e.key === 'Escape') closeM();});
+      mask.addEventListener('click', function (e) { if (e.target === mask) closeM(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
     })();
   </script>
 </body>
