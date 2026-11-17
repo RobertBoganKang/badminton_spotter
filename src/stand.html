@@ -1434,15 +1434,15 @@
       };
 
       let lang = 'zh';
-      function t(k) { return (I18N[lang] && I18N[lang][k]) || (I18N.zh[k] || k); }
+      function t(k) {return (I18N[lang] && I18N[lang][k]) || (I18N.zh[k] || k);}
 
       /* ============================================================
          二、参数定义与运行时状态
          ============================================================ */
       const SLIDER_DEFS = [
-        { group: 'prob', type: 's', key: 'p_smash', min: 0, max: 100, step: 1, def: 55 },
-        { group: 'prob', type: 's', key: 'p_clear', min: 0, max: 100, step: 1, def: 22 },
-        { group: 'prob', type: 's', key: 'p_drop', min: 0, max: 100, step: 1, def: 23 },
+        {group: 'prob', type: 's', key: 'p_smash', min: 0, max: 100, step: 1, def: 55},
+        {group: 'prob', type: 's', key: 'p_clear', min: 0, max: 100, step: 1, def: 22},
+        {group: 'prob', type: 's', key: 'p_drop', min: 0, max: 100, step: 1, def: 23},
 
         {
           group: 'reach', type: 'd', keys: ['t_react_a', 't_full_a'], label: 'sl_react_a',
@@ -1452,22 +1452,22 @@
           group: 'reach', type: 'd', keys: ['t_react_b', 't_full_b'], label: 'sl_react_b',
           min: 0.05, max: 1.60, step: 0.01, gap: 0.05, def: [0.20, 0.55]
         },
-        { group: 'reach', type: 's', key: 'v_run_a', min: 3.0, max: 6.5, step: 0.1, def: 3.8 },
-        { group: 'reach', type: 's', key: 'v_run_b', min: 3.0, max: 6.5, step: 0.1, def: 3.8 },
-        { group: 'reach', type: 's', key: 'r_touch_a', min: 0, max: 1.5, step: 0.05, def: 0.90 },
-        { group: 'reach', type: 's', key: 'r_touch_b', min: 0, max: 1.5, step: 0.05, def: 0.90 },
-        { group: 'reach', type: 's', key: 'k2', min: 1.0, max: 1.6, step: 0.01, def: 1.30 },
+        {group: 'reach', type: 's', key: 'v_run_a', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
+        {group: 'reach', type: 's', key: 'v_run_b', min: 3.0, max: 6.5, step: 0.1, def: 3.8},
+        {group: 'reach', type: 's', key: 'r_touch_a', min: 0, max: 1.5, step: 0.05, def: 0.90},
+        {group: 'reach', type: 's', key: 'r_touch_b', min: 0, max: 1.5, step: 0.05, def: 0.90},
+        {group: 'reach', type: 's', key: 'k2', min: 1.0, max: 1.6, step: 0.01, def: 1.30},
 
-        { group: 'filter', type: 's', key: 'dropMaxOverNet', min: 0, max: 2.0, step: 0.01, def: 0.20 },
-        { group: 'filter', type: 's', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0 },
-        { group: 'filter', type: 's', key: 'clearHeight', min: 1.7, max: 3.5, step: 0.05, def: 2.7 },
+        {group: 'filter', type: 's', key: 'dropMaxOverNet', min: 0, max: 2.0, step: 0.01, def: 0.20},
+        {group: 'filter', type: 's', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
+        {group: 'filter', type: 's', key: 'clearHeight', min: 1.7, max: 3.5, step: 0.05, def: 2.7},
 
         {
           group: 'zrange', type: 'd', keys: ['z_min', 'z_max'], label: 'sl_z_range',
           min: 0, max: 3.5, step: 0.05, gap: 0.05, def: [0.10, 2.50]
         },
 
-        { group: 'speed', type: 's', key: 'v0_smash', min: 15, max: 80, step: 1, def: 60 },
+        {group: 'speed', type: 's', key: 'v0_smash', min: 15, max: 80, step: 1, def: 60},
         {
           group: 'speed', type: 'd', keys: ['v0_clear_lo', 'v0_clear_hi'], label: 'sl_v0_clear',
           min: 28, max: 58, step: 1, gap: 1, def: [36, 50]
@@ -1554,7 +1554,7 @@
       const CLOUD_RANK_BINS = 12;
 
       /* ---- 空气动力学 ---- */
-      const AERO = { dt: 0.005, tMax: 6.0, g: 9.81 };
+      const AERO = {dt: 0.005, tMax: 6.0, g: 9.81};
       const AERO_K = 0.36;
 
       function cdOf(v) {
@@ -1581,11 +1581,11 @@
       /* ---- 截击参数 ---- */
       const CAPTURE_STEP = 10;
       const CAPTURE_STEP_FAST = 25;
-      const T_INTERCEPT = { smash: 0.00, clear: 0.40, drop: 0.15 };
+      const T_INTERCEPT = {smash: 0.00, clear: 0.40, drop: 0.15};
 
       /* ---- 运行时状态 ---- */
       let mode = 'double';
-      let opponents = [{ x: 0, y: 4.6 }];
+      let opponents = [{x: 0, y: 4.6}];
       let dragIdx = -1, dragStarted = false, dragStartPos = null;
       let needsSolve = true, quality = 'full';
       let slowMode = false;
@@ -1593,7 +1593,7 @@
       let manualResultsCleared = false;
       const FAST_SLOW_MS = 500;
       const FULL_SLOW_MS = 3000;
-      let lastTap = { time: 0, x: 0, y: 0 };
+      let lastTap = {time: 0, x: 0, y: 0};
       let showHeat = false;
       let showSubopt = true;
       let heatDirty = true;
@@ -1601,7 +1601,7 @@
       let suboptDirty = true;
 
       let result = {
-        P1: { x: 2.2, y: -4.5 }, P2: { x: -0.5, y: -4.5 },
+        P1: {x: 2.2, y: -4.5}, P2: {x: -0.5, y: -4.5},
         valid: false,
         precise: false,
         reachStats: null,
@@ -1650,7 +1650,7 @@
         updateManualUpdateUI();
       }
 
-      function randHeight() { return 1.60 + Math.random() * 0.25; }
+      function randHeight() {return 1.60 + Math.random() * 0.25;}
       const personHeights = [randHeight(), randHeight(), randHeight()];
 
       const DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -1673,8 +1673,8 @@
       /* ============================================================
          三、坐标与绘制辅助
          ============================================================ */
-      function w2c(p) { return { x: PAD_L + (p.x + HW) * SCALE, y: PAD_T + (HL - p.y) * SCALE }; }
-      function c2w(cx, cy) { return { x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE }; }
+      function w2c(p) {return {x: PAD_L + (p.x + HW) * SCALE, y: PAD_T + (HL - p.y) * SCALE};}
+      function c2w(cx, cy) {return {x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE};}
 
       function tagTextWidth(line1, line2) {
         ctx.save();
@@ -1690,8 +1690,8 @@
         return tagTextWidth(line1, line2) + TAG_PADX * 2;
       }
 
-      function nearDropLabel() { return DROP_NEAR_EDGE.toFixed(1) + ' m'; }
-      function farDropLabel() { return DROP_FAR_EDGE.toFixed(1) + ' m'; }
+      function nearDropLabel() {return DROP_NEAR_EDGE.toFixed(1) + ' m';}
+      function farDropLabel() {return DROP_FAR_EDGE.toFixed(1) + ' m';}
 
       function computePadL() {
         const w = Math.max(
@@ -1833,7 +1833,7 @@
         const smash = new Float32Array(GY * GZ);
         const clear = new Float32Array(GY * GZ);
         const drop = new Float32Array(GY * GZ);
-        const grids = { smash, clear, drop };
+        const grids = {smash, clear, drop};
 
         const sigma = 0.20;
         const inv2s2 = 1 / (2 * sigma * sigma);
@@ -1846,7 +1846,7 @@
           if (Ld.v0 == null) continue;
 
           const trace = [];
-          const opts = { trace };
+          const opts = {trace};
           if (Ld.type === 'drop') opts.maxOverNet = PRM.dropMaxOverNet;
           else if (Ld.type === 'clear') opts.minNetH = PRM.clearHeight;
 
@@ -1880,7 +1880,7 @@
           }
         }
 
-        return { GY, GZ, cell, Y0, Z0, grids };
+        return {GY, GZ, cell, Y0, Z0, grids};
       }
 
       function computeSideHeat() {
@@ -1916,9 +1916,9 @@
           const fy = (wy - Y0) / cell;
           let iA, iB, tX;
           const i0raw = Math.floor(fy);
-          if (i0raw < 0) { iA = 0; iB = 0; tX = 0; }
-          else if (i0raw > GY - 2) { iA = GY - 1; iB = GY - 1; tX = 0; }
-          else { iA = i0raw; iB = i0raw + 1; tX = fy - i0raw; }
+          if (i0raw < 0) {iA = 0; iB = 0; tX = 0;}
+          else if (i0raw > GY - 2) {iA = GY - 1; iB = GY - 1; tX = 0;}
+          else {iA = i0raw; iB = i0raw + 1; tX = fy - i0raw;}
 
           for (let px = 0; px < W; px++) {
             const cssX = px / dpr;
@@ -1928,9 +1928,9 @@
             const fz = (wz - Z0) / cell;
             let jA, jB, tY;
             const j0raw = Math.floor(fz);
-            if (j0raw < 0) { jA = 0; jB = 0; tY = 0; }
-            else if (j0raw > GZ - 2) { jA = GZ - 1; jB = GZ - 1; tY = 0; }
-            else { jA = j0raw; jB = j0raw + 1; tY = fz - j0raw; }
+            if (j0raw < 0) {jA = 0; jB = 0; tY = 0;}
+            else if (j0raw > GZ - 2) {jA = GZ - 1; jB = GZ - 1; tY = 0;}
+            else {jA = j0raw; jB = j0raw + 1; tY = fz - j0raw;}
 
             const r0 = jA * GY, r1 = jB * GY;
             const w00 = (1 - tX) * (1 - tY), w10 = tX * (1 - tY);
@@ -2117,7 +2117,7 @@
 
         if (showHeat && result.valid && cachedLandings.length) {
           if (sideHeatDirty && quality === 'full') {
-            try { computeSideHeat(); } catch (e) { console.error('side heat error:', e); }
+            try {computeSideHeat();} catch (e) {console.error('side heat error:', e);}
             sideHeatDirty = false;
           }
           if (sideHeatReady) {
@@ -2258,7 +2258,7 @@
         const l1 = Math.log(REACH_P1 / (REACH_PMAX - REACH_P1));
         const k = (l1 - l0) / (t1 - t0);
         const tMid = t0 - l0 / k;
-        return { t0, t1, k, tMid };
+        return {t0, t1, k, tMid};
       }
 
       function reachProb(tAvail, rp) {
@@ -2349,7 +2349,7 @@
         const extra = (item.type === 'drop' ? DROP_EXTRA_T : 0);
         const tInt = T_INTERCEPT[item.type] || 0;
         const tAvail = item.t - tau + tInt + extra;
-        return { tAvail, p: reachProb(tAvail, c.rp), q: Math.exp(-LAMBDA_RUN * tau) };
+        return {tAvail, p: reachProb(tAvail, c.rp), q: Math.exp(-LAMBDA_RUN * tau)};
       }
 
       function interceptStats(pos, item, c) {
@@ -2385,7 +2385,7 @@
           const d2 = dx * dx + dy * dy;
 
           if (d2 < 1e-12) {
-            if (pt.t > bestAvail) { bestAvail = pt.t; bestTau = 0; }
+            if (pt.t > bestAvail) {bestAvail = pt.t; bestTau = 0;}
             continue;
           }
 
@@ -2393,7 +2393,7 @@
           const dTouch = dEff - rTouch;
 
           if (dTouch <= 0) {
-            if (pt.t > bestAvail) { bestAvail = pt.t; bestTau = 0; }
+            if (pt.t > bestAvail) {bestAvail = pt.t; bestTau = 0;}
             continue;
           }
 
@@ -2404,7 +2404,7 @@
           const tau = dTouch * Math.sqrt(ux * ux * invSide2 + uy * uy * invV2);
           const avail = pt.t - tau;
 
-          if (avail > bestAvail) { bestAvail = avail; bestTau = tau; }
+          if (avail > bestAvail) {bestAvail = avail; bestTau = tau;}
         }
 
         if (bestAvail === -Infinity) {
@@ -2412,7 +2412,7 @@
         }
 
         const tAvail = bestAvail + extra;
-        return { tAvail, p: reachProb(tAvail, c.rp), q: Math.exp(-LAMBDA_RUN * bestTau) };
+        return {tAvail, p: reachProb(tAvail, c.rp), q: Math.exp(-LAMBDA_RUN * bestTau)};
       }
 
       function smashSpeedFactor() {
@@ -2426,7 +2426,7 @@
         const pc = PRM.p_clear / 100 * clearF;
         const pd = PRM.p_drop / 100;
         const total = ps + pc + pd || 1;
-        return { ps: ps / total, pc: pc / total, pd: pd / total };
+        return {ps: ps / total, pc: pc / total, pd: pd / total};
       }
 
       function simulate(v0, h0, elevDeg, azimDeg, x0, y0, opts) {
@@ -2477,15 +2477,15 @@
             const rx = px + (nx - px) * f;
             const ry = py + (ny - py) * f;
             if (capture && ry < 0) {
-              capture.push({ x: rx, y: ry, z: 0, t: t + f * dt });
+              capture.push({x: rx, y: ry, z: 0, t: t + f * dt});
             }
-            return { x: rx, y: ry, t: t + f * dt };
+            return {x: rx, y: ry, t: t + f * dt};
           }
 
           if (capture && ny < 0 && nz >= zLo && nz <= zHi) {
             captureStepI++;
             if (captureStepI % captureStep === 0) {
-              capture.push({ x: nx, y: ny, z: nz, t: t + dt });
+              capture.push({x: nx, y: ny, z: nz, t: t + dt});
             }
           }
 
@@ -2545,7 +2545,7 @@
         for (let elev = ELEV_MIN; elev <= ELEV_MAX + 1e-9; elev += step) {
           let ok = false;
           for (const az of azims) {
-            if (probe(v0, hitter, elev, az, hw, opts)) { ok = true; break; }
+            if (probe(v0, hitter, elev, az, hw, opts)) {ok = true; break;}
           }
           if (ok) {
             if (lo === null) lo = elev;
@@ -2604,7 +2604,7 @@
 
               const key = azim.toFixed(2) + '_' + elev.toFixed(2) + '_' + k;
               if (!landings.has(key)) {
-                landings.set(key, { x: r.x, y: r.y, type: 'smash', w, t: r.t, v0, elev, azim });
+                landings.set(key, {x: r.x, y: r.y, type: 'smash', w, t: r.t, v0, elev, azim});
               }
             }
           }
@@ -2617,7 +2617,7 @@
 
       function genDropLandings(hitter, fast) {
         const hw = halfWidth();
-        const opts = { maxOverNet: PRM.dropMaxOverNet };
+        const opts = {maxOverNet: PRM.dropMaxOverNet};
         const ty = 0;
         const azimList = targetAzims(hitter, hw, ty, fast ? 10 : 18);
 
@@ -2669,7 +2669,7 @@
                 if (w > maxW) maxW = w;
                 const key = v0.toFixed(1) + '_' + azim.toFixed(2) + '_' + elev.toFixed(2);
                 if (!landings.has(key)) {
-                  landings.set(key, { x: r.x, y: r.y, type: 'drop', w, t: r.t, v0, elev, azim });
+                  landings.set(key, {x: r.x, y: r.y, type: 'drop', w, t: r.t, v0, elev, azim});
                 }
               }
             }
@@ -2684,7 +2684,7 @@
       function genClearLandings(hitter, fast) {
         const hw = halfWidth();
         const lineY = -PRM.clearLineY;
-        const opts = { minNetH: PRM.clearHeight };
+        const opts = {minNetH: PRM.clearHeight};
         const azimList = targetAzims(hitter, hw, lineY, fast ? 10 : 18);
 
         const elevLo = -10, elevHi = 60;
@@ -2726,7 +2726,7 @@
 
                 const key = v0.toFixed(1) + '_' + azim.toFixed(2) + '_' + elev.toFixed(1);
                 if (!landings.has(key)) {
-                  landings.set(key, { x: r.x, y: r.y, type: 'clear', w, t: r.t, v0, elev, azim });
+                  landings.set(key, {x: r.x, y: r.y, type: 'clear', w, t: r.t, v0, elev, azim});
                 }
               }
             }
@@ -2771,7 +2771,7 @@
 
           for (const Ld of arr) {
             const trace = [];
-            const opts = { capture: trace, captureStep: capStep };
+            const opts = {capture: trace, captureStep: capStep};
             if (type === 'drop') opts.maxOverNet = PRM.dropMaxOverNet;
             else if (type === 'clear') opts.minNetH = PRM.clearHeight;
 
@@ -2797,7 +2797,7 @@
           const key = Ld.type + '_' + gx + '_' + gy + '_' + tBin;
           let b = buckets.get(key);
           if (!b) {
-            b = { sx: 0, sy: 0, w: 0, tSum: 0, type: Ld.type, repW: -1, repTrace: null };
+            b = {sx: 0, sy: 0, w: 0, tSum: 0, type: Ld.type, repW: -1, repTrace: null};
             buckets.set(key, b);
           }
           b.sx += Ld.x * Ld.w;
@@ -2813,7 +2813,7 @@
         for (const b of buckets.values()) {
           if (b.w <= 1e-9) continue;
           items.push({
-            L: { x: b.sx / b.w, y: b.sy / b.w },
+            L: {x: b.sx / b.w, y: b.sy / b.w},
             w: b.w,
             type: b.type,
             t: b.tSum / b.w,
@@ -2825,9 +2825,9 @@
 
       function avgReachByType(items, P1, P2, ctxA, ctxB) {
         const acc = {
-          smash: { s: 0, w: 0 },
-          clear: { s: 0, w: 0 },
-          drop: { s: 0, w: 0 }
+          smash: {s: 0, w: 0},
+          clear: {s: 0, w: 0},
+          drop: {s: 0, w: 0}
         };
         for (const it of items) {
           const sA = interceptStats(P1, it, ctxA);
@@ -2890,15 +2890,15 @@
 
         for (let x = x0; x <= x1 + 1e-9; x += step) {
           for (let y = y0; y <= y1 + 1e-9; y += step) {
-            const v = totalV({ x, y }, items, null, ctxA, null);
-            cands.push({ P1: { x, y }, P2: null, V: v });
-            if (v > bestV) { bestV = v; bestPos = { x, y }; }
+            const v = totalV({x, y}, items, null, ctxA, null);
+            cands.push({P1: {x, y}, P2: null, V: v});
+            if (v > bestV) {bestV = v; bestPos = {x, y};}
           }
         }
 
         if (!bestPos) {
-          const a = { x: 0, y: -4.0 };
-          return { best: a, cands: [{ P1: a, P2: null, V: 0 }] };
+          const a = {x: 0, y: -4.0};
+          return {best: a, cands: [{P1: a, P2: null, V: 0}]};
         }
 
         let ax = bestPos.x, ay = bestPos.y, av = bestV;
@@ -2914,8 +2914,8 @@
                 if (k === 0 && m === 0) continue;
                 const nx = ax + k * h, ny = ay + m * h;
                 if (nx < x0 || nx > x1 || ny < y0 || ny > y1) continue;
-                const v = totalV({ x: nx, y: ny }, items, null, ctxA, null);
-                if (v > bv + 1e-9) { bx = nx; by = ny; bv = v; moved = true; }
+                const v = totalV({x: nx, y: ny}, items, null, ctxA, null);
+                if (v > bv + 1e-9) {bx = nx; by = ny; bv = v; moved = true;}
               }
             }
             if (!moved) break;
@@ -2925,14 +2925,14 @@
         }
 
         cands.sort((a, b) => b.V - a.V);
-        return { best: { x: ax, y: ay }, cands };
+        return {best: {x: ax, y: ay}, cands};
       }
 
       function optimizeDouble(items, fast, ctxA, ctxB) {
         const N = items.length;
         if (!N) {
-          const a = { x: -1.5, y: -3 }, b = { x: 1.5, y: -3 };
-          return { best: [a, b], cands: [{ P1: a, P2: b, V: 0 }] };
+          const a = {x: -1.5, y: -3}, b = {x: 1.5, y: -3};
+          return {best: [a, b], cands: [{P1: a, P2: b, V: 0}]};
         }
 
         const sameV = ctxEqual(ctxA, ctxB);
@@ -2950,7 +2950,7 @@
         for (let y = -0.5; y >= -6.3 - 1e-9; y -= gridStep) ys.push(+y.toFixed(2));
 
         const pos = [];
-        for (const y of ys) for (const x of xs) pos.push({ x, y });
+        for (const y of ys) for (const x of xs) pos.push({x, y});
         const M = pos.length;
 
         const PA = new Array(M), PB = new Array(M);
@@ -2984,13 +2984,13 @@
             let s = SA[i] + SB[j];
             for (let k = 0; k < N; k++) s -= aArr[k] * Pi[k] * Pj[k];
             const V = (s - sumW) / sumW - overlapPenalty(pi, pos[j]);
-            cands.push({ P1: pi, P2: pos[j], V });
+            cands.push({P1: pi, P2: pos[j], V});
           }
         }
         cands.sort((a, b) => b.V - a.V);
 
-        let pA = { x: cands[0].P1.x, y: cands[0].P1.y };
-        let pB = { x: cands[0].P2.x, y: cands[0].P2.y };
+        let pA = {x: cands[0].P1.x, y: cands[0].P1.y};
+        let pB = {x: cands[0].P2.x, y: cands[0].P2.y};
         let bestV = cands[0].V;
 
         const scoreAt = (a, b) => {
@@ -3027,30 +3027,30 @@
             for (let k = -1; k <= 1; k++) {
               for (let m = -1; m <= 1; m++) {
                 if (k === 0 && m === 0) continue;
-                const cand = { x: clampX(pA.x + k * h), y: clampY(pA.y + m * h) };
+                const cand = {x: clampX(pA.x + k * h), y: clampY(pA.y + m * h)};
                 const v = scoreAt(cand, pB);
-                if (v > bv + 1e-9) { bv = v; bA = cand; }
+                if (v > bv + 1e-9) {bv = v; bA = cand;}
               }
             }
-            if (bv > bestV + 1e-9) { pA = bA; bestV = bv; improved = true; }
+            if (bv > bestV + 1e-9) {pA = bA; bestV = bv; improved = true;}
 
             bv = bestV; let bB = pB;
             for (let k = -1; k <= 1; k++) {
               for (let m = -1; m <= 1; m++) {
                 if (k === 0 && m === 0) continue;
-                const cand = { x: clampX(pB.x + k * h), y: clampY(pB.y + m * h) };
+                const cand = {x: clampX(pB.x + k * h), y: clampY(pB.y + m * h)};
                 const v = scoreAt(pA, cand);
-                if (v > bv + 1e-9) { bv = v; bB = cand; }
+                if (v > bv + 1e-9) {bv = v; bB = cand;}
               }
             }
-            if (bv > bestV + 1e-9) { pB = bB; bestV = bv; improved = true; }
+            if (bv > bestV + 1e-9) {pB = bB; bestV = bv; improved = true;}
 
             if (!improved) break;
           }
           h *= 0.5;
         }
 
-        return { best: [pA, pB], cands };
+        return {best: [pA, pB], cands};
       }
 
       function sampleCandidates(list, n) {
@@ -3088,7 +3088,7 @@
         let items = buildItemsFromLandings(cachedLandings, cellSize);
 
         if (!items.length) {
-          items = [{ L: { x: 0, y: -PRM.clearLineY }, w: 1, type: 'clear', t: 0.6, trace: null }];
+          items = [{L: {x: 0, y: -PRM.clearLineY}, w: 1, type: 'clear', t: 0.6, trace: null}];
         }
 
         const precise = !fast;
@@ -3118,9 +3118,9 @@
         candidateItems = items;
         candidateList = sampleCandidates(cands, topMax);
         if (candidateList.length) {
-          candidateList[0] = { P1: bestP1, P2: bestP2, V: cands.length ? cands[0].V : 0 };
+          candidateList[0] = {P1: bestP1, P2: bestP2, V: cands.length ? cands[0].V : 0};
         } else {
-          candidateList = [{ P1: bestP1, P2: bestP2, V: 0 }];
+          candidateList = [{P1: bestP1, P2: bestP2, V: 0}];
           topMax = 1;
           topDefault = 1;
           topN = 1;
@@ -3132,7 +3132,7 @@
           ? avgReachByType(items, pick.P1, null, ctxA, null)
           : avgReachByType(items, pick.P1, pick.P2, ctxA, ctxB);
 
-        return { P1: pick.P1, P2: pick.P2, valid: true, precise, reachStats, clearTMin };
+        return {P1: pick.P1, P2: pick.P2, valid: true, precise, reachStats, clearTMin};
       }
 
       function applyScore() {
@@ -3159,13 +3159,13 @@
          九、主视图绘制
          ============================================================ */
       function drawCourtBase() {
-        const tl = w2c({ x: -HW, y: HL }), br = w2c({ x: HW, y: -HL });
+        const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
         ctx.fillStyle = '#f7fbf9';
         ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
       }
 
       function drawCourtLines() {
-        const tl = w2c({ x: -HW, y: HL }), br = w2c({ x: HW, y: -HL });
+        const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
         const w = br.x - tl.x, h = br.y - tl.y;
 
         ctx.save();
@@ -3174,20 +3174,20 @@
         ctx.globalAlpha = 0.68;
         ctx.setLineDash([]);
         for (const yy of [HL, HL - LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL - LONG_SVC), -HL]) {
-          lineStroke(w2c({ x: -HW, y: yy }), w2c({ x: HW, y: yy }));
+          lineStroke(w2c({x: -HW, y: yy}), w2c({x: HW, y: yy}));
         }
         for (const xx of [-HW, HW, -SINGLES_HW, SINGLES_HW]) {
-          lineStroke(w2c({ x: xx, y: -HL }), w2c({ x: xx, y: HL }));
+          lineStroke(w2c({x: xx, y: -HL}), w2c({x: xx, y: HL}));
         }
         for (const s of [-1, 1]) {
-          lineStroke(w2c({ x: 0, y: s * SHORT_SVC }), w2c({ x: 0, y: s * HL }));
+          lineStroke(w2c({x: 0, y: s * SHORT_SVC}), w2c({x: 0, y: s * HL}));
         }
         ctx.restore();
 
         ctx.strokeStyle = C_COURT_FRAME; ctx.lineWidth = 2 / mainScale;
         ctx.strokeRect(tl.x, tl.y, w, h);
 
-        const n1 = w2c({ x: -HW, y: 0 }), n2 = w2c({ x: HW, y: 0 });
+        const n1 = w2c({x: -HW, y: 0}), n2 = w2c({x: HW, y: 0});
         ctx.beginPath(); ctx.strokeStyle = C_NET; ctx.lineWidth = 4 / mainScale;
         ctx.lineCap = 'round';
         ctx.moveTo(n1.x, n1.y); ctx.lineTo(n2.x, n2.y); ctx.stroke();
@@ -3198,33 +3198,33 @@
         ctx.lineWidth = 1 / mainScale;
         ctx.strokeStyle = C_REF_BLUE;
         for (const dn of [DROP_NEAR_EDGE, DROP_FAR_EDGE]) {
-          lineStroke(w2c({ x: -HW, y: -dn }), w2c({ x: HW, y: -dn }));
+          lineStroke(w2c({x: -HW, y: -dn}), w2c({x: HW, y: -dn}));
         }
         ctx.setLineDash([2, 6]);
         ctx.strokeStyle = C_REF_RED;
-        lineStroke(w2c({ x: -HW, y: -PRM.clearLineY }), w2c({ x: HW, y: -PRM.clearLineY }));
+        lineStroke(w2c({x: -HW, y: -PRM.clearLineY}), w2c({x: HW, y: -PRM.clearLineY}));
         ctx.restore();
       }
 
       function drawCourtTags() {
-        const tagRightX = w2c({ x: -HW, y: 0 }).x - 6;
+        const tagRightX = w2c({x: -HW, y: 0}).x - 6;
         const lineV = PRM.clearLineY.toFixed(1) + ' m';
 
-        drawCourtTag(t('lblNearDrop'), nearDropLabel(), tagRightX, w2c({ x: 0, y: -DROP_NEAR_EDGE }).y, '#1f6f8b', 'right');
-        drawCourtTag(t('lblFrontPen'), lineV, tagRightX, w2c({ x: 0, y: -PRM.clearLineY }).y - 8, '#c0392b', 'right');
-        drawCourtTag(t('lblFarDrop'), farDropLabel(), tagRightX, w2c({ x: 0, y: -DROP_FAR_EDGE }).y + 8, '#1f6f8b', 'right');
+        drawCourtTag(t('lblNearDrop'), nearDropLabel(), tagRightX, w2c({x: 0, y: -DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
+        drawCourtTag(t('lblFrontPen'), lineV, tagRightX, w2c({x: 0, y: -PRM.clearLineY}).y - 8, '#c0392b', 'right');
+        drawCourtTag(t('lblFarDrop'), farDropLabel(), tagRightX, w2c({x: 0, y: -DROP_FAR_EDGE}).y + 8, '#1f6f8b', 'right');
         drawCourtTag(
           lang === 'zh' ? '球网' : 'Net',
           null,
           tagRightX,
-          w2c({ x: 0, y: 0 }).y,
+          w2c({x: 0, y: 0}).y,
           C_NET,
           'right'
         );
 
-        const courtLeft = w2c({ x: -HW, y: HL }).x - 7;
-        const courtTop = w2c({ x: -HW, y: HL }).y + 15;
-        const courtBottom = w2c({ x: -HW, y: -HL }).y - 15;
+        const courtLeft = w2c({x: -HW, y: HL}).x - 7;
+        const courtTop = w2c({x: -HW, y: HL}).y + 15;
+        const courtBottom = w2c({x: -HW, y: -HL}).y - 15;
         drawLabelWithHalo(
           lang === 'zh' ? '对手' : 'Opp',
           courtLeft,
@@ -3285,11 +3285,11 @@
           const tt = smash[k] + clear[k] + drop[k];
           if (tt > maxV) maxV = tt;
         }
-        return { GW, GH, cell, xMin, yMin, smash, clear, drop, max: maxV || 1 };
+        return {GW, GH, cell, xMin, yMin, smash, clear, drop, max: maxV || 1};
       }
 
       function computeLandingHeat() {
-        if (!result.valid || !cachedLandings.length) { heatDirty = false; return; }
+        if (!result.valid || !cachedLandings.length) {heatDirty = false; return;}
 
         const W = canvas.width, H = canvas.height;
         if (heatCanvas.width !== W || heatCanvas.height !== H) {
@@ -3298,7 +3298,7 @@
         }
 
         const grid = buildLandingHeatmap(cachedLandings);
-        const { GW, GH, cell, xMin, yMin, smash, clear, drop, max } = grid;
+        const {GW, GH, cell, xMin, yMin, smash, clear, drop, max} = grid;
         const invMax = 1 / max;
 
         const img = heatCtx.createImageData(W, H);
@@ -3313,9 +3313,9 @@
           const j0raw = Math.floor(fy);
           const ty = fy - j0raw;
           let jA, jB, tY;
-          if (j0raw < 0) { jA = 0; jB = 0; tY = 0; }
-          else if (j0raw > GH - 2) { jA = GH - 1; jB = GH - 1; tY = 0; }
-          else { jA = j0raw; jB = j0raw + 1; tY = ty; }
+          if (j0raw < 0) {jA = 0; jB = 0; tY = 0;}
+          else if (j0raw > GH - 2) {jA = GH - 1; jB = GH - 1; tY = 0;}
+          else {jA = j0raw; jB = j0raw + 1; tY = ty;}
 
           for (let px = 0; px < W; px++) {
             const wx = (px / sx - PAD_L) / SCALE - HW;
@@ -3324,9 +3324,9 @@
             const i0raw = Math.floor(fx);
             const tx = fx - i0raw;
             let iA, iB, tX;
-            if (i0raw < 0) { iA = 0; iB = 0; tX = 0; }
-            else if (i0raw > GW - 2) { iA = GW - 1; iB = GW - 1; tX = 0; }
-            else { iA = i0raw; iB = i0raw + 1; tX = tx; }
+            if (i0raw < 0) {iA = 0; iB = 0; tX = 0;}
+            else if (i0raw > GW - 2) {iA = GW - 1; iB = GW - 1; tX = 0;}
+            else {iA = i0raw; iB = i0raw + 1; tX = tx;}
 
             const idx00 = jA * GW + iA, idx10 = jA * GW + iB, idx01 = jB * GW + iA, idx11 = jB * GW + iB;
             const s = (smash[idx00] * (1 - tX) + smash[idx10] * tX) * (1 - tY) + (smash[idx01] * (1 - tX) + smash[idx11] * tX) * tY;
@@ -3545,18 +3545,18 @@
           const fy = (wy - yMin) / cell;
           let jA, jB, tY;
           const jr = Math.floor(fy);
-          if (jr < 0) { jA = jB = 0; tY = 0; }
-          else if (jr > GH - 2) { jA = jB = GH - 1; tY = 0; }
-          else { jA = jr; jB = jr + 1; tY = fy - jr; }
+          if (jr < 0) {jA = jB = 0; tY = 0;}
+          else if (jr > GH - 2) {jA = jB = GH - 1; tY = 0;}
+          else {jA = jr; jB = jr + 1; tY = fy - jr;}
 
           for (let px = px0; px <= px1; px++) {
             const wx = (px / sx - PAD_L) / SCALE - HW;
             const fx = (wx - xMin) / cell;
             let iA, iB, tX;
             const ir = Math.floor(fx);
-            if (ir < 0) { iA = iB = 0; tX = 0; }
-            else if (ir > GW - 2) { iA = iB = GW - 1; tX = 0; }
-            else { iA = ir; iB = ir + 1; tX = fx - ir; }
+            if (ir < 0) {iA = iB = 0; tX = 0;}
+            else if (ir > GW - 2) {iA = iB = GW - 1; tX = 0;}
+            else {iA = ir; iB = ir + 1; tX = fx - ir;}
 
             const w00 = (1 - tX) * (1 - tY);
             const w10 = tX * (1 - tY);
@@ -3828,7 +3828,7 @@
         const H = el.clientHeight || 64;
         const dpr = DPR;
         const cw = Math.round(W * dpr), chh = Math.round(H * dpr);
-        if (el.width !== cw || el.height !== chh) { el.width = cw; el.height = chh; }
+        if (el.width !== cw || el.height !== chh) {el.width = cw; el.height = chh;}
         const c = el.getContext('2d');
         c.setTransform(dpr, 0, 0, dpr, 0, 0);
         c.clearRect(0, 0, W, H);
@@ -4023,7 +4023,7 @@
         const gap = (d.gap != null) ? d.gap : step;
         let lo = PRM[d.keys[0]];
         let hi = PRM[d.keys[1]];
-        if (lo > hi) { const tmp = lo; lo = hi; hi = tmp; }
+        if (lo > hi) {const tmp = lo; lo = hi; hi = tmp;}
 
         const span = Math.max(1e-9, max - min);
         const pct = v => ((v - min) / span) * 100;
@@ -4057,7 +4057,7 @@
             if (ev.button !== undefined && ev.button !== 0) return;
             ev.preventDefault();
             ev.stopPropagation();
-            try { el.setPointerCapture(ev.pointerId); } catch (e) { }
+            try {el.setPointerCapture(ev.pointerId);} catch (e) { }
 
             const move = e2 => {
               e2.preventDefault();
@@ -4074,7 +4074,7 @@
               el.removeEventListener('pointermove', move);
               el.removeEventListener('pointerup', up);
               el.removeEventListener('pointercancel', up);
-              try { el.releasePointerCapture(ev.pointerId); } catch (e) { }
+              try {el.releasePointerCapture(ev.pointerId);} catch (e) { }
               commit(true);
             };
             el.addEventListener('pointermove', move);
@@ -4155,7 +4155,7 @@
             } else {
               grid.appendChild(makeSingleRow(
                 d, gname, markDirtyFull,
-                () => syncing, v => { syncing = v; }
+                () => syncing, v => {syncing = v;}
               ));
             }
           }
@@ -4192,13 +4192,13 @@
           if (ev.button !== undefined && ev.button !== 0) return;
           ev.preventDefault();
           ev.stopPropagation();
-          try { el.setPointerCapture(ev.pointerId); } catch (e) { }
+          try {el.setPointerCapture(ev.pointerId);} catch (e) { }
           if (selectedRank !== 1) {
             selectedRank = 1;
             applyScore();
           }
 
-          drag = { startY: ev.clientY, startVal: PRM[key] };
+          drag = {startY: ev.clientY, startVal: PRM[key]};
         });
 
         el.addEventListener('pointermove', ev => {
@@ -4231,12 +4231,12 @@
           if (ev.button !== undefined && ev.button !== 0) return;
           ev.preventDefault();
           ev.stopPropagation();
-          try { el.setPointerCapture(ev.pointerId); } catch (e) { }
+          try {el.setPointerCapture(ev.pointerId);} catch (e) { }
           if (selectedRank !== 1) {
             selectedRank = 1;
             applyScore();
           }
-          drag = { startY: ev.clientY, startVal: PRM.hh };
+          drag = {startY: ev.clientY, startVal: PRM.hh};
         });
 
         el.addEventListener('pointermove', ev => {
@@ -4297,7 +4297,7 @@
 
           ev.preventDefault();
           ev.stopPropagation();
-          try { el.setPointerCapture(ev.pointerId); } catch (e) { }
+          try {el.setPointerCapture(ev.pointerId);} catch (e) { }
           drag = {
             startY: ev.clientY,
             startRank: selectedRank,
@@ -4325,7 +4325,7 @@
           }
         });
 
-        const finish = () => { if (!drag) return; drag = null; };
+        const finish = () => {if (!drag) return; drag = null;};
         el.addEventListener('pointerup', finish);
         el.addEventListener('pointercancel', finish);
       }
@@ -4397,7 +4397,7 @@
         pillKill.dataset.label = t('pillLabelSm');
         pillDrop.dataset.label = t('pillLabelDr');
         pillClear.dataset.label = t('pillLabelCl');
-        [pillKill, pillDrop, pillClear].forEach(p => { p.title = t('pillHint'); });
+        [pillKill, pillDrop, pillClear].forEach(p => {p.title = t('pillHint');});
         pillHeight.title = t('heightHint');
         pillScore.title = '向上拖动增加，向下拖动减小；双击恢复优劣 1';
         pillTop.title = '向上拖动增加 Top 数量，向下拖动减小；双击恢复默认值';
@@ -4462,7 +4462,7 @@
           const dt = now - lastTap.time;
           const dd = Math.sqrt((ev.clientX - lastTap.x) ** 2 + (ev.clientY - lastTap.y) ** 2);
           if (lastTap.time > 0 && dt < DOUBLE_TAP_MS && dd < DOUBLE_TAP_DIST) {
-            lastTap = { time: 0, x: 0, y: 0 };
+            lastTap = {time: 0, x: 0, y: 0};
             const toHeat = showSubopt;
             showSubopt = !toHeat;
             showHeat = toHeat;
@@ -4473,15 +4473,15 @@
             ev.preventDefault();
             return;
           }
-          lastTap = { time: now, x: ev.clientX, y: ev.clientY };
+          lastTap = {time: now, x: ev.clientX, y: ev.clientY};
           return;
         }
 
-        lastTap = { time: 0, x: 0, y: 0 };
+        lastTap = {time: 0, x: 0, y: 0};
 
         dragIdx = oppIdx;
         dragStarted = false;
-        dragStartPos = { x: ev.clientX, y: ev.clientY };
+        dragStartPos = {x: ev.clientX, y: ev.clientY};
         canvas.setPointerCapture(ev.pointerId);
         canvas.style.cursor = 'grabbing';
         ev.preventDefault();
@@ -4492,7 +4492,7 @@
         if (dragIdx >= 0) {
           if (!dragStarted && dragStartPos) {
             const dx = ev.clientX - dragStartPos.x, dy = ev.clientY - dragStartPos.y;
-            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) { dragStarted = true; }
+            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {dragStarted = true;}
             else return;
           }
           if (dragStarted) {
@@ -4521,7 +4521,7 @@
       }
       canvas.addEventListener('pointerup', endDrag);
       canvas.addEventListener('pointercancel', endDrag);
-      canvas.addEventListener('pointerleave', () => { if (dragIdx < 0) canvas.style.cursor = 'default'; });
+      canvas.addEventListener('pointerleave', () => {if (dragIdx < 0) canvas.style.cursor = 'default';});
 
       /* 侧视图：拖动对手前后位置，拖动球拍调整击球高度与前后位置 */
       let sideDrag = null;
@@ -4554,7 +4554,7 @@
         const p = getSideLocal(ev);
         const target = hitSideTarget(p.x, p.y);
         if (!target) return;
-        try { sideCanvas.setPointerCapture(ev.pointerId); } catch (e) { }
+        try {sideCanvas.setPointerCapture(ev.pointerId);} catch (e) { }
         sideDrag = {
           pointerId: ev.pointerId,
           type: target,
@@ -4620,20 +4620,20 @@
         const mask = $('principleModal');
         const credit = $('credit');
 
-        const openM = () => { mask.classList.add('open'); document.body.style.overflow = 'hidden'; };
-        const closeM = () => { mask.classList.remove('open'); document.body.style.overflow = ''; };
+        const openM = () => {mask.classList.add('open'); document.body.style.overflow = 'hidden';};
+        const closeM = () => {mask.classList.remove('open'); document.body.style.overflow = '';};
 
         credit.addEventListener('dblclick', openM);
         let lastTapTime = 0;
         credit.addEventListener('touchend', function (e) {
           const now = Date.now();
-          if (now - lastTapTime < 350) { e.preventDefault(); openM(); lastTapTime = 0; }
-          else { lastTapTime = now; }
-        }, { passive: false });
+          if (now - lastTapTime < 350) {e.preventDefault(); openM(); lastTapTime = 0;}
+          else {lastTapTime = now;}
+        }, {passive: false});
 
         $('principleClose').addEventListener('click', closeM);
-        mask.addEventListener('click', function (e) { if (e.target === mask) closeM(); });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
+        mask.addEventListener('click', function (e) {if (e.target === mask) closeM();});
+        document.addEventListener('keydown', function (e) {if (e.key === 'Escape') closeM();});
       })();
 
       /* ============================================================
@@ -4661,10 +4661,10 @@
           updateStats();
           updateManualUpdateUI();
         }
-        try { draw(); }
-        catch (err) { console.error('draw error:', err); }
-        try { drawSide(); }
-        catch (err) { console.error('side draw error:', err); }
+        try {draw();}
+        catch (err) {console.error('draw error:', err);}
+        try {drawSide();}
+        catch (err) {console.error('side draw error:', err);}
         requestAnimationFrame(loop);
       }
 
@@ -4675,7 +4675,7 @@
         heatDirty = true;
         sideHeatDirty = true;
         suboptDirty = true;
-      } catch (e) { console.error('init error:', e); }
+      } catch (e) {console.error('init error:', e);}
 
       buildSliders();
       refreshStaticText();

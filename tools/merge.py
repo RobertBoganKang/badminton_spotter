@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """把多个 HTML 合并成一个可通过按钮循环切换的单文件 HTML。"""
+
 from __future__ import annotations
 
 import argparse
@@ -9,6 +10,7 @@ import html
 import json
 import re
 import sys
+import zlib
 from pathlib import Path
 from string import Template
 
@@ -85,31 +87,64 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   const pageCache = [];
   let   currentIndex = 0;
+  let   renderToken  = 0;   // 防止快速切换时旧解压结果覆盖新页面
 
-  /* ---------- 渲染 ---------- */
+  const SUPPORTS_DECOMPRESS = (typeof DecompressionStream === 'function');
 
-  function decodeBase64(text) {
+  /* ---------- 解压 / 渲染 ---------- */
+
+  function base64ToBytes(text) {
     const binary = atob(text);
     const bytes  = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new TextDecoder('utf-8').decode(bytes);
+    return bytes;
   }
 
-  function getPageHtml(index) {
-    if (pageCache[index] === undefined) {
-      pageCache[index] = decodeBase64(pages[index].data);
+  async function decompressBytes(bytes) {
+    const ds = new DecompressionStream('deflate');   // zlib 格式
+    const stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  async function getPageHtml(index) {
+    if (pageCache[index] !== undefined) return pageCache[index];
+
+    const page = pages[index];
+    let bytes  = base64ToBytes(page.data);
+
+    if (page.compressed) {
+      if (!SUPPORTS_DECOMPRESS) {
+        throw new Error('当前浏览器不支持 DecompressionStream，无法解压页面数据。');
+      }
+      bytes = await decompressBytes(bytes);
     }
-    return pageCache[index];
+
+    const text = new TextDecoder('utf-8').decode(bytes);
+    pageCache[index] = text;
+    return text;
   }
 
-  function renderPage(index) {
-    const html = getPageHtml(index);
+  async function renderPage(index) {
+    const token = ++renderToken;
+    let htmlText;
+    try {
+      htmlText = await getPageHtml(index);
+    } catch (err) {
+      console.error(err);
+      if (token === renderToken) {
+        frameEl.srcdoc = '<pre style="padding:16px;color:#c00;font-family:monospace;">'
+                       + '页面解压失败：' + String(err && err.message || err) + '</pre>';
+      }
+      return;
+    }
+    if (token !== renderToken) return;   // 已被更新的切换请求取代
+
     if ('srcdoc' in frameEl) {
-      frameEl.srcdoc = html;
+      frameEl.srcdoc = htmlText;
       return;
     }
     if (frameEl.dataset.blobUrl) URL.revokeObjectURL(frameEl.dataset.blobUrl);
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    const url = URL.createObjectURL(new Blob([htmlText], { type: 'text/html' }));
     frameEl.dataset.blobUrl = url;
     frameEl.src = url;
   }
@@ -123,8 +158,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   function showPage(index) {
     if (index < 0 || index >= pages.length) return;
     currentIndex = index;
+    updateUi();          // 先更新标题，避免等待解压时 UI 滞后
     renderPage(index);
-    updateUi();
   }
 
   const goNext = () => showPage((currentIndex + 1) % pages.length);
@@ -403,13 +438,17 @@ def collect_matching_files(folder: Path, glob_pattern: str) -> list[Path]:
 
 def default_file_sort(file_list: list[Path]) -> list[Path]:
     """默认顺序：index.html 优先，其余按文件名（不区分大小写）排序。"""
+
     def sort_key(file_item: Path):
         name_lower = file_item.name.lower()
         return (0 if INDEX_FILE_RE.match(name_lower) else 1, name_lower)
+
     return sorted(file_list, key=sort_key)
 
 
-def apply_custom_file_order(file_list: list[Path], order_config: str | None) -> list[Path]:
+def apply_custom_file_order(
+    file_list: list[Path], order_config: str | None
+) -> list[Path]:
     """按 --order 指定的顺序排序，未匹配到的放到最后（默认顺序）。"""
     if not order_config:
         return default_file_sort(file_list)
@@ -427,7 +466,7 @@ def apply_custom_file_order(file_list: list[Path], order_config: str | None) -> 
                 used.add(file_item)
                 break
         else:
-            print(f"警告：--order 中的 \"{wanted}\" 没有匹配到文件", file=sys.stderr)
+            print(f'警告：--order 中的 "{wanted}" 没有匹配到文件', file=sys.stderr)
 
     return ordered + [f for f in default_file_sort(file_list) if f not in used]
 
@@ -449,23 +488,45 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("folder", help="包含 HTML 文件的文件夹")
-    parser.add_argument("-o", "--output", help="输出文件路径（默认 <folder>/merged.html）")
-    parser.add_argument("-t", "--title", default=DEFAULT_TITLE,
-                        help="总标题，留空则标签页只显示各页自身标题")
-    parser.add_argument("--pattern", default=DEFAULT_PATTERN,
-                        help="文件匹配模式，逗号分隔（默认 *.html,*.htm）")
+    parser.add_argument(
+        "-o", "--output", help="输出文件路径（默认 <folder>/merged.html）"
+    )
+    parser.add_argument(
+        "-t",
+        "--title",
+        default=DEFAULT_TITLE,
+        help="总标题，留空则标签页只显示各页自身标题",
+    )
+    parser.add_argument(
+        "--pattern",
+        default=DEFAULT_PATTERN,
+        help="文件匹配模式，逗号分隔（默认 *.html,*.htm）",
+    )
     parser.add_argument("--order", help="逗号分隔的文件名/主干名，用于指定循环顺序")
     parser.add_argument("--labels", help="逗号分隔的标题文字，按最终顺序对应")
-    parser.add_argument("--exclude", action="append", default=[], metavar="NAME",
-                        help="要跳过的文件名或主干名，可重复，也可逗号分隔")
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help="要跳过的文件名或主干名，可重复，也可逗号分隔",
+    )
+    parser.add_argument(
+        "--no-compress",
+        action="store_true",
+        help="不压缩页面数据（默认使用 zlib 压缩，可显著减小输出体积）",
+    )
     args = parser.parse_args(argv)
 
     target_folder = Path(args.folder).expanduser().resolve()
     if not target_folder.is_dir():
         parser.error(f"不是文件夹：{target_folder}")
 
-    output_file = (Path(args.output).expanduser().resolve()
-                   if args.output else target_folder / "merged.html")
+    output_file = (
+        Path(args.output).expanduser().resolve()
+        if args.output
+        else target_folder / "merged.html"
+    )
 
     file_list = collect_matching_files(target_folder, args.pattern)
     file_list = [f for f in file_list if f.resolve() != output_file]
@@ -473,7 +534,8 @@ def main(argv=None) -> int:
     exclude_set = build_exclude_set(args.exclude)
     if exclude_set:
         file_list = [
-            f for f in file_list
+            f
+            for f in file_list
             if f.name.lower() not in exclude_set and f.stem.lower() not in exclude_set
         ]
 
@@ -492,6 +554,8 @@ def main(argv=None) -> int:
             )
 
     page_info_list = []
+    total_raw_bytes = 0
+    total_packed_bytes = 0
     for page_idx, html_file in enumerate(file_list):
         html_content = read_text(html_file)
 
@@ -501,13 +565,31 @@ def main(argv=None) -> int:
         if not page_title:
             page_title = extract_title(html_content) or html_file.stem
 
-        page_info_list.append({
-            "title": page_title,
-            "data": base64.b64encode(html_content.encode("utf-8")).decode("ascii"),
-            "_file_size_bytes": html_file.stat().st_size,
-        })
+        raw_bytes = html_content.encode("utf-8")
+        if args.no_compress:
+            packed_bytes = raw_bytes
+            compressed_flag = False
+        else:
+            packed_bytes = zlib.compress(raw_bytes, level=9)
+            compressed_flag = True
 
-    frontend_payload = [{k: p[k] for k in ("title", "data")} for p in page_info_list]
+        total_raw_bytes += len(raw_bytes)
+        total_packed_bytes += len(packed_bytes)
+
+        page_info_list.append(
+            {
+                "title": page_title,
+                "data": base64.b64encode(packed_bytes).decode("ascii"),
+                "compressed": compressed_flag,
+                "_file_size_bytes": html_file.stat().st_size,
+                "_packed_bytes": len(packed_bytes),
+            }
+        )
+
+    frontend_payload = [
+        {"title": p["title"], "data": p["data"], "compressed": p["compressed"]}
+        for p in page_info_list
+    ]
     pages_json_text = escape_js_unsafe_chars(
         json.dumps(frontend_payload, ensure_ascii=False, separators=(",", ":"))
     )
@@ -524,8 +606,17 @@ def main(argv=None) -> int:
     output_size_kb = output_file.stat().st_size / 1024
     print(f"✅ 已生成：{output_file}")
     print(f"   共 {len(page_info_list)} 个页面，输出大小 {output_size_kb:.1f} KB")
+    if not args.no_compress:
+        ratio = (total_packed_bytes / total_raw_bytes * 100) if total_raw_bytes else 0
+        print(
+            f"   原始 HTML 合计 {total_raw_bytes / 1024:.1f} KB → "
+            f"压缩后 {total_packed_bytes / 1024:.1f} KB（{ratio:.1f}%）"
+        )
     for idx, page in enumerate(page_info_list, 1):
         print(f"   {idx}. {page['title']}  ({page['_file_size_bytes'] / 1024:.1f} KB)")
+    print(
+        "   提示：解压依赖浏览器 DecompressionStream（Chrome/Edge 80+、Firefox 113+、Safari 16.4+）"
+    )
 
     return 0
 
