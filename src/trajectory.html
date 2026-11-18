@@ -612,11 +612,12 @@
       top: 0;
       bottom: 0;
       left: 0;
-      width: min(330px, 88vw);
+      width: min(360px, 92vw);
       display: flex;
       flex-direction: column;
       background: #fff;
-      box-shadow: 4px 0 26px rgba(20, 50, 35, .14);
+      border-right: 1px solid var(--border);
+      box-shadow: 18px 0 45px rgba(20, 50, 35, .16);
       transform: translateX(-103%);
       transition: transform .26s cubic-bezier(.4, 0, .2, 1);
     }
@@ -629,22 +630,25 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 16px;
-      color: #fff;
-      background: var(--primary);
+      padding: 15px 16px;
+      color: var(--text);
+      background: #fff;
+      border-bottom: 1px solid var(--border);
     }
 
     .sidebar-head h2 {
       margin: 0;
-      font-size: 14.5px;
+      font-size: 15px;
     }
 
     .sidebar-close {
-      padding: 0 4px;
+      width: 30px;
+      height: 30px;
       border: 0;
-      color: #fff;
-      background: transparent;
-      font-size: 22px;
+      border-radius: 8px;
+      color: var(--text-2);
+      background: #f1f5f2;
+      font-size: 20px;
       cursor: pointer;
     }
 
@@ -1119,7 +1123,7 @@
 
   <aside class="sidebar" id="sidebar" aria-label="模型参数">
     <div class="sidebar-head">
-      <h2 data-i18n="modelParams">模型参数</h2>
+      <h2>参数</h2>
       <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭">×</button>
     </div>
     <div class="sidebar-body">

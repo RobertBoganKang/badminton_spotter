@@ -675,25 +675,32 @@
     }
 
     .params-dialog {
-      width: min(780px, calc(100vw - 28px));
-      max-height: min(88vh, 820px);
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: min(360px, 92vw);
+      max-width: none;
+      height: 100dvh;
+      max-height: none;
+      margin: 0;
       padding: 0;
       overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 22px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
       color: var(--ink);
       background: var(--surface);
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+      box-shadow: 18px 0 45px rgba(20, 50, 35, .16);
     }
 
     .params-dialog::backdrop {
-      background: rgba(5, 18, 13, 0.54);
-      backdrop-filter: blur(5px);
+      background: rgba(5, 18, 13, 0.30);
+      backdrop-filter: blur(2px);
     }
 
     .params-inner {
       display: flex;
-      max-height: min(88vh, 820px);
+      height: 100%;
+      max-height: none;
       flex-direction: column;
     }
 
@@ -702,12 +709,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 18px 20px 15px;
+      padding: 15px 16px;
       border-bottom: 1px solid var(--line);
     }
 
     .params-head h2 {
-      font-size: 20px;
+      font-size: 15px;
     }
 
     .params-head p {
@@ -728,7 +735,7 @@
 
     .params-body {
       overflow: auto;
-      padding: 18px 20px 24px;
+      padding: 13px 14px 24px;
     }
 
     .param-section {
@@ -948,6 +955,8 @@
       --drop: #28aa50;
       --drive: #7a5ab5;
       --gold: #1b241f;
+      --velocity-blue: #1e88e5;
+      --velocity-blue-light: #62c6eb;
       --surface: #fff;
       --surface-2: #f7fbf9;
       --surface-3: #eef4f0;
@@ -1264,6 +1273,59 @@
       min-width: 0;
     }
 
+    .rotation-cluster {
+      display: none;
+      flex: 0 0 auto;
+      align-items: stretch;
+      height: 20px;
+      min-width: 0;
+    }
+
+    .rotation-cluster.is-visible {
+      display: inline-flex;
+    }
+
+    .rotation-cluster .compound-segment {
+      gap: 3px;
+      height: 20px;
+      min-height: 20px;
+      padding-inline: 7px;
+      border-color: rgba(30, 136, 229, .28);
+      color: var(--velocity-blue);
+      background: rgba(30, 136, 229, .12);
+    }
+
+    .rotation-cluster .compound-segment strong {
+      font-size: 10px;
+    }
+
+    .rotation-cluster .rotation-hand {
+      color: var(--velocity-blue);
+    }
+
+    .rotation-cluster .compound-segment.is-left-hand {
+      color: var(--velocity-blue-light);
+      border-color: rgba(91, 182, 218, .5);
+      background: rgba(98, 198, 235, .2);
+    }
+
+    .rotation-cluster .compound-segment.is-left-hand:hover {
+      background: rgba(98, 198, 235, .3);
+    }
+
+    .rotation-cluster .compound-segment.is-left-hand .rotation-hand {
+      color: var(--velocity-blue-light);
+    }
+
+    .rotation-cluster .compound-segment:hover {
+      background: rgba(30, 136, 229, .18);
+    }
+
+    .rotation-cluster .compound-segment:disabled {
+      cursor: default;
+      opacity: .42;
+    }
+
     .compound-segment {
       display: inline-flex;
       align-items: center;
@@ -1422,6 +1484,28 @@
       background: transparent;
       backdrop-filter: none;
       font-size: 10.5px;
+    }
+
+    .top-legend .racket-foot-chip {
+      display: none;
+      padding: 0 2px;
+      border: 0;
+      border-radius: 0;
+      color: var(--velocity-blue);
+      background: transparent;
+      font-weight: 600;
+    }
+
+    .top-legend .racket-foot-chip.is-visible {
+      display: inline-flex;
+    }
+
+    .racket-foot-chip-dot {
+      width: 5px;
+      height: 5px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--velocity-blue);
     }
 
     .heat-top-legend {
@@ -1584,6 +1668,29 @@
       border-radius: 10px;
       background: #f7fbf9;
       box-shadow: none;
+    }
+
+    .calc-wait-bubble {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 30;
+      display: none;
+      padding: 7px 13px;
+      border: 1px solid rgba(31, 111, 139, .24);
+      border-radius: 999px;
+      color: #111827;
+      background: rgba(255, 255, 255, .94);
+      box-shadow: 0 5px 18px rgba(20, 50, 35, .12);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .calc-wait-bubble.is-visible {
+      display: block;
     }
 
     .side-stage canvas {
@@ -1817,6 +1924,8 @@
 
     #credit {
       cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .footer b {
@@ -2245,6 +2354,30 @@
       display: none;
     }
 
+  .symmetry-toggle {
+    display: inline-flex;
+    width: 28px;
+    height: 24px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(22, 107, 70, .38);
+    border-radius: 7px;
+    color: var(--primary);
+    background: rgba(22, 107, 70, .08);
+    font: 700 16px/1 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: color .15s, background .15s, border-color .15s;
+  }
+
+  .symmetry-toggle.is-active {
+    border-color: var(--primary);
+    color: #fff;
+    background: var(--primary);
+  }
+
     .dual-range {
       position: relative;
       width: 100%;
@@ -2317,6 +2450,11 @@
         height: 390px;
         min-height: 390px;
       }
+
+    .symmetry-toggle {
+      height: 21.5px;
+      font-size: 15px;
+    }
     }
 
     @media (pointer: coarse) {
@@ -2337,7 +2475,7 @@
         <div class="logo" aria-hidden="true">👋</div>
         <div>
           <h1 id="pageTitle">羽毛球最优出球轨迹</h1>
-          <p id="pageSub">拖动球员调整位置 · 长按对手调初速度 · 双击球场切换热力图 · 上下拖动“优劣 / Top”，向上增加、向下减小</p>
+          <p id="pageSub">拖动球员调整位置 · 双击对手调速度 · 上下拖动 A/B 角度调旋转 · 双击球场切换热力图</p>
         </div>
       </div>
       <div class="header-actions">
@@ -2359,6 +2497,13 @@
         <button class="mode-toggle" id="modeToggle" data-mode="double" type="button" aria-label="切换单打或双打"
           aria-pressed="false">双打</button>
 
+        <button class="symmetry-toggle" id="symmetryBtn" type="button"
+          title="以球场中心旋转 180°" aria-label="以球场中心旋转 180°" aria-pressed="false">
+          ↺
+        </button>
+
+        <button class="manual-update-btn" id="updateBtn" type="button" hidden>更新</button>
+
         <div class="top-legend" aria-hidden="true">
           <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--smash)"></i><span
               data-i18n="typeSmash">下压</span></span>
@@ -2370,6 +2515,10 @@
               data-i18n="typeDrive">平抽</span></span>
           <span class="legend-chip"><i class="legend-swatch" style="--legend-color:var(--gold)"></i><span
               data-i18n="selected">选中</span></span>
+          <span class="legend-chip racket-foot-chip" id="racketFootLegend">
+            <i class="racket-foot-chip-dot" aria-hidden="true"></i>
+            <span data-i18n="racketFootLegend">持拍侧脚</span>
+          </span>
         </div>
 
         <div class="heat-top-legend hidden" id="heatLegend" aria-label="热力图标识：红色为优，蓝色为劣">
@@ -2379,8 +2528,19 @@
         </div>
 
         <div class="tb-right">
-          <button class="manual-update-btn" id="updateBtn" type="button" hidden>更新</button>
           <div class="pill-group">
+            <div class="rotation-cluster" id="rotationCluster" aria-label="对手旋转角度">
+              <button class="compound-segment compound-left" id="rotationAPill" data-rotation="0" type="button"
+                title="单击切换 A 的持拍手，向上拖动增加角度，向下拖动减小">
+                <span>A</span><strong class="rotation-hand" id="rotationAHand">右</strong><strong
+                  id="rotationAValue">0°</strong>
+              </button>
+              <button class="compound-segment compound-right" id="rotationBPill" data-rotation="1" type="button"
+                title="单击切换 B 的持拍手，向上拖动增加角度，向下拖动减小">
+                <span>B</span><strong class="rotation-hand" id="rotationBHand">右</strong><strong
+                  id="rotationBValue">0°</strong>
+              </button>
+            </div>
             <div class="rank-cluster">
               <button class="compound-segment compound-left" id="rankPill" type="button" title="向上拖动增加数字，向下拖动减小数字"
                 aria-label="当前球路优劣值，向上拖动增加数字，向下拖动减小数字">
@@ -2413,6 +2573,9 @@
           <canvas id="mainCanvas" role="img" aria-label="羽毛球场俯视图，显示我方击球点、对手位置和 Top N 出球轨迹">
             当前浏览器无法显示球场轨迹图。
           </canvas>
+          <div class="calc-wait-bubble" id="calcWaitBubble" role="status" aria-live="polite">
+            正在计算中
+          </div>
         </div>
         <div class="side-stage">
           <canvas id="sideCanvas" role="img" aria-label="球场长度与高度侧视图，显示球路、球网和对手截击点">
@@ -2485,8 +2648,8 @@
     <div class="params-inner">
       <div class="params-head">
         <div>
-          <h2 id="paramsTitle">模型参数</h2>
-          <p>所有修改都会重新计算合法球路；拖动球场中的球员后自动恢复“优劣 1”。</p>
+          <h2 id="paramsTitle">参数</h2>
+          <p hidden></p>
         </div>
         <button class="param-close" id="paramsClose" type="button" aria-label="关闭参数面板">×</button>
       </div>
@@ -2561,6 +2724,56 @@
         </section>
 
         <section class="param-section">
+          <h3>转身模型</h3>
+          <div class="param-grid">
+            <div class="param-item">
+              <div class="param-item-head"><label for="turnTmax">回身耗时上限</label><output
+                  id="turnTmaxValue">0.55 s</output></div>
+              <input id="turnTmax" data-param="turnTmax" type="range" min="0" max="1.2" step="0.01" value="0.55">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="turnTheta0">转身死区</label><output
+                  id="turnTheta0Value">25°</output></div>
+              <input id="turnTheta0" data-param="turnTheta0" type="range" min="0" max="70" step="1" value="25">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="turnSpeedK">转身速度折扣</label><output
+                  id="turnSpeedKValue">0.45</output></div>
+              <input id="turnSpeedK" data-param="turnSpeedK" type="range" min="0" max="0.8" step="0.01"
+                value="0.45">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="fhBias">正反手速度偏置</label><output
+                  id="fhBiasValue">0.18</output></div>
+              <input id="fhBias" data-param="fhBias" type="range" min="0" max="0.5" step="0.01" value="0.18">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="turnOverlapK">转身/移动重叠</label><output
+                  id="turnOverlapKValue">25%</output></div>
+              <input id="turnOverlapK" data-param="turnOverlapK" type="range" min="0" max="1" step="0.01" value="0.25">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="leadFootBoost">持拍脚方向加速</label><output
+                  id="leadFootBoostValue">10%</output></div>
+              <input id="leadFootBoost" data-param="leadFootBoost" type="range" min="0" max="0.3" step="0.01"
+                value="0.10">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="crossLineSpeedK">跨线速度</label><output
+                  id="crossLineSpeedKValue">92%</output></div>
+              <input id="crossLineSpeedK" data-param="crossLineSpeedK" type="range" min="0.70" max="1" step="0.01"
+                value="0.92">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="backhandTurnK">反手转身附加</label><output
+                  id="backhandTurnKValue">18%</output></div>
+              <input id="backhandTurnK" data-param="backhandTurnK" type="range" min="0" max="0.5" step="0.01"
+                value="0.18">
+            </div>
+          </div>
+        </section>
+
+        <section class="param-section">
           <h3>截击与显示</h3>
           <div class="param-grid">
             <div class="param-item param-item-dual">
@@ -2574,7 +2787,8 @@
               </div>
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="k2">后退速度系数</label><output id="k2Value">1.30</output></div>
+              <div class="param-item-head"><label for="k2">后退速度系数</label><output id="k2Value">1.30</output>
+              </div>
               <input id="k2" data-param="k2" type="range" min="1" max="1.8" step="0.01" value="1.3">
             </div>
             <div class="param-item">
@@ -2617,6 +2831,7 @@
         return text.includes('.') ? text.replace(/0+$/, '').replace(/\.$/, '') : text;
       };
       const pct = (v) => Number.isFinite(v) ? Math.round(v * 100) + '%' : '—';
+      const DEG = Math.PI / 180;
       const DPR_CAP = 2;
       const COARSE_POINTER = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       let lang = 'zh';
@@ -2624,7 +2839,8 @@
       const I18N = {
         zh: {
           title: '羽毛球优势出球轨迹',
-          subtitle: '拖动球员调整位置 · 长按对手调初速度 · 双击球场切换热力图 · 上下拖动“优劣 / Top”，向上增加、向下减小',
+          subtitle: '拖动球员调整位置 · 双击对手调速度 · 上下拖动 A/B 角度调旋转 · 双击球场切换热力图',
+          symmetryHint: '以球场中心旋转 180°',
           rank: '优劣',
           contactHeightShort: '击球高',
           typeSmash: '下压',
@@ -2672,6 +2888,17 @@
           reachHeight: '可接高度',
           runSpeed: '跑动速度',
           touchRadius: '触球半径',
+          turnSection: '转身模型',
+          turnTmax: '回身耗时上限',
+          turnTheta0: '转身死区',
+          turnSpeedK: '转身速度折扣',
+          fhBias: '正反手速度偏置',
+          turnOverlapK: '转身/移动重叠',
+          leadFootBoost: '持拍脚方向加速',
+          crossLineSpeedK: '跨线速度',
+          backhandTurnK: '反手转身附加',
+          racketFootLegend: '持拍侧脚',
+          rotationControl: '对手旋转角度',
           zMin: '可接高度下限',
           zMax: '可接高度上限',
           k2: '后退速度系数',
@@ -2687,16 +2914,21 @@
         <h3>三、飞行仿真</h3>
         <p>采用重力与速度相关空气阻力模型，仿真步长 0.005 s。通过相邻步插值获得过网位置、落点和飞行时间；主视图与侧视图使用同一组三维轨迹数据。</p>
         <h3>四、对手反应和截击</h3>
-        <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、方向速度系数和触球半径计算接球概率。</p>
-        <h3>五、排序</h3>
+        <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、转身代价和触球半径计算接球概率。</p>
+        <p>未双击对手时使用原始不考虑转身的方向速度模型。双击对手进入速度手柄模式后启用转身模型：总移动耗时按“<code>max(转身时间, 移动时间) + k × min(转身时间, 移动时间)</code>”计算，再叠加跨步延迟和关节极限时间。<code>k=0</code> 表示完全并行，<code>k=1</code> 表示转身完成后才移动；默认 <code>k=0.25</code>，表示两者部分重叠。移动阶段继续叠加前向、侧向和后退速度差异，反手触球半径按 88% 计算；转身参数全部归零时与原始方向速度一致。球员默认面向球网。关闭速度手柄后恢复原始模型。椭圆长轴表示双脚连线，长轴一侧的圆点表示持拍侧脚。</p>
+        <p>移动速度进一步按照身体朝向建立椭圆速度场：持拍脚方向获得额外加速，跨线方向速度较低，后退方向不获得该加速；两个比例均可在“转身模型”中调整。反手侧惩罚随绝对转身角平滑增加，并额外作用于转身时间、跨步延迟和关节极限，避免小角度时突然跳变。开启 180° 对称视图后，顶部角度读数也按显示方向换算，拖动角度时会反向转换回物理坐标，因此显示与画面一致且不改变求解结果。</p>
+        <h3>五、后台计算与精度</h3>
+        <p>开启对手速度手柄后，候选球路生成、轨迹仿真和截击评分会放入单个内联 Web Worker 中执行，主页面线程保持可操作。重复更新会取消旧任务；计算期间显示“正在计算中”，完成后自动更新图形。截击概率和期望得分使用 <code>Float32 / Math.fround</code> 精度，轨迹几何仍保留双精度。</p>
+        <h3>六、排序</h3>
         <p>合法轨迹按对手接球概率从低到高排序，Top #1 为最优。<b>优劣</b>用于选择具体球路，<b>Top</b>用于调整显示和热力图使用的球路数量；默认取合法候选的 1%，上限为 20%。</p>
-        <h3>六、视图与热力图</h3>
+        <h3>七、视图与热力图</h3>
         <p>主视图显示俯视球路，侧视图显示场地长度与高度。双击球场开启热力图，红色表示对手接球概率较低（优），蓝色表示较高（劣）。</p>
       `
         },
         en: {
           title: 'Badminton Optimal Shuttlecock Trajectory',
-          subtitle: 'Drag players · Long-press an opponent for initial velocity · Double-tap court for heatmap · Drag “Rank / Top” up to increase, down to decrease',
+          subtitle: 'Drag players · Double-click an opponent for speed · Drag A/B angles to rotate · Double-tap court for heatmap',
+          symmetryHint: 'Rotate 180° around the court centre',
           rank: 'Rank',
           contactHeightShort: 'Height',
           typeSmash: 'Steep',
@@ -2744,6 +2976,17 @@
           reachHeight: 'Reach height',
           runSpeed: 'Running speed',
           touchRadius: 'Touch radius',
+          turnSection: 'Turning model',
+          turnTmax: 'Maximum turn time',
+          turnTheta0: 'Turn dead zone',
+          turnSpeedK: 'Turn speed loss',
+          fhBias: 'Forehand/backhand bias',
+          turnOverlapK: 'Turn/move overlap',
+          leadFootBoost: 'Lead-foot speed boost',
+          crossLineSpeedK: 'Cross-line speed',
+          backhandTurnK: 'Backhand turn penalty',
+          racketFootLegend: 'Racket-side foot',
+          rotationControl: 'Opponent rotation angles',
           zMin: 'Reach height min',
           zMax: 'Reach height max',
           k2: 'Backward speed factor',
@@ -2759,10 +3002,14 @@
         <h3>3. Flight simulation</h3>
         <p>The model uses gravity and speed-dependent air drag with a 0.005 s timestep. Net crossing, landing and flight time are interpolated between simulation steps. The top view and side view share the same 3D trajectory data.</p>
         <h3>4. Reach and interception</h3>
-        <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, directional speed factors and touch radius into a reach probability.</p>
-        <h3>5. Ranking</h3>
+        <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, turning cost and touch radius into a reach probability.</p>
+        <p>Before interaction, the model uses the original directional speed calculation without turning. Double-clicking an opponent opens velocity-handle mode and enables the turning model: total movement time is <code>max(turn time, translation time) + k × min(turn time, translation time)</code>, plus step delay and joint-limit time. <code>k=0</code> means fully parallel, while <code>k=1</code> means turning must finish before translation; the default <code>k=0.25</code> represents partial overlap. The movement stage retains forward, lateral and backward speed differences and uses 88% of the normal touch radius on the backhand side. With all turning parameters at zero, it matches the directional-speed baseline. Opponents face the net by default. Closing the handles restores the original model. The ellipse's long axis marks the line between the feet; the dot on one side marks the racket-side foot.</p>
+        <p>Movement speed also uses a body-aligned elliptical field: the lead-foot direction receives a configurable speed boost, cross-line movement is slower, and backward movement receives no boost. Backhand penalties increase smoothly with absolute turn angle and additionally affect turn time, step delay, and joint-limit time to avoid a sudden jump at small angles. In the 180° mirrored view, angle readouts are converted to display coordinates while drag input is converted back to world coordinates, keeping the displayed orientation consistent without changing solver results.</p>
+        <h3>5. Background calculation and precision</h3>
+        <p>When opponent velocity handles are enabled, candidate generation, trajectory simulation and interception scoring run in one inline Web Worker, keeping the main page responsive. Repeated updates cancel stale jobs, a calculating bubble is shown, and results update automatically when complete. Interception probabilities and expected scores use <code>Float32 / Math.fround</code>; trajectory geometry remains double precision.</p>
+        <h3>6. Ranking</h3>
         <p>Legal shots are sorted from the lowest opponent reach probability to the highest. <b>Rank</b> selects a specific shot and <b>Top</b> controls how many shots are shown and used by the heatmap. Top defaults to 1% of legal candidates and is capped at 20%.</p>
-        <h3>6. Views and heatmap</h3>
+        <h3>7. Views and heatmap</h3>
         <p>The top view shows the horizontal fan and the side view shows court length against height. Double-tap the court to toggle the heatmap: red means a lower opponent reach probability and blue means a higher probability.</p>
       `
         }
@@ -2796,9 +3043,22 @@
         p0: 0.02,
         p1: 0.88,
         pmax: 0.92,
-        lambdaRun: 0.6,
+        // Directional speed factors shared by the legacy and turning models.
         sideK: 0.95,
         forwardK: 1.15
+      });
+
+      const TURN = Object.freeze({
+        speedP: 1,
+        speedFloor: 0.22,
+        curveP: 1.4,
+        stepDelay: 0.1,
+        stepThetaThreshold: 60 * DEG,
+        jointSoftStart: 70 * DEG,
+        jointHardLimit: 120 * DEG,
+        jointSoftPenalty: 0.15,
+        jointHardPenalty: 0.3,
+        backhandTouchK: 0.88
       });
 
       const TYPE_DELTA = Object.freeze({
@@ -2828,6 +3088,14 @@
         t1b: 0.55,
         speedB: 3.8,
         touchB: 0.9,
+        turnTmax: 0.55,
+        turnTheta0: 25 * DEG,
+        turnSpeedK: 0.45,
+        fhBias: 0.18,
+        turnOverlapK: 0.25,
+        leadFootBoost: 0.10,
+        crossLineSpeedK: 0.92,
+        backhandTurnK: 0.18,
         zMin: 0.1,
         zMax: 2.5,
         k2: 1.3,
@@ -2838,8 +3106,14 @@
         mode: 'double',
         contact: {x: 0, y: -2.8, z: DEFAULTS.contactHeight},
         opponents: [
-          {x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false},
-          {x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false}
+          {
+            x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false,
+            heading: Math.PI, hand: 'right', racketFoot: 'right', stance: 'parallel'
+          },
+          {
+            x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false,
+            heading: Math.PI, hand: 'right', racketFoot: 'right', stance: 'parallel'
+          }
         ],
         params: {...DEFAULTS},
         paths: [],
@@ -2856,7 +3130,9 @@
         slowMode: false,
         manualNeeded: false,
         manualResultsCleared: false,
-        heatDirty: true
+        heatDirty: true,
+        selectedOpponent: 0,
+        mirror180: false
       };
       const FAST_SLOW_MS = 500;
       const FULL_SLOW_MS = 3000;
@@ -2874,12 +3150,16 @@
       let solveSequence = 0;
       let pendingFast = false;
       let pendingManual = false;
+      let turnWorker = null;
+      let turnWorkerBusy = false;
+      let turnWorkerJobId = 0;
+      let turnWorkerStarted = 0;
       let renderQueued = false;
       let drag = null;
       let rankDrag = null;
       let topDrag = null;
+      let rotationDrag = null;
       let heightDrag = null;
-      let longPressTimer = 0;
       let lastTap = {time: 0, x: 0, y: 0};
       let lastRankTap = {time: 0};
       let lastTopTap = {time: 0};
@@ -2901,6 +3181,8 @@
         statusText: $('statusText'),
         liveStatus: $('liveStatus'),
         updateBtn: $('updateBtn'),
+        calcWaitBubble: $('calcWaitBubble'),
+        symmetryBtn: $('symmetryBtn'),
         topNValue: $('topNValue'),
         rankPill: $('rankPill'),
         topPill: $('topPill'),
@@ -2927,6 +3209,14 @@
         chipInterceptA: $('chipInterceptA'),
         chipInterceptB: $('chipInterceptB'),
         heatLegend: $('heatLegend'),
+        racketFootLegend: $('racketFootLegend'),
+        rotationCluster: $('rotationCluster'),
+        rotationAPill: $('rotationAPill'),
+        rotationBPill: $('rotationBPill'),
+        rotationAHand: $('rotationAHand'),
+        rotationBHand: $('rotationBHand'),
+        rotationAValue: $('rotationAValue'),
+        rotationBValue: $('rotationBValue'),
         modeToggle: $('modeToggle'),
         hitPill: $('hitPill'),
         typePill: $('typePill'),
@@ -2947,6 +3237,10 @@
 
       function activeOpponents() {
         return state.mode === 'single' ? state.opponents.slice(0, 1) : state.opponents;
+      }
+
+      function usesLegacySpeedModel() {
+        return !activeOpponents().some((opp) => opp.velVisible);
       }
 
       function categoryColor(type) {
@@ -3080,13 +3374,23 @@
         return 1;
       }
 
+      function wrapToPi(angle) {
+        return ((angle + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      }
+
       function opponentContext(index) {
         const suffix = index === 0 ? 'a' : 'b';
+        const opp = state.opponents[index];
+        const hand = opp.hand === 'left' ? 'left' : 'right';
         return {
-          x: state.opponents[index].x,
-          y: state.opponents[index].y,
-          vx: state.opponents[index].vx || 0,
-          vy: state.opponents[index].vy || 0,
+          x: opp.x,
+          y: opp.y,
+          vx: opp.vx || 0,
+          vy: opp.vy || 0,
+          heading: Number.isFinite(opp.heading) ? opp.heading : 0,
+          hand,
+          racketFoot: hand === 'left' ? 'left' : 'right',
+          stance: opp.stance || 'parallel',
           speed: state.params['speed' + suffix.toUpperCase()],
           touch: state.params['touch' + suffix.toUpperCase()],
           reaction: reachParams(
@@ -3096,22 +3400,140 @@
         };
       }
 
+      function turnTimeForDelta(absTheta, stance) {
+        const deadzone = clamp(state.params.turnTheta0, 0, Math.PI - 1e-4);
+        const u = clamp((absTheta - deadzone) / (Math.PI - deadzone), 0, 1);
+        const stanceCurveScale = stance === 'racket-front' ? 1.08 :
+          (stance === 'non-racket-front' ? 0.92 : 1);
+        return state.params.turnTmax * Math.pow(u, TURN.curveP * stanceCurveScale);
+      }
+
+      function stepDelayForDelta(absTheta, stance) {
+        if (absTheta <= TURN.stepThetaThreshold) return 0;
+        if (stance === 'racket-front') return TURN.stepDelay * 0.8;
+        if (stance === 'non-racket-front') return TURN.stepDelay * 1.2;
+        return TURN.stepDelay;
+      }
+
+      function jointLimitPenalty(absTheta) {
+        if (absTheta <= TURN.jointSoftStart) return 0;
+        if (absTheta >= TURN.jointHardLimit) return TURN.jointHardPenalty;
+        const u = (absTheta - TURN.jointSoftStart) /
+          (TURN.jointHardLimit - TURN.jointSoftStart);
+        return lerp(0, TURN.jointSoftPenalty, u);
+      }
+
+      // Turn and translation partially overlap. k=0 is fully parallel and
+      // k=1 is strictly sequential.
       function runTimeToPoint(pos, point, type, ctx) {
+        const dx = point.x - pos.x;
+        const dy = point.y - pos.y;
+        const d = Math.hypot(dx, dy);
+        const movementAngle = d > 1e-8 ? Math.atan2(dx, dy) : ctx.heading;
+        const rawDeltaTheta = d > 1e-8 ? wrapToPi(movementAngle - ctx.heading) : 0;
+        const turningEnabled = state.params.turnTmax > 0 ||
+          state.params.turnSpeedK > 0 ||
+          state.params.fhBias > 0 ||
+          state.params.leadFootBoost > 0 ||
+          state.params.crossLineSpeedK < 0.999 ||
+          state.params.backhandTurnK > 0;
+        const backhand = ctx.hand === 'right' ? rawDeltaTheta < 0 : rawDeltaTheta > 0;
+        const backhandBlend = turningEnabled && backhand
+          ? smoothRamp(Math.abs(rawDeltaTheta), 0, Math.PI / 2)
+          : 0;
+        const handTouchScale = 1 - (1 - TURN.backhandTouchK) * backhandBlend;
+        const touchRadius = ctx.touch * touchScale(type) * handTouchScale;
+        const runDistance = Math.max(0, d - touchRadius);
+        const deltaTheta = runDistance > 0 ? rawDeltaTheta : 0;
+        const absTheta = Math.abs(deltaTheta);
+        const handSign = ctx.hand === 'left' ? -1 : 1;
+        const asym = Math.max(0.2, 1 + state.params.fhBias * handSign * Math.sin(deltaTheta));
+        const turnFactor = clamp(
+          1 - state.params.turnSpeedK * Math.pow(absTheta / Math.PI, TURN.speedP),
+          TURN.speedFloor,
+          1
+        );
+        const ux = d > 1e-8 ? dx / d : 0;
+        const uy = d > 1e-8 ? dy / d : 0;
+        const lateralSpeed = ctx.speed * REACH.sideK;
+        const towardNetSpeed = ctx.speed * REACH.forwardK;
+        const backwardSpeed = ctx.speed / Math.max(1, state.params.k2);
+        const directionalSpeed = point.y < pos.y ? towardNetSpeed : backwardSpeed;
+        const inverseBaseSpeed = Math.hypot(ux / lateralSpeed, uy / directionalSpeed);
+        const baseSpeed = inverseBaseSpeed > 1e-8 ? 1 / inverseBaseSpeed : ctx.speed;
+        const cosDelta = Math.cos(deltaTheta);
+        const sinDelta = Math.abs(Math.sin(deltaTheta));
+        const forwardMove = Math.max(0, cosDelta);
+        const backwardMove = Math.max(0, -cosDelta);
+        const leadSpeed = 1 + state.params.leadFootBoost;
+        const crossSpeed = state.params.crossLineSpeedK;
+        const footInv = Math.sqrt(
+          Math.pow(forwardMove / leadSpeed, 2) +
+          Math.pow(sinDelta / crossSpeed, 2) +
+          Math.pow(backwardMove, 2)
+        );
+        const footSpeedFactor = turningEnabled && footInv > 1e-8 ? 1 / footInv : 1;
+        const vEff = Math.max(0.01, baseSpeed * asym * turnFactor * footSpeedFactor);
+        const translationTime = runDistance / vEff;
+        const backhandTurnScale = 1 + state.params.backhandTurnK * backhandBlend;
+        const rotationTime = runDistance > 0
+          ? turnTimeForDelta(absTheta, ctx.stance) * backhandTurnScale
+          : 0;
+        const stepDelay = runDistance > 0 && turningEnabled
+          ? stepDelayForDelta(absTheta, ctx.stance) * (1 + state.params.backhandTurnK * 0.6 * backhandBlend)
+          : 0;
+        const limitPenalty = runDistance > 0 && turningEnabled
+          ? jointLimitPenalty(absTheta) * (1 + state.params.backhandTurnK * 0.5 * backhandBlend)
+          : 0;
+        return {
+          tau: Math.max(translationTime, rotationTime)
+            + state.params.turnOverlapK * Math.min(translationTime, rotationTime)
+            + stepDelay + limitPenalty,
+          translationTime,
+          rotationTime,
+          stepDelay,
+          limitPenalty,
+          deltaTheta,
+          effectiveSpeed: vEff,
+          backhand: runDistance > 0 && backhand
+        };
+      }
+
+      function legacyRunTimeToPoint(pos, point, type, ctx) {
         const dx = point.x - pos.x;
         const dy = point.y - pos.y;
         const d = Math.hypot(dx, dy);
         const touchRadius = ctx.touch * touchScale(type);
         const runDistance = Math.max(0, d - touchRadius);
-        if (runDistance <= 0) return 0;
-
+        if (runDistance <= 0) {
+          return {
+            tau: 0,
+            translationTime: 0,
+            rotationTime: 0,
+            stepDelay: 0,
+            limitPenalty: 0,
+            deltaTheta: 0,
+            effectiveSpeed: ctx.speed,
+            backhand: false
+          };
+        }
         const ux = dx / d;
         const uy = dy / d;
         const lateralSpeed = ctx.speed * REACH.sideK;
         const towardNetSpeed = ctx.speed * REACH.forwardK;
         const backwardSpeed = ctx.speed / Math.max(1, state.params.k2);
-        const isTowardNet = point.y < pos.y;
-        const directionalSpeed = isTowardNet ? towardNetSpeed : backwardSpeed;
-        return runDistance * Math.hypot(ux / lateralSpeed, uy / directionalSpeed);
+        const directionalSpeed = point.y < pos.y ? towardNetSpeed : backwardSpeed;
+        const tau = runDistance * Math.hypot(ux / lateralSpeed, uy / directionalSpeed);
+        return {
+          tau,
+          translationTime: tau,
+          rotationTime: 0,
+          stepDelay: 0,
+          limitPenalty: 0,
+          deltaTheta: 0,
+          effectiveSpeed: directionalSpeed,
+          backhand: false
+        };
       }
 
       function interceptForOpponent(shot, oppIndex) {
@@ -3120,6 +3542,7 @@
         const zMax = Math.max(state.params.zMin, state.params.zMax);
         const delta = TYPE_DELTA[shot.type] || 0;
         const extra = shot.type === 'drop' ? 0.08 : 0;
+        const legacySpeedModel = usesLegacySpeedModel();
         let bestAvail = -Infinity;
         let best = null;
 
@@ -3127,17 +3550,22 @@
         for (let i = points.length - 1; i >= 0; i--) {
           const p = points[i];
           if (p.y < 0 || p.z < zMin || p.z > zMax) continue;
-          if (p.t <= bestAvail) break;
           const leadTime = Math.min(ctx.reaction.t0, p.t);
+          if (p.t - leadTime <= bestAvail) break;
           const leadPos = {
             x: clamp(ctx.x + ctx.vx * leadTime, -halfWidth() + 0.1, halfWidth() - 0.1),
             y: clamp(ctx.y + ctx.vy * leadTime, 0.1, COURT.HL - 0.1)
           };
-          const tau = runTimeToPoint(leadPos, p, shot.type, ctx);
-          const avail = p.t - tau;
+          const timing = legacySpeedModel
+            ? legacyRunTimeToPoint(leadPos, p, shot.type, ctx)
+            : runTimeToPoint(leadPos, p, shot.type, ctx);
+          const tau = timing.tau;
+          // Existing motion during the reaction phase is already reflected in
+          // leadPos, so the elapsed lead time is counted exactly once here.
+          const avail = p.t - tau - leadTime;
           if (avail > bestAvail) {
             bestAvail = avail;
-            best = {x: p.x, y: p.y, z: p.z, t: p.t, tau, avail};
+            best = {x: p.x, y: p.y, z: p.z, t: p.t, tau, avail, leadTime, timing};
           }
         }
 
@@ -3157,7 +3585,9 @@
 
         const tAvailable = bestAvail + delta + extra;
         const reactionP = reachProbability(tAvailable, ctx.reaction);
-        const qRun = Math.exp(-REACH.lambdaRun * best.tau);
+        // Movement time is already represented by bestAvail. Do not apply it
+        // again as a second multiplicative running-quality penalty.
+        const qRun = 1;
         return {
           x: best.x,
           y: best.y,
@@ -3167,6 +3597,12 @@
           reactionP,
           qRun,
           tau: best.tau,
+          turnTime: best.timing.rotationTime,
+          translationTime: best.timing.translationTime,
+          stepDelay: best.timing.stepDelay,
+          limitPenalty: best.timing.limitPenalty,
+          deltaTheta: best.timing.deltaTheta,
+          backhand: best.timing.backhand,
           tAvailable,
           intercept: true
         };
@@ -3303,6 +3739,9 @@
         els.updateBtn.disabled = state.busy;
         els.updateBtn.textContent = L('更新', 'Update');
         els.updateBtn.classList.toggle('has-changes', state.manualNeeded);
+        const calculating = state.busy && !usesLegacySpeedModel();
+        els.calcWaitBubble.classList.toggle('is-visible', calculating);
+        els.calcWaitBubble.textContent = L('正在计算中', 'Calculating');
       }
 
       function clearResultsForManualUpdate() {
@@ -3331,14 +3770,14 @@
         updateManualUpdateUI();
       }
 
-      function performSolve(fast, manual = false) {
-        const started = performance.now();
-        const base = generateCandidates(fast);
-        const candidates = [];
-        for (const item of base) {
-          const enriched = enrichCandidate(item);
-          if (enriched) candidates.push(enriched);
-        }
+      function resetSolvePerformanceMode() {
+        state.slowMode = false;
+        state.manualNeeded = false;
+        state.manualResultsCleared = false;
+        updateManualUpdateUI();
+      }
+
+      function applySolvedCandidates(candidates, fast, started) {
         candidates.sort((a, b) => {
           if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
           if (Math.abs(a.eAttack - b.eAttack) > 1e-9) return b.eAttack - a.eAttack;
@@ -3381,8 +3820,177 @@
         drawSide();
       }
 
+      function performSolve(fast, manual = false) {
+        if (!usesLegacySpeedModel()) {
+          startTurnWorkerSolve(fast, solveSequence);
+          return;
+        }
+        const started = performance.now();
+        const base = generateCandidates(fast);
+        const candidates = [];
+        for (const item of base) {
+          const enriched = enrichCandidate(item);
+          if (enriched) candidates.push(enriched);
+        }
+        applySolvedCandidates(candidates, fast, started);
+      }
+
+      function cancelTurnWorkerSolve() {
+        if (!turnWorkerBusy) return;
+        turnWorkerJobId++;
+        if (turnWorker) turnWorker.terminate();
+        turnWorker = null;
+        turnWorkerBusy = false;
+      }
+
+      function turnWorkerStateSnapshot() {
+        return {
+          mode: state.mode,
+          contact: {...state.contact},
+          opponents: state.opponents.map(opp => ({...opp})),
+          params: {...state.params}
+        };
+      }
+
+      function createTurnWorker() {
+        const constantSource = [
+          'const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));',
+          'const lerp = (a, b, t) => a + (b - a) * t;',
+          `const COURT = ${JSON.stringify(COURT)};`,
+          `const AERO = ${JSON.stringify(AERO)};`,
+          `const MAX_TRAJECTORY_Z = ${MAX_TRAJECTORY_Z};`,
+          `const REACH = ${JSON.stringify(REACH)};`,
+          `const TURN = ${JSON.stringify(TURN)};`,
+          `const TYPE_DELTA = ${JSON.stringify(TYPE_DELTA)};`,
+          `const DEG = ${DEG};`,
+          `let state = ${JSON.stringify(turnWorkerStateSnapshot())};`
+        ].join('\n');
+        const functionList = [
+          halfWidth,
+          activeOpponents,
+          usesLegacySpeedModel,
+          simulateShot,
+          classifyShot,
+          reachParams,
+          reachProbability,
+          touchScale,
+          wrapToPi,
+          opponentContext,
+          turnTimeForDelta,
+          stepDelayForDelta,
+          jointLimitPenalty,
+          runTimeToPoint,
+          legacyRunTimeToPoint,
+          interceptForOpponent,
+          smoothRamp,
+          returnQuality,
+          enrichCandidate,
+          targetAzimuths,
+          speedSamples,
+          dedupeKey,
+          generateCandidates
+        ];
+        const functions = functionList.map(fn => fn.toString()).join('\n\n');
+        const handler = `
+self.onmessage = function (event) {
+  const data = event.data;
+  try {
+    state = data.state || state;
+    const started = performance.now();
+    const base = generateCandidates(data.fast);
+    const candidates = [];
+    for (const item of base) {
+      const enriched = enrichCandidate(item);
+      if (!enriched) continue;
+      enriched.pHit = Math.fround(enriched.pHit);
+      enriched.pMiss = Math.fround(enriched.pMiss);
+      enriched.eAttack = Math.fround(enriched.eAttack);
+      enriched.qReturn = Math.fround(enriched.qReturn);
+      for (const stat of enriched.oppStats || []) {
+        stat.pHit = Math.fround(stat.pHit);
+        stat.reactionP = Math.fround(stat.reactionP);
+        stat.qRun = Math.fround(stat.qRun);
+      }
+      candidates.push(enriched);
+    }
+    candidates.sort((a, b) => {
+      if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
+      if (Math.abs(a.eAttack - b.eAttack) > 1e-9) return b.eAttack - a.eAttack;
+      return b.netMargin - a.netMargin;
+    });
+    self.postMessage({
+      jobId: data.jobId,
+      seq: data.seq,
+      ok: true,
+      candidates,
+      elapsed: performance.now() - started
+    });
+  } catch (error) {
+    self.postMessage({
+      jobId: data.jobId,
+      seq: data.seq,
+      ok: false,
+      error: String(error && (error.stack || error.message) || error)
+    });
+  }
+};`;
+        const source = `'use strict';\n${constantSource}\n${functions}\n${handler}`;
+        const url = URL.createObjectURL(new Blob([source], {type: 'text/javascript'}));
+        const worker = new Worker(url);
+        URL.revokeObjectURL(url);
+        worker.onmessage = handleTurnWorkerMessage;
+        worker.onerror = event => {
+          console.error('turn worker error:', event.message || event);
+          turnWorkerBusy = false;
+          state.busy = false;
+          state.manualNeeded = true;
+          setBusy(false);
+          updateManualUpdateUI();
+          updateStatus();
+        };
+        return worker;
+      }
+
+      function startTurnWorkerSolve(fast, seq) {
+        if (turnWorkerBusy) return;
+        if (!turnWorker) turnWorker = createTurnWorker();
+        const jobId = ++turnWorkerJobId;
+        turnWorkerBusy = true;
+        turnWorkerStarted = performance.now();
+        state.busy = true;
+        setBusy(true, fast);
+        updateManualUpdateUI();
+        els.statusText.innerHTML = L(
+          '<strong>后台计算中</strong> · 页面仍可操作',
+          '<strong>Calculating in background</strong> · page remains interactive'
+        );
+        turnWorker.postMessage({
+          jobId,
+          seq,
+          fast,
+          state: turnWorkerStateSnapshot()
+        });
+      }
+
+      function handleTurnWorkerMessage(event) {
+        const data = event.data || {};
+        if (data.jobId !== turnWorkerJobId || data.seq !== solveSequence) return;
+        turnWorkerBusy = false;
+        if (!data.ok) {
+          console.error('turn worker solve failed:', data.error);
+          state.busy = false;
+          state.manualNeeded = true;
+          setBusy(false);
+          updateManualUpdateUI();
+          updateStatus();
+          return;
+        }
+        applySolvedCandidates(data.candidates || [], pendingFast, turnWorkerStarted);
+      }
+
       function requestSolve(fast, delay, manual = false) {
         clearTimeout(solveTimer);
+        cancelTurnWorkerSolve();
         if (state.slowMode && !manual) {
           state.manualNeeded = true;
           clearResultsForManualUpdate();
@@ -3515,7 +4123,69 @@
         els.heightValue.style.color = 'inherit';
       }
 
+      function rotationText(heading) {
+        const viewHeading = (Number.isFinite(heading) ? heading : 0) + (state.mirror180 ? Math.PI : 0);
+        const degrees = wrapHeadingDegrees(viewHeading / DEG);
+        return `${fmt(degrees, 0)}°`;
+      }
+
+      function wrapHeadingDegrees(degrees) {
+        const wrapped = ((degrees + 180) % 360 + 360) % 360 - 180;
+        return wrapped === -180 && degrees > 0 ? 180 : wrapped;
+      }
+
+      function updateRotationUI() {
+        const single = state.mode === 'single';
+        const orientationVisible = activeOpponents().some((opp) => opp.velVisible);
+        els.rotationCluster.classList.toggle('is-visible', orientationVisible);
+        els.racketFootLegend.classList.toggle('is-visible', orientationVisible);
+        const aLeft = state.opponents[0].hand === 'left';
+        const bLeft = state.opponents[1].hand === 'left';
+        els.rotationAHand.textContent = L(aLeft ? '左' : '右', aLeft ? 'Left' : 'Right');
+        els.rotationBHand.textContent = single ? '—' : L(bLeft ? '左' : '右', bLeft ? 'Left' : 'Right');
+        els.rotationAValue.textContent = rotationText(state.opponents[0].heading);
+        els.rotationBValue.textContent = single ? '—' : rotationText(state.opponents[1].heading);
+        els.rotationAPill.classList.toggle('is-left-hand', aLeft);
+        els.rotationBPill.classList.toggle('is-left-hand', !single && bLeft);
+        els.rotationAPill.setAttribute('aria-pressed', String(aLeft));
+        els.rotationBPill.setAttribute('aria-pressed', String(!single && bLeft));
+        els.rotationBPill.disabled = single;
+        els.rotationAPill.setAttribute(
+          'aria-label',
+          L(`A ${aLeft ? '左' : '右'}手持拍，旋转 ${rotationText(state.opponents[0].heading)}；单击切换持拍手，向上拖动增加角度，向下拖动减小`,
+            `A ${aLeft ? 'left' : 'right'}-handed, rotation ${rotationText(state.opponents[0].heading)}; click to switch hand, drag up to increase angle, down to decrease`)
+        );
+        els.rotationBPill.setAttribute(
+          'aria-label',
+          single ? L('单打无 B', 'No B in singles') :
+            L(`B ${bLeft ? '左' : '右'}手持拍，旋转 ${rotationText(state.opponents[1].heading)}；单击切换持拍手，向上拖动增加角度，向下拖动减小`,
+              `B ${bLeft ? 'left' : 'right'}-handed, rotation ${rotationText(state.opponents[1].heading)}; click to switch hand, drag up to increase angle, down to decrease`)
+        );
+      }
+
+      function setOpponentHand(index, hand) {
+        if (index === 1 && state.mode === 'single') return;
+        const normalized = hand === 'left' ? 'left' : 'right';
+        state.selectedOpponent = index;
+        state.opponents[index].hand = normalized;
+        state.opponents[index].racketFoot = normalized;
+        updateRotationUI();
+        scheduleDraw();
+        requestSolve(false, 40);
+      }
+
+      function setOpponentHeading(index, degrees, final = false) {
+        if (index === 1 && state.mode === 'single') return;
+        state.selectedOpponent = index;
+        const worldDegrees = wrapHeadingDegrees(degrees - (state.mirror180 ? 180 : 0));
+        state.opponents[index].heading = worldDegrees * DEG;
+        updateRotationUI();
+        scheduleDraw();
+        requestSolve(!final, final ? 30 : 110);
+      }
+
       function updateAllText() {
+        updateRotationUI();
         els.topNValue.textContent = String(state.topN);
         const path = getSelectedPath();
         updateBubbleTints(path);
@@ -3692,7 +4362,8 @@
         for (const input of document.querySelectorAll('[data-param]')) {
           const key = input.dataset.param;
           const value = key === 'contactHeight' ? state.contact.z : state.params[key];
-          if (document.activeElement !== input) input.value = value;
+          const inputValue = key === 'turnTheta0' ? value / DEG : value;
+          if (document.activeElement !== input) input.value = inputValue;
           const output = $(input.id + 'Value');
           if (output) {
             let text;
@@ -3703,10 +4374,17 @@
               text = fmt(value, value % 1 ? 1 : 0) + ' m/s';
             } else if (key === 'thetaMax') {
               text = fmt(value, 0) + '°';
+            } else if (key === 'turnTheta0') {
+              text = fmt(value / DEG, 0) + '°';
+            } else if (key === 'turnTmax') {
+              text = fmt(value, 2) + ' s';
             } else if (key === 't0a' || key === 't1a' || key === 't0b' || key === 't1b') {
               text = fmt(value, 2) + ' s';
             } else if (key === 'heatOpacity') {
               text = Math.round(value * 100) + '%';
+        } else if (key === 'turnOverlapK' || key === 'leadFootBoost' ||
+            key === 'crossLineSpeedK' || key === 'backhandTurnK') {
+          text = Math.round(value * 100) + '%';
             } else {
               text = fmt(value, 2);
             }
@@ -3729,11 +4407,17 @@
         document.title = t('title');
         els.pageTitle.textContent = t('title');
         els.pageSub.textContent = t('subtitle');
+    els.symmetryBtn.title = t('symmetryHint');
+    els.symmetryBtn.setAttribute('aria-label', t('symmetryHint'));
         els.footerText.textContent = t('footer');
         els.langBtn.textContent = lang === 'zh' ? 'EN' : '中';
         els.modeToggle.textContent = state.mode === 'single' ? t('singles') : t('doubles');
-        els.paramsTitle.textContent = t('paramsTitle');
-        document.querySelector('.params-head p').textContent = t('paramsDesc');
+        els.paramsTitle.textContent = '参数';
+        const paramsDescription = document.querySelector('.params-head p');
+        if (paramsDescription) {
+          paramsDescription.textContent = '';
+          paramsDescription.hidden = true;
+        }
         els.paramsReset.textContent = t('resetParams');
         els.principleTitle.textContent = t('methodTitle');
         els.principleBody.innerHTML = t('method');
@@ -3743,7 +4427,9 @@
           el.textContent = t(el.dataset.i18n);
         });
 
-        const sectionKeys = ['ability', 'opponentASection', 'opponentBSection', 'interceptDisplay'];
+        const sectionKeys = [
+          'ability', 'opponentASection', 'opponentBSection', 'turnSection', 'interceptDisplay'
+        ];
         document.querySelectorAll('.param-section h3').forEach((el, index) => {
           if (sectionKeys[index]) el.textContent = t(sectionKeys[index]);
         });
@@ -3761,6 +4447,14 @@
           t1b: 'reactionHigh',
           speedB: 'runSpeed',
           touchB: 'touchRadius',
+          turnTmax: 'turnTmax',
+          turnTheta0: 'turnTheta0',
+          turnSpeedK: 'turnSpeedK',
+          fhBias: 'fhBias',
+          turnOverlapK: 'turnOverlapK',
+          leadFootBoost: 'leadFootBoost',
+          crossLineSpeedK: 'crossLineSpeedK',
+          backhandTurnK: 'backhandTurnK',
           zMin: 'zMin',
           zMax: 'zMax',
           k2: 'k2',
@@ -3776,8 +4470,16 @@
         els.principleClose.setAttribute('aria-label', L('关闭', 'Close'));
         els.rankPill.title = L('向上拖动增加数字，向下拖动减小数字；双击恢复优劣 1', 'Drag up to increase, down to decrease; double-click to reset Rank 1');
         els.topPill.title = L('向上拖动增加显示数量，向下拖动减小显示数量；双击恢复默认值', 'Drag up to increase, down to decrease; double-click for default Top');
+        els.rotationCluster.setAttribute('aria-label', t('rotationControl'));
+        els.rotationAPill.title = L('单击切换 A 的持拍手；向上拖动增加角度，向下拖动减小',
+          'Click to switch A racket hand; drag up to increase angle, down to decrease');
+        els.rotationBPill.title = state.mode === 'single'
+          ? L('单打无 B', 'No B in singles')
+          : L('单击切换 B 的持拍手；向上拖动增加角度，向下拖动减小',
+            'Click to switch B racket hand; drag up to increase angle, down to decrease');
         els.heightPill.title = L('向上拖动增加击球高度，向下拖动减小击球高度', 'Drag up to increase contact height, down to decrease');
         els.heatLegend.setAttribute('aria-label', L('热力图标识：红色为优，蓝色为劣', 'Heatmap legend: red is good, blue is poor'));
+        updateRotationUI();
         els.mainCanvas.setAttribute('aria-label', L(
           '羽毛球场俯视图，显示我方击球点、对手位置和 Top N 出球轨迹',
           'Top view of the badminton court showing contact point, opponents and top trajectories'
@@ -3802,10 +4504,12 @@
           const hw = COURT.SINGLES_HW - 0.12;
           state.contact.x = clamp(state.contact.x, -hw, hw);
           state.opponents[0].x = clamp(state.opponents[0].x, -hw, hw);
+          if (state.selectedOpponent === 1) state.selectedOpponent = 0;
         }
         els.modeToggle.dataset.mode = isSingle ? 'single' : 'double';
         els.modeToggle.textContent = isSingle ? t('singles') : t('doubles');
         els.modeToggle.setAttribute('aria-pressed', String(isSingle));
+        updateRotationUI();
         requestSolve(false, 10);
       }
 
@@ -3821,8 +4525,14 @@
         state.mode = 'double';
         state.contact = {x: 0, y: -2.8, z: DEFAULTS.contactHeight};
         state.opponents = [
-          {x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false},
-          {x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false}
+          {
+            x: -1.4, y: 4.6, vx: 0, vy: 0, velVisible: false,
+            heading: Math.PI, hand: 'right', racketFoot: 'right', stance: 'parallel'
+          },
+          {
+            x: 1.4, y: 4.6, vx: 0, vy: 0, velVisible: false,
+            heading: Math.PI, hand: 'right', racketFoot: 'right', stance: 'parallel'
+          }
         ];
         state.params = {...DEFAULTS};
         state.topN = 1;
@@ -3831,6 +4541,7 @@
         state.filter = 'all';
         state.heatOn = false;
         state.selectedRank = 1;
+        state.selectedOpponent = 0;
         state.heatDirty = true;
         els.modeToggle.dataset.mode = 'double';
         els.modeToggle.textContent = t('doubles');
@@ -3873,6 +4584,10 @@
       }
 
       function w2m(x, y) {
+        if (state.mirror180) {
+          x = -x;
+          y = -y;
+        }
         return {
           x: mainView.left + (x + COURT.HW) * mainView.scale,
           y: mainView.top + (COURT.HL - y) * mainView.scale
@@ -3880,10 +4595,15 @@
       }
 
       function m2w(x, y) {
-        return {
+        const world = {
           x: (x - mainView.left) / mainView.scale - COURT.HW,
           y: COURT.HL - (y - mainView.top) / mainView.scale
         };
+        if (state.mirror180) {
+          world.x = -world.x;
+          world.y = -world.y;
+        }
+        return world;
       }
 
       function displayJitterPoint(path, x, y) {
@@ -3899,6 +4619,7 @@
       }
 
       function sidePoint(y, z) {
+        if (state.mirror180) y = -y;
         return {
           x: sideView.left + z * sideView.scaleZ,
           y: sideView.top + (COURT.HL - y) * sideView.scaleY
@@ -3926,7 +4647,12 @@
       function courtRect() {
         const tl = w2m(-COURT.HW, COURT.HL);
         const br = w2m(COURT.HW, -COURT.HL);
-        return {x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y};
+        return {
+          x: Math.min(tl.x, br.x),
+          y: Math.min(tl.y, br.y),
+          w: Math.abs(br.x - tl.x),
+          h: Math.abs(br.y - tl.y)
+        };
       }
 
       function drawCourt() {
@@ -3944,7 +4670,7 @@
         const oppTop = w2m(-COURT.HW, COURT.HL);
         const net = w2m(COURT.HW, 0);
         ctx.fillStyle = cssColor('--court-opponent');
-        ctx.fillRect(rect.x, oppTop.y, rect.w, net.y - oppTop.y);
+        ctx.fillRect(rect.x, Math.min(oppTop.y, net.y), rect.w, Math.abs(net.y - oppTop.y));
 
         ctx.strokeStyle = line;
         ctx.lineWidth = 1;
@@ -3997,8 +4723,10 @@
         ctx.fillStyle = muted;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillText(L('我方', 'Us'), rect.x + 4, rect.y + rect.h - 12);
-        ctx.fillText(L('对手', 'Opponent'), rect.x + 4, rect.y + 12);
+        const usY = state.mirror180 ? rect.y + 12 : rect.y + rect.h - 12;
+        const oppY = state.mirror180 ? rect.y + rect.h - 12 : rect.y + 12;
+        ctx.fillText(L('我方', 'Us'), rect.x + 4, usY);
+        ctx.fillText(L('对手', 'Opponent'), rect.x + 4, oppY);
         ctx.textAlign = 'right';
         ctx.fillText(L('球网', 'Net'), rect.x + rect.w - 4, netA.y - 10);
         ctx.restore();
@@ -4223,7 +4951,7 @@
         deadzone: 0.55,
         scale: 0.2,
         gamma: 3,
-        color: '#1e88e5',
+        color: cssColor('--velocity-blue'),
         glow: 'rgba(30,136,229,.16)'
       });
 
@@ -4236,10 +4964,12 @@
         }
         const norm = Math.pow(Math.min(speed / VELOCITY_UI.max, 1), 1 / VELOCITY_UI.gamma);
         const dist = (VELOCITY_UI.deadzone + norm * VELOCITY_UI.max * VELOCITY_UI.scale) * mainView.scale;
-        const screenLength = Math.hypot(opp.vx, -opp.vy);
+        const displayVx = state.mirror180 ? -opp.vx : opp.vx;
+        const displayVy = state.mirror180 ? -opp.vy : opp.vy;
+        const screenLength = Math.hypot(displayVx, -displayVy);
         return {
-          x: center.x + opp.vx / screenLength * dist,
-          y: center.y - opp.vy / screenLength * dist
+          x: center.x + displayVx / screenLength * dist,
+          y: center.y - displayVy / screenLength * dist
         };
       }
 
@@ -4269,14 +4999,17 @@
 
       function toggleOpponentVelocity(index) {
         const opp = state.opponents[index];
+        const wasTurning = !usesLegacySpeedModel();
+        state.selectedOpponent = index;
         opp.velVisible = !opp.velVisible;
         if (!opp.velVisible) {
           opp.vx = 0;
           opp.vy = 0;
-          requestSolve(false, 40);
-        } else {
-          scheduleDraw();
         }
+        if (wasTurning !== !usesLegacySpeedModel()) resetSolvePerformanceMode();
+        scheduleDraw();
+        updateRotationUI();
+        requestSolve(false, 40);
       }
 
       function drawVelocityHandles() {
@@ -4284,16 +5017,17 @@
         const speedLabelFont = '700 10px ' + cssColor('--font').replace(/"/g, '');
         activeOpponents().forEach((opp, index) => {
           if (!opp.velVisible) return;
+          const velocityColor = cssColor(opp.hand === 'left' ? '--velocity-blue-light' : '--velocity-blue');
           const center = w2m(opp.x, opp.y);
           const handle = opponentHandleScreen(index);
           const speed = Math.hypot(opp.vx || 0, opp.vy || 0);
 
           ctx.save();
           ctx.beginPath();
-          ctx.fillStyle = 'rgba(30,136,229,.10)';
+          ctx.fillStyle = colorWithAlpha(velocityColor, 0.10);
           ctx.arc(center.x, center.y, VELOCITY_UI.deadzone * mainView.scale, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = 'rgba(30,136,229,.22)';
+          ctx.strokeStyle = colorWithAlpha(velocityColor, 0.22);
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -4304,8 +5038,8 @@
           const sy = center.y + uy / ul * VELOCITY_UI.deadzone * mainView.scale;
 
           if (speed >= 0.01) {
-            ctx.strokeStyle = VELOCITY_UI.color;
-            ctx.fillStyle = VELOCITY_UI.color;
+            ctx.strokeStyle = velocityColor;
+            ctx.fillStyle = velocityColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(sx, sy);
@@ -4322,14 +5056,14 @@
 
           ctx.beginPath();
           ctx.fillStyle = '#fff';
-          ctx.strokeStyle = VELOCITY_UI.color;
+          ctx.strokeStyle = velocityColor;
           ctx.lineWidth = 2.2;
           ctx.arc(handle.x, handle.y, speed >= 0.01 ? 7 : 8, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
           if (speed >= 0.01) {
             ctx.beginPath();
-            ctx.fillStyle = VELOCITY_UI.color;
+            ctx.fillStyle = velocityColor;
             ctx.arc(handle.x, handle.y, 2.2, 0, Math.PI * 2);
             ctx.fill();
           }
@@ -4342,18 +5076,19 @@
           ctx.fillStyle = 'rgba(255,255,255,.94)';
           roundedRect(ctx, labelX, labelY, textWidth + 10, 17, 5);
           ctx.fill();
-          ctx.strokeStyle = 'rgba(30,136,229,.24)';
+          ctx.strokeStyle = colorWithAlpha(velocityColor, 0.24);
           ctx.lineWidth = 1;
           ctx.stroke();
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = VELOCITY_UI.color;
+          ctx.fillStyle = velocityColor;
           ctx.fillText(speedText, labelX + 5, labelY + 8.5);
           ctx.restore();
         });
       }
 
-      function drawActor(ctx, c, radius, fill, outline, label, sublabel, showHalo = true, showLabel = true) {
+      function drawActor(ctx, c, radius, fill, outline, label, sublabel, showHalo = true, showLabel = true,
+        labelBelow = false) {
         ctx.save();
         if (showHalo) {
           ctx.beginPath();
@@ -4376,20 +5111,23 @@
         }
 
         const labelX = c.x;
-        const labelY = c.y - radius - 8;
+        const boxH = sublabel ? 28 : 17;
+        const boxTop = labelBelow
+          ? c.y + radius + 8
+          : c.y - radius - 8 - boxH;
         ctx.font = '700 11px ' + cssColor('--font').replace(/"/g, '');
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
+        ctx.textBaseline = 'top';
         const w = Math.max(ctx.measureText(label).width, sublabel ? ctx.measureText(sublabel).width : 0) + 12;
         ctx.fillStyle = colorWithAlpha(cssColor('--surface'), 0.88);
-        roundedRect(ctx, labelX - w / 2, labelY - (sublabel ? 26 : 15), w, sublabel ? 28 : 17, 6);
+        roundedRect(ctx, labelX - w / 2, boxTop, w, boxH, 6);
         ctx.fill();
         ctx.fillStyle = cssColor('--ink');
-        ctx.fillText(label, labelX, labelY - (sublabel ? 12 : 1));
+        ctx.fillText(label, labelX, boxTop + 4);
         if (sublabel) {
           ctx.font = '10px ' + cssColor('--font').replace(/"/g, '');
           ctx.fillStyle = cssColor('--muted');
-          ctx.fillText(sublabel, labelX, labelY);
+          ctx.fillText(sublabel, labelX, boxTop + 17);
         }
         ctx.restore();
       }
@@ -4405,9 +5143,48 @@
         ctx.closePath();
       }
 
+      function drawTurnOpponent(ctx, opp, index, radius) {
+        const c = w2m(opp.x, opp.y);
+        const heading = (Number.isFinite(opp.heading) ? opp.heading : 0) + (state.mirror180 ? Math.PI : 0);
+        const screenAngle = Math.atan2(-Math.cos(heading), Math.sin(heading));
+        const ellipseAngle = screenAngle + Math.PI / 2;
+        const shortRadius = Math.max(6.5, radius * 1.08);
+        const longRadius = radius * 2.25;
+        const footSign = opp.hand === 'left' ? -1 : 1;
+        const footLocalX = footSign * longRadius * 0.62;
+        const footLocalY = 0;
+        const footX = c.x + footLocalX * Math.cos(ellipseAngle) - footLocalY * Math.sin(ellipseAngle);
+        const footY = c.y + footLocalX * Math.sin(ellipseAngle) + footLocalY * Math.cos(ellipseAngle);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(c.x, c.y, longRadius, shortRadius, ellipseAngle, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = cssColor('--ink');
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '700 10px ' + cssColor('--font').replace(/"/g, '');
+        ctx.fillStyle = cssColor('--ink');
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(index === 0 ? 'A' : 'B', c.x, c.y + 0.5);
+
+        ctx.beginPath();
+        ctx.fillStyle = cssColor(opp.hand === 'left' ? '--velocity-blue-light' : '--velocity-blue');
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.2;
+        ctx.arc(footX, footY, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
       function drawPlayersMain() {
         const ctx = mainCtx;
         const opps = activeOpponents();
+        const showsOrientation = opps.some((opp) => opp.velVisible);
         opps.forEach((opp, index) => {
           const c = w2m(opp.x, opp.y);
           const runSpeed = index === 0 ? state.params.speedA : state.params.speedB;
@@ -4416,6 +5193,10 @@
             0.62,
             1.60
           );
+          if (showsOrientation) {
+            drawTurnOpponent(ctx, opp, index, dotRadius);
+            return;
+          }
           drawActor(
             ctx,
             c,
@@ -4424,7 +5205,9 @@
             cssColor('--surface'),
             index === 0 ? L('对手 A', 'Opponent A') : L('对手 B', 'Opponent B'),
             '',
-            !opp.velVisible
+            !opp.velVisible,
+            true,
+            state.mirror180
           );
         });
 
@@ -4498,11 +5281,13 @@
         tw = Math.max(tw, ctx.measureText(lines[1]).width) + 14;
         const boxH = 36;
         const margin = 6;
+        const below = {x: anchor.x - tw / 2, y: anchor.y + 24};
+        const above = {x: anchor.x - tw / 2, y: anchor.y - boxH - 24};
         const candidates = [
-          {x: anchor.x - tw / 2, y: anchor.y + 24},
+          ...(state.mirror180 ? [above] : [below]),
           {x: anchor.x + 25, y: anchor.y - boxH / 2},
           {x: anchor.x - tw - 25, y: anchor.y - boxH / 2},
-          {x: anchor.x - tw / 2, y: anchor.y - boxH - 24}
+          ...(state.mirror180 ? [below] : [above])
         ];
         const chosen = candidates.find((p) =>
           p.x >= margin &&
@@ -4511,7 +5296,11 @@
           p.y + boxH <= mainView.h - margin
         ) || {
           x: clamp(anchor.x - tw / 2, margin, mainView.w - tw - margin),
-          y: clamp(anchor.y + 24, margin, mainView.h - boxH - margin)
+          y: clamp(
+            state.mirror180 ? anchor.y - boxH - 24 : anchor.y + 24,
+            margin,
+            mainView.h - boxH - margin
+          )
         };
         ctx.fillStyle = colorWithAlpha(cssColor('--surface'), 0.94);
         roundedRect(ctx, chosen.x, chosen.y, tw, boxH, 7);
@@ -4556,6 +5345,8 @@
         const groundX = sideView.left;
         const topY = sidePoint(COURT.HL, 0).y;
         const bottomY = sidePoint(-COURT.HL, 0).y;
+    const screenTop = Math.min(topY, bottomY);
+    const screenBottom = Math.max(topY, bottomY);
         const netY = sidePoint(0, 0).y;
 
         ctx.save();
@@ -4594,11 +5385,11 @@
         ctx.fillStyle = muted;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(L('地面', 'Ground'), groundX, topY - 7);
+    ctx.fillText(L('地面', 'Ground'), groundX, screenTop - 7);
         ctx.fillText(L('网 1.55 m', 'Net 1.55 m'), groundX + 3, netY - 8);
         ctx.textBaseline = 'top';
-        ctx.fillText(L('对手', 'Opponent'), groundX + 2, topY + 3);
-        ctx.fillText(L('我方', 'Us'), groundX + 2, bottomY - 17);
+    ctx.fillText(L('对手', 'Opponent'), groundX + 2, state.mirror180 ? screenBottom - 17 : screenTop + 3);
+    ctx.fillText(L('我方', 'Us'), groundX + 2, state.mirror180 ? screenTop + 3 : screenBottom - 17);
 
         ctx.strokeStyle = '#b7c9bf';
         ctx.lineWidth = 1;
@@ -4723,7 +5514,7 @@
       function drawSideHeightLabels() {
         const ctx = sideCtx;
         const groundX = sideView.left;
-        const topY = sidePoint(COURT.HL, 0).y;
+    const topY = Math.min(sidePoint(COURT.HL, 0).y, sidePoint(-COURT.HL, 0).y);
         ctx.save();
         ctx.font = '600 11.5px ' + cssColor('--font').replace(/"/g, '');
         ctx.fillStyle = '#4d6256';
@@ -4871,11 +5662,21 @@
         if (!mainHeatCanvas) return;
         const top = w2m(-COURT.HW, COURT.HL);
         const bottom = w2m(COURT.HW, 0);
+        const x = Math.min(top.x, bottom.x);
+        const y = Math.min(top.y, bottom.y);
+        const w = Math.abs(bottom.x - top.x);
+        const h = Math.abs(bottom.y - top.y);
         const ctx = mainCtx;
         ctx.save();
         ctx.globalAlpha = state.params.heatOpacity;
         ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(mainHeatCanvas, top.x, top.y, bottom.x - top.x, bottom.y - top.y);
+        if (state.mirror180) {
+          ctx.translate(x + w / 2, y + h / 2);
+          ctx.rotate(Math.PI);
+          ctx.drawImage(mainHeatCanvas, -w / 2, -h / 2, w, h);
+        } else {
+          ctx.drawImage(mainHeatCanvas, x, y, w, h);
+        }
         ctx.restore();
       }
 
@@ -4954,13 +5755,6 @@
         return points[0] && points[0].dist <= points[0].maxDist ? points[0] : null;
       }
 
-      function clearLongPress() {
-        if (longPressTimer) {
-          clearTimeout(longPressTimer);
-          longPressTimer = 0;
-        }
-      }
-
       function updateContactFromWorld(w) {
         const hw = halfWidth();
         state.contact.x = clamp(w.x, -hw + 0.12, hw - 0.12);
@@ -4982,7 +5776,11 @@
       mainCanvas.addEventListener('pointerdown', (event) => {
         const p = mainEventPoint(event);
         const hit = hitActorAt(p.sx, p.sy);
-        clearLongPress();
+        if (hit && (hit.type === 'opponent' || hit.type === 'velocity')) {
+          state.selectedOpponent = hit.index;
+          updateRotationUI();
+          scheduleDraw();
+        }
         try {mainCanvas.setPointerCapture(event.pointerId);} catch (e) { }
         drag = {
           ...(hit || {type: 'blank', index: 0}),
@@ -4991,15 +5789,6 @@
           startY: p.sy,
           pointerId: event.pointerId
         };
-        if (hit && hit.type === 'opponent') {
-          longPressTimer = setTimeout(() => {
-            if (!drag || drag.type !== 'opponent' || drag.index !== hit.index || drag.moved) return;
-            longPressTimer = 0;
-            toggleOpponentVelocity(hit.index);
-            drag = null;
-            mainCanvas.style.cursor = 'grab';
-          }, 500);
-        }
         mainCanvas.style.cursor = hit ? 'grabbing' : 'default';
         event.preventDefault();
       });
@@ -5014,7 +5803,6 @@
         if (!drag.moved) {
           if (Math.hypot(p.sx - drag.startX, p.sy - drag.startY) <= (COARSE_POINTER ? 7 : 4)) return;
           drag.moved = true;
-          clearLongPress();
         }
         if (drag.type === 'blank') {
           event.preventDefault();
@@ -5030,7 +5818,6 @@
       });
 
       mainCanvas.addEventListener('pointerup', (event) => {
-        clearLongPress();
         const p = mainEventPoint(event);
         if (!drag || drag.pointerId !== event.pointerId) {
           mainCanvas.style.cursor = hitActorAt(p.sx, p.sy) ? 'grab' : 'default';
@@ -5038,19 +5825,32 @@
         }
         const wasMoved = drag.moved;
         const draggedType = drag.type;
+        const draggedIndex = drag.index;
         drag = null;
-        if (wasMoved) requestSolve(false, 40);
-        else {
+        if (wasMoved) {
+          lastTap.time = 0;
+          requestSolve(false, 40);
+        } else if (event.pointerType !== 'mouse') {
           const now = performance.now();
-          if (draggedType !== 'blank') {
-            lastTap.time = 0;
-          } else if (event.pointerType !== 'mouse' &&
-            now - lastTap.time < 330 &&
+          const actor = hitActorAt(p.sx, p.sy);
+          const sameTarget = lastTap.type === (actor ? actor.type : 'blank') &&
+            lastTap.index === (actor ? actor.index : -1);
+          if (now - lastTap.time < 330 && sameTarget &&
             Math.hypot(p.sx - lastTap.x, p.sy - lastTap.y) < (COARSE_POINTER ? 38 : 26)) {
-            setHeat(!state.heatOn);
+            if (draggedType === 'opponent' && actor && actor.type === 'opponent') {
+              toggleOpponentVelocity(draggedIndex);
+            } else if (draggedType === 'blank' && !actor) {
+              setHeat(!state.heatOn);
+            }
             lastTap.time = 0;
           } else {
-            lastTap = {time: now, x: p.sx, y: p.sy};
+            lastTap = {
+              time: now,
+              x: p.sx,
+              y: p.sy,
+              type: actor ? actor.type : 'blank',
+              index: actor ? actor.index : -1
+            };
           }
         }
         mainCanvas.style.cursor = hitActorAt(p.sx, p.sy) ? 'grab' : 'default';
@@ -5058,7 +5858,6 @@
       });
 
       mainCanvas.addEventListener('pointercancel', () => {
-        clearLongPress();
         if (drag) {
           const shouldSolve = drag.type !== 'blank' && drag.moved;
           drag = null;
@@ -5069,7 +5868,14 @@
 
       mainCanvas.addEventListener('dblclick', (event) => {
         const p = mainEventPoint(event);
-        if (!hitActorAt(p.sx, p.sy)) setHeat(!state.heatOn);
+        const hit = hitActorAt(p.sx, p.sy);
+        if (hit && hit.type === 'opponent') {
+          toggleOpponentVelocity(hit.index);
+          lastTap.time = 0;
+          event.preventDefault();
+          return;
+        }
+        if (!hit) setHeat(!state.heatOn);
       });
 
       mainCanvas.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -5109,6 +5915,11 @@
         const p = sideEventPoint(event);
         const hit = sideActorAt(p.sx, p.sy);
         if (!hit) return;
+        if (hit.type === 'sideOpponent') {
+          state.selectedOpponent = hit.index;
+          updateRotationUI();
+          scheduleDraw();
+        }
         try {sideCanvas.setPointerCapture(event.pointerId);} catch (e) { }
         drag = {
           ...hit,
@@ -5130,7 +5941,8 @@
         if ((drag.type !== 'sideContact' && drag.type !== 'sideOpponent') ||
           drag.pointerId !== event.pointerId) return;
         if (Math.hypot(p.sx - drag.startX, p.sy - drag.startY) > 2) drag.moved = true;
-        const worldY = COURT.HL - (p.sy - sideView.top) / sideView.scaleY;
+        let worldY = COURT.HL - (p.sy - sideView.top) / sideView.scaleY;
+        if (state.mirror180) worldY = -worldY;
         if (drag.type === 'sideContact') {
           state.contact.z = clamp((p.sx - sideView.left) / sideView.scaleZ, 0.1, 3.5);
           state.contact.y = clamp(worldY, -COURT.HL + 0.18, -0.18);
@@ -5165,6 +5977,84 @@
       sideCanvas.addEventListener('pointerleave', () => {
         if (!drag) sideCanvas.style.cursor = 'default';
       });
+
+      function bindRotationPill(button, index) {
+        button.addEventListener('pointerdown', (event) => {
+          if (button.disabled || (event.button !== undefined && event.button !== 0)) return;
+          state.selectedOpponent = index;
+          rotationDrag = {
+            pointerId: event.pointerId,
+            index,
+            startY: event.clientY,
+            startHeading: wrapHeadingDegrees(
+              state.opponents[index].heading / DEG + (state.mirror180 ? 180 : 0)
+            ),
+            moved: false
+          };
+          try {button.setPointerCapture(event.pointerId);} catch (e) { }
+          updateRotationUI();
+          scheduleDraw();
+          event.preventDefault();
+          event.stopPropagation();
+        });
+
+        button.addEventListener('pointermove', (event) => {
+          if (!rotationDrag || rotationDrag.index !== index ||
+            event.pointerId !== rotationDrag.pointerId) return;
+          const dy = rotationDrag.startY - event.clientY;
+          const dragThreshold = COARSE_POINTER ? 7 : 4;
+          if (!rotationDrag.moved) {
+            if (Math.abs(dy) <= dragThreshold) return;
+            rotationDrag.moved = true;
+          }
+          setOpponentHeading(index, rotationDrag.startHeading + Math.round(dy * 0.8), false);
+          event.preventDefault();
+          event.stopPropagation();
+        });
+
+        button.addEventListener('pointerup', (event) => {
+          if (!rotationDrag || rotationDrag.index !== index ||
+            event.pointerId !== rotationDrag.pointerId) return;
+          const moved = rotationDrag.moved;
+          rotationDrag = null;
+          if (moved) {
+            updateRotationUI();
+            scheduleDraw();
+            requestSolve(false, 30);
+          } else {
+            const nextHand = state.opponents[index].hand === 'left' ? 'right' : 'left';
+            setOpponentHand(index, nextHand);
+          }
+          event.preventDefault();
+          event.stopPropagation();
+        });
+
+        button.addEventListener('pointercancel', (event) => {
+          if (!rotationDrag || rotationDrag.index !== index ||
+            event.pointerId !== rotationDrag.pointerId) return;
+          rotationDrag = null;
+          requestSolve(false, 30);
+        });
+
+        button.addEventListener('keydown', (event) => {
+          const current = wrapHeadingDegrees(
+            state.opponents[index].heading / DEG + (state.mirror180 ? 180 : 0)
+          );
+          let next;
+          if (event.key === 'ArrowUp') next = current + 1;
+          else if (event.key === 'ArrowDown') next = current - 1;
+          else if (event.key === 'PageUp') next = current + 15;
+          else if (event.key === 'PageDown') next = current - 15;
+          else if (event.key === 'Home') next = 0;
+          else return;
+          setOpponentHeading(index, next, true);
+          event.preventDefault();
+          event.stopPropagation();
+        });
+      }
+
+      bindRotationPill(els.rotationAPill, 0);
+      bindRotationPill(els.rotationBPill, 1);
 
       els.rankPill.addEventListener('pointerdown', (event) => {
         if (event.button !== undefined && event.button !== 0) return;
@@ -5380,6 +6270,14 @@
       els.modeToggle.addEventListener('click', () => {
         setMode(state.mode === 'double' ? 'single' : 'double');
       });
+
+      els.symmetryBtn.addEventListener('click', () => {
+        state.mirror180 = !state.mirror180;
+        els.symmetryBtn.classList.toggle('is-active', state.mirror180);
+        els.symmetryBtn.setAttribute('aria-pressed', String(state.mirror180));
+        updateRotationUI();
+        scheduleDraw();
+      });
       els.paramsReset.addEventListener('click', resetAll);
       els.paramsBtn.addEventListener('click', () => {
         updateParamsUI();
@@ -5435,7 +6333,8 @@
       document.querySelectorAll('[data-param]').forEach((input) => {
         input.addEventListener('input', () => {
           const key = input.dataset.param;
-          const value = parseFloat(input.value);
+          const rawValue = parseFloat(input.value);
+          const value = key === 'turnTheta0' ? rawValue * DEG : rawValue;
           if (key === 'contactHeight') {
             state.contact.z = clamp(value, 0.1, 3.5);
           } else {

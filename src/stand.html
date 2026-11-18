@@ -19,6 +19,8 @@
       --primary: #166b46;
       --primary-2: #1f8a5b;
       --primary-bright: #22a06b;
+      --velocity-blue: #1e88e5;
+      --velocity-blue-light: #62c6eb;
       --seg-clear: 45, 90, 200;
       --seg-drop: 40, 170, 80;
       --seg-kill: 192, 57, 43;
@@ -321,6 +323,71 @@
       background: #dbe7f3;
     }
 
+    .symmetry-toggle {
+      display: inline-flex;
+      width: 28px;
+      height: 24px;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(22, 107, 70, .38);
+      border-radius: 7px;
+      color: var(--primary);
+      background: rgba(22, 107, 70, .08);
+      font: 700 16px/1 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: color .15s, background .15s, border-color .15s;
+    }
+
+    .symmetry-toggle.is-active {
+      border-color: var(--primary);
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .our-hand-cluster {
+      display: none;
+      align-items: stretch;
+      height: 22px;
+      flex: 0 0 auto;
+    }
+
+    .our-hand-cluster.is-visible {
+      display: inline-flex;
+    }
+
+    .our-hand-pill {
+      min-width: 34px;
+      padding: 0 7px;
+      border: 1px solid rgba(30, 136, 229, .32);
+      color: var(--velocity-blue);
+      background: rgba(30, 136, 229, .10);
+      font: 700 10px system-ui;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .our-hand-pill:first-child {
+      border-radius: 999px 3px 3px 999px;
+    }
+
+    .our-hand-pill:last-child {
+      margin-left: -1px;
+      border-radius: 3px 999px 999px 3px;
+    }
+
+    .our-hand-pill.is-left-hand {
+      border-color: rgba(98, 198, 235, .56);
+      color: var(--velocity-blue-light);
+      background: rgba(98, 198, 235, .18);
+    }
+
+    .our-hand-pill[hidden] {
+      display: none;
+    }
+
     .tb-right {
       display: inline-flex;
       align-items: center;
@@ -478,6 +545,27 @@
       gap: 8px;
     }
 
+    .calc-wait-bubble {
+      position: absolute;
+      z-index: 30;
+      display: none;
+      padding: 7px 13px;
+      border: 1px solid rgba(31, 111, 139, .24);
+      border-radius: 999px;
+      color: #111827;
+      background: rgba(255, 255, 255, .94);
+      box-shadow: 0 5px 18px rgba(20, 50, 35, .12);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .calc-wait-bubble.is-visible {
+      display: block;
+    }
+
     .rank-legend {
       position: static;
       display: inline-flex;
@@ -504,6 +592,31 @@
       height: 6px;
       border-radius: 999px;
       background: linear-gradient(to right, #d73027, #fc8d59, #ffffbf, #91bfdb, #4575b4);
+    }
+
+    .our-foot-legend {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      color: #1e88e5;
+      font-size: 9.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .our-foot-legend.is-visible {
+      display: inline-flex;
+    }
+
+    .our-foot-legend i {
+      display: block;
+      width: 5px;
+      height: 5px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #1e88e5;
     }
 
     canvas {
@@ -584,6 +697,7 @@
     #credit {
       cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
     }
 
     .sidebar {
@@ -1042,6 +1156,11 @@
         min-width: 42px;
       }
 
+      .symmetry-toggle {
+        height: 21.5px;
+        font-size: 15px;
+      }
+
       .pill {
         font-size: 10px;
         padding: 1px 7px;
@@ -1145,12 +1264,20 @@
 
         <button class="mode-toggle" id="modeToggle" data-mode="double">双打</button>
 
+        <button class="symmetry-toggle" id="symmetryBtn" type="button"
+          title="以球场中心旋转 180°" aria-label="以球场中心旋转 180°" aria-pressed="false">↺</button>
+
+        <button class="manual-update-btn" id="manualUpdateBtn" type="button" hidden>更新</button>
+
+        <span class="our-foot-legend" id="ourFootLegend" aria-hidden="true">
+          <i></i><span id="ourFootLegendText">执拍侧脚</span>
+        </span>
+
         <div class="rank-legend" id="rankLegend">
           <span>优</span><i></i><span>劣</span>
         </div>
 
         <div class="tb-right">
-          <button class="manual-update-btn" id="manualUpdateBtn" type="button" hidden>更新</button>
           <div class="pill-group" id="pillGroup">
             <div class="rank-cluster">
               <span class="pill pill-score score-left" id="pillScore">优劣 <b id="scoreValue">1</b></span>
@@ -1162,6 +1289,10 @@
               <span class="seg seg-drop" id="pillDrop" data-label="吊">吊 23%</span>
               <span class="seg seg-kill" id="pillKill" data-label="杀">杀 55%</span>
             </div>
+          </div>
+          <div class="our-hand-cluster" id="ourHandCluster" aria-label="我方持拍手">
+            <button class="our-hand-pill" id="ourHandA" type="button">A 右</button>
+            <button class="our-hand-pill" id="ourHandB" type="button">B 右</button>
           </div>
           <button class="collapse-btn" id="collapseBtn" aria-label="隐藏顶部">
             <svg class="chev-up" viewBox="0 0 16 16" aria-hidden="true">
@@ -1177,6 +1308,9 @@
       <div class="canvas-wrap">
         <canvas id="canvas"></canvas>
         <canvas id="sideCanvas"></canvas>
+        <div class="calc-wait-bubble" id="calcWaitBubble" role="status" aria-live="polite">
+          <span id="calcWaitBubbleText">正在计算中</span>
+        </div>
       </div>
       <div class="candidate-line">
         <span class="candidate-status-dot" id="candidateStatusDot"></span>
@@ -1225,8 +1359,10 @@
         zh: {
           title: '羽毛球场站位点',
           sub: '拖动对手点调位置 · 拖动胶囊调高度/概率 · 双击场地切换“次优解点云 / 落点热力图” · 左侧 ☰ 调参数',
+          symmetryHint: '以球场中心旋转 180°',
           doubles: '双打', singles: '单打',
           params: '参数', reset: '恢复默认参数', updateButton: '更新',
+          calculating: '正在计算中',
           footer: '创作 · 保留所有权利',
           principleTitle: '羽毛球场站位点 · 计算方法',
           net: '网',
@@ -1236,6 +1372,7 @@
           gSpeed: '初速度', gSpeedHint: 'm/s',
           gProb: '概率', gProbHint: '三者联动 · 总和 100%',
           gReach: '可达性', gReachHint: '反应曲线 · 跑速 · 触及半径',
+          gTurn: '我方转身', gTurnHint: 'A/B 独立 · 持拍脚与正反手',
           gFilter: '过滤', gFilterHint: '高过网 / 控高参考',
           gZRange: '可接高度', gZRangeHint: '贴地 ~ 举拍',
           gSubopt: '次优解', gSuboptHint: '候选密度点云',
@@ -1244,6 +1381,15 @@
           sl_v_run_a: 'A 跑动速度', sl_v_run_b: 'B 跑动速度',
           sl_r_touch_a: 'A 触及半径', sl_r_touch_b: 'B 触及半径',
           sl_k2: '上网/后退',
+          sl_our_turn_tmax: '回身耗时上限',
+          sl_our_turn_deadzone: '转身死区（度）',
+          sl_our_turn_speed_loss: '转身速度折扣',
+          sl_our_turn_overlap: '转身/移动重叠',
+          sl_our_fh_bias: '正反手速度偏置',
+          sl_our_backhand_turn: '反手转身附加',
+          sl_our_backhand_touch: '反手触球比例',
+          sl_our_lead_boost: '持拍脚方向加速',
+          sl_our_cross_line: '跨线速度',
           sl_dropMaxOverNet: '吊球过网高',
           sl_clearLineY: '控高参考线',
           sl_clearHeight: '高球过网最低',
@@ -1256,11 +1402,12 @@
           langBtn: 'EN',
           pillHint: '拖动调整（上增下减）',
           heightHint: '上下拖动调整击球高度',
-          scoreHint: '上下拖动浏览候选站位（上 = 更优）· 双击恢复 1000 · 仅在热力图开启时显示',
+          scoreHint: '上下拖动浏览候选站位（上 = 更优）· 双击恢复最优 1',
           pillHeight: '击球高',
           pillScore: '优劣',
           ourBack: '后', ourFront: '前', ourSolo: '站位',
           labelLeft: '左', labelRight: '右',
+          ourFootLegend: '执拍侧脚',
           tagFast: '快', tagSlow: '慢',
           infoContact: '击球高',
           infoSmash: '杀', infoClear: '高', infoDrop: '吊',
@@ -1303,10 +1450,11 @@
 
       <h3>四、期望净得分与优化器</h3>
       <div class="formula">V(站位) = Σ<sub>L</sub> w(L) · [reach(L) · c(L) − (1 − reach(L))] / Σ w(L)</div>
-      <p><b>单打</b>：网格 + 局部精修（使用 A 的跑动速度与反应曲线）。<b>双打</b>：全枚举所有位置对（粗网格 → 局部精修），A 用 A 的参数、B 用 B 的参数，过近惩罚：两人距离 &lt; 2 m 时按二次曲线惩罚。</p>
+      <p><b>单打</b>使用位置网格与局部精修。<b>双打普通模式</b>联合枚举 A/B 位置对，A、B 分别使用自己的跑速、反应曲线和触及范围，并保留两人距离 &lt; 2 m 的重叠惩罚。</p>
+      <p><b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
 
-      <h3>五、优劣评分（1–1000）</h3>
-      <p>求解器把搜索到的<b>所有</b>候选站位（单打的全部网格点 / 双打的全部位置对）按期望净得分 V 从高到低排序，再<b>非等距采样 1000 个</b>作为展示序列——<b>优的一端更密集，劣的一端更稀疏</b>。<b>1000 分 = 最优站位</b>，<b>1 分 = 采样序列中最差的位置</b>。顶部「优劣」胶囊上下拖动即可在候选之间切换。<b>“优劣”胶囊只在热力图开启时显示</b>（双击场地开关热力图）。<b>拖动球员或双击「优劣」胶囊会自动恢复到 1000（最优站位）。</b></p>
+      <h3>五、优劣与 Top</h3>
+      <p>候选按期望净得分 V 从高到低排列。<b>优劣 1</b> 表示当前候选中的最优站位，数字越大表示排名越靠后；上下拖动即可切换。<b>Top</b> 控制当前显示的候选数量：默认取基础数量的千分之一，上限为 20%。开启转身模式后，双打会用位置对数量计算 Top，排除 <code>8×8</code> 朝向枚举的放大；单打排除 8 个方向；普通模式不做这项除法。双击 Top 恢复默认值。</p>
 
       <h3>五之二、次优解点云（新）</h3>
       <p>默认叠加显示在球场上的是<b>次优解点云</b>：把「候选列表」中排名靠前的 N 个站位（单打 1 个点/候选，双打 2 个点/候选）全部画成紫色半透明小圆点，点越密集的区域说明该位置的候选越多、越集中。参数面板「次优解」组里的「前 N 个候选」滑块控制 N 的大小（默认 100，范围 1–1000）。<b>双击场地</b>可在「点云」与「落点热力图」之间切换：双击后点云消失，只留下原来的落点热力图（以及原先热力图开启时才会出现的「优劣」胶囊）。</p>
@@ -1319,11 +1467,11 @@
 
       <h3>八、交互与局限</h3>
       <ul>
-        <li><b>拖动对手点</b> → 调整击球位置（自动恢复优劣 1000）</li>
+        <li><b>拖动对手点</b> → 调整击球位置（自动恢复最优候选 1）</li>
         <li><b>拖动“击球高”胶囊</b> → 调整击球高度（影响杀球速度、高球可用角度）</li>
         <li><b>拖动概率胶囊</b> → 调整杀/吊/高概率</li>
-        <li><b>拖动“优劣”胶囊</b>（仅热力图开启时可见）→ 在 1–1000 名候选站位间切换</li>
-        <li><b>双击“优劣”胶囊</b> → 恢复到最大值 1000（最优站位）</li>
+        <li><b>拖动“优劣”胶囊</b> → 在当前 Top 范围内切换候选排名</li>
+        <li><b>双击“优劣”胶囊</b> → 恢复到最优候选 1</li>
         <li><b>双击场地空白</b> → 在「次优解点云 / 落点热力图」之间切换</li>
         <li><b>参数面板</b> → 初速度、控高参考线、高球过网最低、可接高度范围、反应曲线、A/B 跑速与触及半径、过滤、次优解点云范围</li>
         <li>站位是概率意义上的最优，不是绝对最优；双打用独立 OR 合并，未建模让球/分工</li>
@@ -1334,8 +1482,10 @@
         en: {
           title: 'Badminton Player Ground Position',
           sub: 'Drag opponent dot · Drag pills for height/probability · Double-tap court to switch sub-opt cloud / landing heatmap · ☰ for parameters',
+          symmetryHint: 'Rotate 180° around the court centre',
           doubles: 'Doubles', singles: 'Singles',
           params: 'Parameters', reset: 'Reset parameters', updateButton: 'Update',
+          calculating: 'Calculating',
           footer: 'Created · All Rights Reserved',
           principleTitle: 'Badminton Player Ground Position · Methodology',
           net: 'Net',
@@ -1345,6 +1495,7 @@
           gSpeed: 'Initial speed', gSpeedHint: 'm/s',
           gProb: 'Probabilities', gProbHint: 'linked · sum = 100%',
           gReach: 'Reachability', gReachHint: 'reaction · speed · touch radius',
+          gTurn: 'Our turning', gTurnHint: 'A/B independent · lead foot & handedness',
           gFilter: 'Filters', gFilterHint: 'net min / baseline ref',
           gZRange: 'Reachable height', gZRangeHint: 'ground ~ racket top',
           gSubopt: 'Sub-optimal', gSuboptHint: 'candidate density',
@@ -1353,6 +1504,15 @@
           sl_v_run_a: 'A run speed', sl_v_run_b: 'B run speed',
           sl_r_touch_a: 'A touch radius', sl_r_touch_b: 'B touch radius',
           sl_k2: 'Net / back',
+          sl_our_turn_tmax: 'Maximum turn time',
+          sl_our_turn_deadzone: 'Turn dead zone (deg)',
+          sl_our_turn_speed_loss: 'Turn speed loss',
+          sl_our_turn_overlap: 'Turn/move overlap',
+          sl_our_fh_bias: 'Forehand/backhand bias',
+          sl_our_backhand_turn: 'Backhand turn penalty',
+          sl_our_backhand_touch: 'Backhand touch ratio',
+          sl_our_lead_boost: 'Lead-foot speed boost',
+          sl_our_cross_line: 'Cross-line speed',
           sl_dropMaxOverNet: 'Drop net max',
           sl_clearLineY: 'Baseline ref',
           sl_clearHeight: 'Clear net min H',
@@ -1365,11 +1525,12 @@
           langBtn: '中',
           pillHint: 'Drag to adjust (up = +, down = −)',
           heightHint: 'Drag up/down to adjust contact height',
-          scoreHint: 'Drag to browse candidates (up = better) · double-tap to reset to 1000 · only visible with heatmap on',
+          scoreHint: 'Drag to browse candidates (up = better) · double-tap to reset to best rank 1',
           pillHeight: 'Height',
           pillScore: 'Rank',
           ourBack: 'Rear', ourFront: 'Front', ourSolo: 'Spot',
           labelLeft: 'L', labelRight: 'R',
+          ourFootLegend: 'Racket-side foot',
           tagFast: 'Fast ', tagSlow: 'Slow ',
           infoContact: 'Height',
           infoSmash: 'Sm', infoClear: 'Cl', infoDrop: 'Dr',
@@ -1408,9 +1569,10 @@
       <p>Doubles OR: <code>reach = 1−(1−p₁)(1−p₂)</code>.</p>
       <h3>4. Expected net score</h3>
       <div class="formula">V(pos) = Σ<sub>L</sub> w(L) · [reach(L)·c(L) − (1−reach(L))] / Σ w(L)</div>
-      <p>Singles: grid + refinement (uses A's parameters). Doubles: enumerate pairs, A uses A's parameters and B uses B's, proximity penalty &lt; 2 m.</p>
-      <h3>5. Rank score (1–1000)</h3>
-      <p>The solver sorts <b>every</b> candidate position by expected net score V, then <b>samples 1000 of them non-uniformly</b> — denser at the good end, sparser at the poor end. <b>1000 = best</b>, <b>1 = worst sampled</b>. The Rank pill only appears when the heatmap is on. Dragging the player or double-tapping the Rank pill resets it to 1000.</p>
+      <p>Singles uses a position grid plus local refinement. Normal doubles jointly enumerates A/B position pairs, with each player's own speed, reaction curve and touch radius, plus the &lt; 2 m overlap penalty.</p>
+      <p><b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
+      <h3>5. Rank and Top</h3>
+      <p><b>Rank 1</b> is the best currently selected candidate; larger numbers are worse. Drag the Rank pill to browse candidates. Top controls how many candidates are shown: the default is one thousandth of the base count and the cap is 20%. In turning mode, doubles computes Top from position-pair count rather than the <code>8×8</code> heading expansion; singles excludes the eight directions. Normal mode applies no such division. Double-tap Top to restore its default.</p>
       <h3>5b. Sub-optimal cloud (new)</h3>
       <p>By default a <b>sub-optimal point cloud</b> is overlaid on the court: the top N candidates from the candidate list (1 dot/candidate in singles, 2 dots/candidate in doubles) are drawn as semi-transparent purple dots. Denser regions mean more candidates cluster there. The “Top N candidates” slider in the “Sub-optimal” group controls N (default 100, range 1–1000). <b>Double-tap the court</b> to switch between the point cloud and the landing heatmap — after double-tapping, the cloud disappears and only the original heatmap remains (with the Rank pill shown when the heatmap is on).</p>
       <h3>6. Diagnostics</h3>
@@ -1419,14 +1581,14 @@
       <p>Landings are weighted by distance kernel × initial-speed/height weight and rendered as Gaussian KDE. <b style="color:#c0392b">red=smash</b>, <b style="color:#2d5ac8">blue=clear</b>, <b style="color:#28aa50">green=drop</b>. Double-tap court to toggle. The side view projects the same trajectories into a height × length section, toggled together.</p>
       <h3>8. Interactions</h3>
       <ul>
-        <li>Drag opponent dot → contact point (resets Rank to 1000)</li>
+        <li>Drag opponent dot → contact point (resets Rank to 1)</li>
         <li>Drag height pill → contact height</li>
         <li>Drag probability pills → smash/drop/clear</li>
-        <li>Drag rank pill (only with heatmap on) → browse 1–1000 candidate positions</li>
-        <li>Double-tap rank pill → reset to max 1000 (best position)</li>
+        <li>Drag rank pill → browse candidates within the current Top range</li>
+        <li>Double-tap rank pill → reset to the best candidate, Rank 1</li>
         <li>Double-tap empty court → switch between sub-opt cloud and landing heatmap</li>
         <li>Parameter panel → speeds, baseline ref, high net min, reachable-height range, reaction curves, A/B run speeds &amp; touch radii, filters, sub-opt cloud range</li>
-        <li>Positions are probabilistically optimal, not absolutely optimal; doubles uses independent OR, no rotation/covering model</li>
+        <li>Positions are probabilistically optimal under the displayed model; turning mode uses the joint pose search described above</li>
         <li>Intercept only models "horizontal run + height availability", not the speed difference of jumping/crouching</li>
       </ul>
     `
@@ -1457,6 +1619,16 @@
         {group: 'reach', type: 's', key: 'r_touch_a', min: 0, max: 1.5, step: 0.05, def: 0.90},
         {group: 'reach', type: 's', key: 'r_touch_b', min: 0, max: 1.5, step: 0.05, def: 0.90},
         {group: 'reach', type: 's', key: 'k2', min: 1.0, max: 1.6, step: 0.01, def: 1.30},
+
+        {group: 'turn', type: 's', key: 'our_turn_tmax', min: 0, max: 1.20, step: 0.01, def: 0.55},
+        {group: 'turn', type: 's', key: 'our_turn_deadzone', min: 0, max: 70, step: 1, def: 25},
+        {group: 'turn', type: 's', key: 'our_turn_speed_loss', min: 0, max: 0.80, step: 0.01, def: 0.45},
+        {group: 'turn', type: 's', key: 'our_turn_overlap', min: 0, max: 1.00, step: 0.01, def: 0.25},
+        {group: 'turn', type: 's', key: 'our_fh_bias', min: 0, max: 0.50, step: 0.01, def: 0.18},
+        {group: 'turn', type: 's', key: 'our_backhand_turn', min: 0, max: 0.50, step: 0.01, def: 0.18},
+        {group: 'turn', type: 's', key: 'our_backhand_touch', min: 0.60, max: 1.00, step: 0.01, def: 0.88},
+        {group: 'turn', type: 's', key: 'our_lead_boost', min: 0, max: 0.30, step: 0.01, def: 0.10},
+        {group: 'turn', type: 's', key: 'our_cross_line', min: 0.70, max: 1.00, step: 0.01, def: 0.92},
 
         {group: 'filter', type: 's', key: 'dropMaxOverNet', min: 0, max: 2.0, step: 0.01, def: 0.20},
         {group: 'filter', type: 's', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
@@ -1577,6 +1749,7 @@
       const V_FWD_K = 1.15, V_SIDE_K = 0.95;
       const SPEED_BASE = 3.8;
       const LAMBDA_RUN = 0.6;
+      const OUR_HEADING = 0;
 
       /* ---- 截击参数 ---- */
       const CAPTURE_STEP = 10;
@@ -1591,8 +1764,18 @@
       let slowMode = false;
       let manualSolvePending = false;
       let manualResultsCleared = false;
-      const FAST_SLOW_MS = 500;
-      const FULL_SLOW_MS = 3000;
+      let mirror180 = false;
+      let ourTurnEnabled = [false, false];
+      let ourHand = ['right', 'right'];
+      const headingCache = new Map();
+      let jointWorker = null;
+      let jointWorkerBusy = false;
+      let jointWorkerJobId = 0;
+      let jointWorkerStarted = 0;
+      let jointWorkerFast = false;
+      let jointWorkerPrepared = null;
+      const FAST_SLOW_MS = 1000;
+      const FULL_SLOW_MS = 6000;
       let lastTap = {time: 0, x: 0, y: 0};
       let showHeat = false;
       let showSubopt = true;
@@ -1609,8 +1792,10 @@
       };
 
       function markDirty(full) {
+        cancelJointWorkerSolve();
         quality = full ? 'full' : 'fast';
         needsSolve = true;
+        headingCache.clear();
         candidateStatusDot.classList.remove('is-ready');
         candidateStatusDot.title = slowMode ? '等待手动更新' : '快速预览 / 正在计算';
         if (slowMode) clearResultsForManualUpdate();
@@ -1641,12 +1826,33 @@
       function updateManualUpdateUI() {
         manualUpdateBtn.hidden = !slowMode;
         manualUpdateBtn.textContent = t('updateButton');
-        manualUpdateBtn.disabled = manualSolvePending;
+        manualUpdateBtn.disabled = manualSolvePending || jointWorkerBusy;
+        const calculating = jointWorkerBusy || (slowMode && manualSolvePending);
+        calcWaitBubble.classList.toggle('is-visible', calculating);
+        calcWaitBubbleText.textContent = t('calculating');
+        if (calculating) positionCalcWaitBubble();
+      }
+
+      function positionCalcWaitBubble() {
+        const wrap = canvas.parentElement;
+        const wrapRect = wrap.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        calcWaitBubble.style.left =
+          (canvasRect.left - wrapRect.left + canvasRect.width / 2) + 'px';
+        calcWaitBubble.style.top =
+          (canvasRect.top - wrapRect.top + canvasRect.height / 2) + 'px';
       }
 
       function detectSlowSolve(elapsed, fast) {
         if (slowMode) return;
         slowMode = elapsed > (fast ? FAST_SLOW_MS : FULL_SLOW_MS);
+        updateManualUpdateUI();
+      }
+
+      function resetSolvePerformanceMode() {
+        slowMode = false;
+        manualSolvePending = false;
+        manualResultsCleared = false;
         updateManualUpdateUI();
       }
 
@@ -1673,8 +1879,34 @@
       /* ============================================================
          三、坐标与绘制辅助
          ============================================================ */
-      function w2c(p) {return {x: PAD_L + (p.x + HW) * SCALE, y: PAD_T + (HL - p.y) * SCALE};}
-      function c2w(cx, cy) {return {x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE};}
+      function mirrorPoint(p) {
+        return mirror180 ? {x: -p.x, y: -p.y} : p;
+      }
+      function w2c(p) {
+        const d = mirrorPoint(p);
+        return {x: PAD_L + (d.x + HW) * SCALE, y: PAD_T + (HL - d.y) * SCALE};
+      }
+      function c2w(cx, cy) {
+        const world = {x: (cx - PAD_L) / SCALE - HW, y: HL - (cy - PAD_T) / SCALE};
+        return mirror180 ? {x: -world.x, y: -world.y} : world;
+      }
+      function sideDisplayY(y) { return mirror180 ? -y : y; }
+      function sideScreenY(y) { return sideCourtTop + (HL - sideDisplayY(y)) * sideScaleY; }
+      function sideWorldYFromScreen(cssY) {
+        const world = HL - (cssY - sideCourtTop) / sideScaleY;
+        return mirror180 ? -world : world;
+      }
+      function drawRotatedImage(c, image, w, h, centerX, centerY, flipX = true, flipY = true) {
+        if (!mirror180) {
+          c.drawImage(image, 0, 0, w, h);
+          return;
+        }
+        c.save();
+        c.translate(centerX, centerY);
+        c.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+        c.drawImage(image, -centerX, -centerY, w, h);
+        c.restore();
+      }
 
       function tagTextWidth(line1, line2) {
         ctx.save();
@@ -1960,7 +2192,7 @@
 
       /* 身高 = 头顶高度；头圆心 = 头顶 − 头半径 */
       function drawSidePerson(y, color, heightM) {
-        const sy = sideCourtTop + (HL - y) * sideScaleY;
+        const sy = sideScreenY(y);
         const fullLen = Math.max(10, heightM * sideScaleZ);
 
         const headR = clamp(fullLen * 0.13, 2.5, SIDE_HEAD_R);
@@ -1987,7 +2219,7 @@
       }
 
       function drawRacketContact() {
-        const sy = sideCourtTop + (HL - opponents[0].y) * sideScaleY;
+        const sy = sideScreenY(opponents[0].y);
         const hx = sideGroundX + PRM.hh * sideScaleZ;
 
         const fullLen = Math.max(10, personHeights[0] * sideScaleZ);
@@ -2109,6 +2341,7 @@
           heatDirty = true;
           sideHeatDirty = true;
           suboptDirty = true;
+          if (calcWaitBubble.classList.contains('is-visible')) positionCalcWaitBubble();
         }
 
         sctx.clearRect(0, 0, sideW, sideH);
@@ -2122,7 +2355,16 @@
           }
           if (sideHeatReady) {
             sctx.imageSmoothingEnabled = true;
-            sctx.drawImage(sideHeatCanvas, 0, 0, sideW, sideH);
+            drawRotatedImage(
+              sctx,
+              sideHeatCanvas,
+              sideW,
+              sideH,
+              0,
+              sideCourtTop + HL * sideScaleY,
+              false,
+              true
+            );
           }
         }
         drawSideHeightGuides();
@@ -2141,7 +2383,7 @@
 
         const ticks = [HL, HL - LONG_SVC, SHORT_SVC, -SHORT_SVC, -(HL - LONG_SVC), -HL];
         for (const ty of ticks) {
-          const sy = sideCourtTop + (HL - ty) * sideScaleY;
+          const sy = sideScreenY(ty);
           const isEnd = Math.abs(Math.abs(ty) - HL) < 1e-6;
           sctx.fillStyle = isEnd ? C_COURT_FRAME : C_COURT_LINE;
           const tw = isEnd ? 6 : 4;
@@ -2170,10 +2412,17 @@
         sctx.textAlign = 'center';
         sctx.fillText('网 1.55 m', sideGroundX + netLen / 2, netSy - 6);
         sctx.textAlign = 'left';
-        sctx.textBaseline = 'top';
-        sctx.fillText('对手', sideGroundX + 3, sideCourtTop + 5);
-        sctx.textBaseline = 'bottom';
-        sctx.fillText('我方', sideGroundX + 3, sideCourtTop + L * sideScaleY - 4);
+        if (mirror180) {
+          sctx.textBaseline = 'bottom';
+          sctx.fillText('对手', sideGroundX + 3, sideCourtTop + L * sideScaleY - 4);
+          sctx.textBaseline = 'top';
+          sctx.fillText('我方', sideGroundX + 3, sideCourtTop + 5);
+        } else {
+          sctx.textBaseline = 'top';
+          sctx.fillText('对手', sideGroundX + 3, sideCourtTop + 5);
+          sctx.textBaseline = 'bottom';
+          sctx.fillText('我方', sideGroundX + 3, sideCourtTop + L * sideScaleY - 4);
+        }
         sctx.restore();
 
         const ourColor = C_PERSON;
@@ -2267,23 +2516,105 @@
 
       function ctxOf(which) {
         const s = (which === 'b') ? 'b' : 'a';
+        const index = s === 'b' ? 1 : 0;
         return {
+          side: s,
           vRun: PRM['v_run_' + s],
           rTouch: PRM['r_touch_' + s],
-          rp: reachParams(PRM['t_react_' + s], PRM['t_full_' + s])
+          rp: reachParams(PRM['t_react_' + s], PRM['t_full_' + s]),
+          turnEnabled: ourTurnEnabled[index],
+          hand: ourHand[index]
         };
       }
 
       function ctxEqual(a, b) {
         return a.vRun === b.vRun && a.rTouch === b.rTouch &&
-          Math.abs(a.rp.t0 - b.rp.t0) < 1e-9 && Math.abs(a.rp.t1 - b.rp.t1) < 1e-9;
+          Math.abs(a.rp.t0 - b.rp.t0) < 1e-9 && Math.abs(a.rp.t1 - b.rp.t1) < 1e-9 &&
+          a.turnEnabled === b.turnEnabled && a.hand === b.hand;
+      }
+
+      function weightedHeadingForPosition(pos, items, c) {
+        if (!c.turnEnabled) return 0;
+        let sx = 0, sy = 0, total = 0;
+        for (const item of items) {
+          const dx = item.L.x - pos.x;
+          const dy = item.L.y - pos.y;
+          if (Math.hypot(dx, dy) < 1e-8) continue;
+          const weight = item.w * (cValue(item.type, item.L.y) + 1);
+          const angle = Math.atan2(dx, dy);
+          sx += Math.sin(angle) * weight;
+          sy += Math.cos(angle) * weight;
+          total += weight;
+        }
+        if (total <= 1e-9 || Math.hypot(sx, sy) < 1e-9) return 0;
+        return Math.atan2(sx, sy);
+      }
+
+      function headingMotionScore(pos, items, c, heading) {
+        let score = 0;
+        const ctx = {...c, heading};
+        for (const item of items) {
+          const tau = motionTimeToPoint(pos, item.L, item.type, ctx).tau;
+          score += item.w * Math.exp(-LAMBDA_RUN * tau);
+        }
+        return score;
+      }
+
+      function bestHeadingForPosition(pos, items, c) {
+        if (!c.turnEnabled) return 0;
+        const cacheKey = `${c.side || 'a'}:${pos.x.toFixed(4)}:${pos.y.toFixed(4)}`;
+        if (headingCache.has(cacheKey)) return headingCache.get(cacheKey);
+
+        const mean = weightedHeadingForPosition(pos, items, c);
+        const candidates = [0, mean];
+        for (let i = 0; i < 8; i++) candidates.push(i * Math.PI / 4);
+
+        let bestHeading = 0;
+        let bestScore = -Infinity;
+        const evaluated = new Set();
+        for (const raw of candidates) {
+          const heading = wrapMotionAngle(raw);
+          const key = heading.toFixed(6);
+          if (evaluated.has(key)) continue;
+          evaluated.add(key);
+          const score = headingMotionScore(pos, items, c, heading);
+          if (score > bestScore + 1e-12) {
+            bestScore = score;
+            bestHeading = heading;
+          }
+        }
+
+        let step = Math.PI / 8;
+        for (let pass = 0; pass < 3; pass++) {
+          for (const delta of [-step, step]) {
+            const heading = wrapMotionAngle(bestHeading + delta);
+            const score = headingMotionScore(pos, items, c, heading);
+            if (score > bestScore + 1e-12) {
+              bestScore = score;
+              bestHeading = heading;
+            }
+          }
+          step *= 0.5;
+        }
+        headingCache.set(cacheKey, bestHeading);
+        return bestHeading;
+      }
+
+      function ctxForPosition(pos, items, c) {
+        return {...c, heading: bestHeadingForPosition(pos, items, c)};
+      }
+
+      function ctxForStoredPose(pos, items, c) {
+        if (Number.isFinite(pos.heading)) return {...c, heading: pos.heading};
+        return ctxForPosition(pos, items, c);
       }
 
       function abDiffers() {
         return Math.abs(PRM.v_run_a - PRM.v_run_b) > 1e-9 ||
           Math.abs(PRM.r_touch_a - PRM.r_touch_b) > 1e-9 ||
           Math.abs(PRM.t_react_a - PRM.t_react_b) > 1e-9 ||
-          Math.abs(PRM.t_full_a - PRM.t_full_b) > 1e-9;
+          Math.abs(PRM.t_full_a - PRM.t_full_b) > 1e-9 ||
+          ourTurnEnabled[0] !== ourTurnEnabled[1] || ourHand[0] !== ourHand[1];
       }
 
       function smoothRamp(v, lo, hi) {
@@ -2291,6 +2622,92 @@
         if (v >= hi) return 1;
         const u = (v - lo) / (hi - lo);
         return u * u * (3 - 2 * u);
+      }
+
+      function wrapMotionAngle(a) {
+        return ((a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      }
+
+      function motionTimeToPoint(pos, point, type, c) {
+        const dx = point.x - pos.x;
+        const dy = point.y - pos.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 1e-9) {
+          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
+        }
+
+        const ux = dx / d;
+        const uy = dy / d;
+        const vSide = c.vRun * V_SIDE_K;
+        const vFwd = c.vRun * V_FWD_K;
+        const vBack = c.vRun / Math.max(1.0, PRM.k2);
+        const baseSpeed = 1 / Math.sqrt(
+          ux * ux / (vSide * vSide) + uy * uy / ((uy >= 0 ? vFwd : vBack) ** 2)
+        );
+
+        if (!c.turnEnabled) {
+          const rTouch = c.rTouch * touchScale(type);
+          const runDistance = Math.max(0, d - rTouch);
+          return {
+            tau: runDistance / baseSpeed,
+            translationTime: runDistance / baseSpeed,
+            rotationTime: 0,
+            stepDelay: 0,
+            limitPenalty: 0
+          };
+        }
+
+        const movementAngle = Math.atan2(dx, dy);
+        const rawDelta = wrapMotionAngle(movementAngle - (Number.isFinite(c.heading) ? c.heading : OUR_HEADING));
+        const absTheta = Math.abs(rawDelta);
+        const backhand = c.hand === 'right' ? rawDelta < 0 : rawDelta > 0;
+        const backhandBlend = backhand ? smoothRamp(absTheta, 0, Math.PI / 2) : 0;
+        const rTouch = c.rTouch * touchScale(type) *
+          (1 - (1 - PRM.our_backhand_touch) * backhandBlend);
+        const runDistance = Math.max(0, d - rTouch);
+        if (runDistance <= 0) {
+          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
+        }
+
+        const fhSign = c.hand === 'left' ? -1 : 1;
+        const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * Math.sin(rawDelta));
+        const turnSpeedFactor = clamp(
+          1 - PRM.our_turn_speed_loss * Math.pow(absTheta / Math.PI, 1),
+          0.22,
+          1
+        );
+
+        const forwardMove = Math.max(0, Math.cos(rawDelta));
+        const backwardMove = Math.max(0, -Math.cos(rawDelta));
+        const lateralMove = Math.abs(Math.sin(rawDelta));
+        const footInv = Math.sqrt(
+          (forwardMove / (1 + PRM.our_lead_boost)) ** 2 +
+          (lateralMove / PRM.our_cross_line) ** 2 +
+          backwardMove ** 2
+        );
+        const footFactor = 1 / Math.max(1e-9, footInv);
+        const vEff = Math.max(0.01, baseSpeed * forehandBias * turnSpeedFactor * footFactor);
+        const translationTime = runDistance / vEff;
+
+        const deadzone = PRM.our_turn_deadzone * Math.PI / 180;
+        const u = clamp(
+          (absTheta - deadzone) / (Math.PI - deadzone),
+          0,
+          1
+        );
+        const backhandScale = 1 + PRM.our_backhand_turn * backhandBlend;
+        const rotationTime = PRM.our_turn_tmax * Math.pow(u, 1.4) * backhandScale;
+        const stepDelay = absTheta > 60 * Math.PI / 180
+          ? 0.10 * (1 + PRM.our_backhand_turn * 0.6 * backhandBlend)
+          : 0;
+        const limitPenalty = absTheta > 70 * Math.PI / 180
+          ? (absTheta >= 120 * Math.PI / 180 ? 0.30 : 0.15) *
+            (1 + PRM.our_backhand_turn * 0.5 * backhandBlend)
+          : 0;
+        const tau = Math.max(translationTime, rotationTime) +
+          PRM.our_turn_overlap * Math.min(translationTime, rotationTime) +
+          stepDelay + limitPenalty;
+        return {tau, translationTime, rotationTime, stepDelay, limitPenalty};
       }
 
       function cValue(type, y) {
@@ -2323,26 +2740,7 @@
       }
 
       function runTime(pos, Lp, type, c) {
-        const dx = Lp.x - pos.x;
-        const dy = Lp.y - pos.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 1e-12) return 0;
-
-        const rTouch = c.rTouch * touchScale(type);
-        const dEff = Math.sqrt(d2);
-        const dTouch = dEff - rTouch;
-        if (dTouch <= 0) return 0;
-
-        const vr = c.vRun;
-        const invD = 1 / dEff;
-        const ux = dx * invD;
-        const uy = dy * invD;
-        const vSide = vr * V_SIDE_K;
-        const vBack = vr / Math.max(1.0, PRM.k2);
-        const vy = (uy >= 0) ? vr * V_FWD_K : vBack;
-        const kx = ux / vSide;
-        const ky = uy / vy;
-        return dTouch * Math.sqrt(kx * kx + ky * ky);
+        return motionTimeToPoint(pos, Lp, type, c).tau;
       }
 
       function interceptFallback(item, tau, c) {
@@ -2361,15 +2759,6 @@
         }
 
         const extra = (type === 'drop' ? DROP_EXTRA_T : 0);
-        const rTouch = c.rTouch * touchScale(type);
-        const vr = c.vRun;
-        const vSide = vr * V_SIDE_K;
-        const vFwd = vr * V_FWD_K;
-        const vBack = vr / Math.max(1.0, PRM.k2);
-        const invSide2 = 1 / (vSide * vSide);
-        const invFwd2 = 1 / (vFwd * vFwd);
-        const invBack2 = 1 / (vBack * vBack);
-
         const px = pos.x, py = pos.y;
         const n = trace.length;
 
@@ -2378,6 +2767,8 @@
 
         for (let i = n - 1; i >= 0; i--) {
           const pt = trace[i];
+          // tau is always non-negative, so earlier trajectory samples cannot
+          // beat an availability value already larger than this sample time.
           if (pt.t <= bestAvail) break;
 
           const dx = pt.x - px;
@@ -2389,19 +2780,7 @@
             continue;
           }
 
-          const dEff = Math.sqrt(d2);
-          const dTouch = dEff - rTouch;
-
-          if (dTouch <= 0) {
-            if (pt.t > bestAvail) {bestAvail = pt.t; bestTau = 0;}
-            continue;
-          }
-
-          const invD = 1 / dEff;
-          const ux = dx * invD;
-          const uy = dy * invD;
-          const invV2 = (uy >= 0) ? invFwd2 : invBack2;
-          const tau = dTouch * Math.sqrt(ux * ux * invSide2 + uy * uy * invV2);
+          const tau = motionTimeToPoint(pos, pt, type, c).tau;
           const avail = pt.t - tau;
 
           if (avail > bestAvail) {bestAvail = avail; bestTau = tau;}
@@ -2823,6 +3202,30 @@
         return items;
       }
 
+      function buildExactPathItems(landings) {
+        const buckets = new Map();
+        for (const Ld of landings) {
+          if (Ld.w <= 0) continue;
+          const traceKey = Ld.trace && Ld.trace.length
+            ? Ld.trace.join(',')
+            : `no-trace:${Ld.x}:${Ld.y}`;
+          const key = `${Ld.type}:${Ld.t}:${Ld.y}:${traceKey}`;
+          let item = buckets.get(key);
+          if (!item) {
+            item = {
+              L: {x: Ld.x, y: Ld.y},
+              w: 0,
+              type: Ld.type,
+              t: Ld.t,
+              trace: Ld.trace || null
+            };
+            buckets.set(key, item);
+          }
+          item.w += Ld.w;
+        }
+        return Array.from(buckets.values());
+      }
+
       function avgReachByType(items, P1, P2, ctxA, ctxB) {
         const acc = {
           smash: {s: 0, w: 0},
@@ -2871,6 +3274,16 @@
         return SEP_PEN_K * u * u;
       }
 
+      function symmetricAxisGrid(limit, requestedStep) {
+        const count = Math.max(1, Math.ceil(limit / requestedStep - 1e-9));
+        const step = limit / count;
+        const out = [];
+        for (let i = -count; i <= count; i++) {
+          out.push(+(i * step).toFixed(8));
+        }
+        return out;
+      }
+
       function totalV(pos, items, otherPos, ctxA, ctxB) {
         let sumWV = 0, sumW = 0;
         for (let i = 0; i < items.length; i++) {
@@ -2884,15 +3297,18 @@
       function optimizeSolo(items, step, ctxA) {
         const x0 = -HW + 0.30, x1 = HW - 0.30;
         const y0 = -HL + 0.40, y1 = -0.5;
+        const xs = symmetricAxisGrid(HW - 0.30, step);
 
         const cands = [];
         let bestPos = null, bestV = -Infinity;
 
-        for (let x = x0; x <= x1 + 1e-9; x += step) {
+        for (const x of xs) {
           for (let y = y0; y <= y1 + 1e-9; y += step) {
-            const v = totalV({x, y}, items, null, ctxA, null);
-            cands.push({P1: {x, y}, P2: null, V: v});
-            if (v > bestV) {bestV = v; bestPos = {x, y};}
+            const pos = {x, y};
+            const cP = ctxForPosition(pos, items, ctxA);
+            const v = totalV(pos, items, null, cP, null);
+            cands.push({P1: {...pos, heading: cP.heading}, P2: null, V: v});
+            if (v > bestV) {bestV = v; bestPos = {...pos, heading: cP.heading};}
           }
         }
 
@@ -2912,9 +3328,11 @@
             for (let k = -1; k <= 1; k++) {
               for (let m = -1; m <= 1; m++) {
                 if (k === 0 && m === 0) continue;
-                const nx = ax + k * h, ny = ay + m * h;
+                 const nx = ax + k * h, ny = ay + m * h;
                 if (nx < x0 || nx > x1 || ny < y0 || ny > y1) continue;
-                const v = totalV({x: nx, y: ny}, items, null, ctxA, null);
+                const pos = {x: nx, y: ny};
+                const cP = ctxForPosition(pos, items, ctxA);
+                const v = totalV(pos, items, null, cP, null);
                 if (v > bv + 1e-9) {bx = nx; by = ny; bv = v; moved = true;}
               }
             }
@@ -2925,7 +3343,9 @@
         }
 
         cands.sort((a, b) => b.V - a.V);
-        return {best: {x: ax, y: ay}, cands};
+        const bestPosFinal = {x: ax, y: ay};
+        const bestCtx = ctxForPosition(bestPosFinal, items, ctxA);
+        return {best: {...bestPosFinal, heading: bestCtx.heading}, cands};
       }
 
       function optimizeDouble(items, fast, ctxA, ctxB) {
@@ -2937,7 +3357,7 @@
 
         const sameV = ctxEqual(ctxA, ctxB);
 
-        const aArr = new Float64Array(N);
+        const aArr = new Float32Array(N);
         let sumW = 0;
         for (let i = 0; i < N; i++) {
           sumW += items[i].w;
@@ -2945,8 +3365,8 @@
         }
 
         const gridStep = fast ? 0.6 : 0.4;
-        const xs = [], ys = [];
-        for (let x = -2.6; x <= 2.6 + 1e-9; x += gridStep) xs.push(+x.toFixed(2));
+        const xs = symmetricAxisGrid(2.6, gridStep);
+        const ys = [];
         for (let y = -0.5; y >= -6.3 - 1e-9; y -= gridStep) ys.push(+y.toFixed(2));
 
         const pos = [];
@@ -2954,20 +3374,25 @@
         const M = pos.length;
 
         const PA = new Array(M), PB = new Array(M);
-        const SA = new Float64Array(M), SB = new Float64Array(M);
+        const headingAGrid = new Float32Array(M), headingBGrid = new Float32Array(M);
+        const SA = new Float32Array(M), SB = new Float32Array(M);
         for (let p = 0; p < M; p++) {
-          const arrA = new Float64Array(N);
-          const arrB = new Float64Array(N);
+          const arrA = new Float32Array(N);
+          const arrB = new Float32Array(N);
+          const ctxAP = ctxForPosition(pos[p], items, ctxA);
+          const ctxBP = ctxForPosition(pos[p], items, ctxB);
+          headingAGrid[p] = ctxAP.heading;
+          headingBGrid[p] = ctxBP.heading;
           let sa = 0, sb = 0;
           for (let i = 0; i < N; i++) {
             const it = items[i];
-            const sA = interceptStats(pos[p], it, ctxA);
+            const sA = interceptStats(pos[p], it, ctxAP);
             const pa = sA.p * sA.q;
             let pb;
-            if (sameV) {
+            if (sameV && Math.abs(ctxAP.heading - ctxBP.heading) < 1e-9) {
               pb = pa;
             } else {
-              const sB = interceptStats(pos[p], it, ctxB);
+              const sB = interceptStats(pos[p], it, ctxBP);
               pb = sB.p * sB.q;
             }
             arrA[i] = pa; arrB[i] = pb;
@@ -2984,26 +3409,50 @@
             let s = SA[i] + SB[j];
             for (let k = 0; k < N; k++) s -= aArr[k] * Pi[k] * Pj[k];
             const V = (s - sumW) / sumW - overlapPenalty(pi, pos[j]);
-            cands.push({P1: pi, P2: pos[j], V});
+            cands.push({
+              P1: {...pi, heading: headingAGrid[i]},
+              P2: {...pos[j], heading: headingBGrid[j]},
+              V
+            });
           }
         }
         cands.sort((a, b) => b.V - a.V);
+        if (sameV) {
+          for (const cand of cands) {
+            if (cand.P1.x > cand.P2.x + 1e-9) {
+              const tmp = cand.P1;
+              cand.P1 = cand.P2;
+              cand.P2 = tmp;
+            }
+          }
+        }
 
         let pA = {x: cands[0].P1.x, y: cands[0].P1.y};
         let pB = {x: cands[0].P2.x, y: cands[0].P2.y};
         let bestV = cands[0].V;
+        if (sameV && pA.x > pB.x + 1e-9) {
+          const tmp = pA;
+          pA = pB;
+          pB = tmp;
+        }
 
         const scoreAt = (a, b) => {
+          const ctxAP = ctxForPosition(a, items, ctxA);
+          const ctxBP = ctxForPosition(b, items, ctxB);
+          const samePositionCtx = sameV &&
+            Math.abs(a.x - b.x) < 1e-9 &&
+            Math.abs(a.y - b.y) < 1e-9 &&
+            Math.abs(ctxAP.heading - ctxBP.heading) < 1e-9;
           let s = 0;
           for (let k = 0; k < N; k++) {
             const it = items[k];
-            const sA = interceptStats(a, it, ctxA);
+            const sA = interceptStats(a, it, ctxAP);
             const pa = sA.p * sA.q;
             let pb;
-            if (sameV) {
+            if (samePositionCtx) {
               pb = pa;
             } else {
-              const sB = interceptStats(b, it, ctxB);
+              const sB = interceptStats(b, it, ctxBP);
               pb = sB.p * sB.q;
             }
             const r = 1 - (1 - pa) * (1 - pb);
@@ -3020,37 +3469,594 @@
 
         while (h >= MIN_H - 1e-9) {
           let guard = 0;
+          let updateAFirst = true;
           while (guard++ < 200) {
             let improved = false;
 
-            let bv = bestV, bA = pA;
-            for (let k = -1; k <= 1; k++) {
-              for (let m = -1; m <= 1; m++) {
-                if (k === 0 && m === 0) continue;
-                const cand = {x: clampX(pA.x + k * h), y: clampY(pA.y + m * h)};
-                const v = scoreAt(cand, pB);
-                if (v > bv + 1e-9) {bv = v; bA = cand;}
+            const improveA = () => {
+              let bv = bestV, bA = pA;
+              for (let k = -1; k <= 1; k++) {
+                for (let m = -1; m <= 1; m++) {
+                  if (k === 0 && m === 0) continue;
+                  const cand = {x: clampX(pA.x + k * h), y: clampY(pA.y + m * h)};
+                  const v = scoreAt(cand, pB);
+                  if (v > bv + 1e-9) {bv = v; bA = cand;}
+                }
               }
-            }
-            if (bv > bestV + 1e-9) {pA = bA; bestV = bv; improved = true;}
+              if (bv <= bestV + 1e-9) return false;
+              pA = bA;
+              bestV = bv;
+              return true;
+            };
 
-            bv = bestV; let bB = pB;
-            for (let k = -1; k <= 1; k++) {
-              for (let m = -1; m <= 1; m++) {
-                if (k === 0 && m === 0) continue;
-                const cand = {x: clampX(pB.x + k * h), y: clampY(pB.y + m * h)};
-                const v = scoreAt(pA, cand);
-                if (v > bv + 1e-9) {bv = v; bB = cand;}
+            const improveB = () => {
+              let bv = bestV, bB = pB;
+              for (let k = -1; k <= 1; k++) {
+                for (let m = -1; m <= 1; m++) {
+                  if (k === 0 && m === 0) continue;
+                  const cand = {x: clampX(pB.x + k * h), y: clampY(pB.y + m * h)};
+                  const v = scoreAt(pA, cand);
+                  if (v > bv + 1e-9) {bv = v; bB = cand;}
+                }
               }
+              if (bv <= bestV + 1e-9) return false;
+              pB = bB;
+              bestV = bv;
+              return true;
+            };
+
+            if (updateAFirst) {
+              improved = improveA() || improved;
+              improved = improveB() || improved;
+            } else {
+              improved = improveB() || improved;
+              improved = improveA() || improved;
             }
-            if (bv > bestV + 1e-9) {pB = bB; bestV = bv; improved = true;}
+            updateAFirst = !updateAFirst;
 
             if (!improved) break;
           }
           h *= 0.5;
         }
 
-        return {best: [pA, pB], cands};
+        // With identical A/B settings the two players are interchangeable.
+        // Keep their labels stable so moving an opponent to the mirrored side
+        // does not arbitrarily swap which side A and B occupy.
+        if (sameV && pA.x > pB.x + 1e-9) {
+          const tmp = pA;
+          pA = pB;
+          pB = tmp;
+        }
+
+        const headingA = bestHeadingForPosition(pA, items, ctxA);
+        const headingB = bestHeadingForPosition(pB, items, ctxB);
+        return {
+          best: [{...pA, heading: headingA}, {...pB, heading: headingB}],
+          cands
+        };
+      }
+
+      function pruneDominatedHeadingProfiles(profiles) {
+        const sorted = profiles.slice().sort((a, b) => b.weightedReach - a.weightedReach);
+        const kept = [];
+        for (const profile of sorted) {
+          let dominated = false;
+          for (const other of kept) {
+            let coversAll = true;
+            for (let i = 0; i < profile.values.length; i++) {
+              if (other.values[i] + 1e-12 < profile.values[i]) {
+                coversAll = false;
+                break;
+              }
+            }
+            if (coversAll) {
+              dominated = true;
+              break;
+            }
+          }
+          if (!dominated) kept.push(profile);
+        }
+        return kept;
+      }
+
+      function jointHeadingAngles(enabled) {
+        if (!enabled) return [0];
+        const out = [];
+        for (let i = 0; i < 8; i++) out.push(wrapMotionAngle(i * Math.PI / 4));
+        return out;
+      }
+
+      function descendingAxisGrid(start, end, requestedStep) {
+        const span = Math.abs(end - start);
+        const count = Math.max(1, Math.ceil(span / requestedStep - 1e-9));
+        const step = (end - start) / count;
+        const out = [];
+        for (let i = 0; i <= count; i++) out.push(+(start + i * step).toFixed(8));
+        return out;
+      }
+
+      function buildHeadingProfiles(pos, headings, items, ctx, itemWeights) {
+        const out = [];
+        for (const heading of headings) {
+          const poseCtx = {...ctx, heading};
+          const values = new Float32Array(items.length);
+          let weightedReach = 0;
+          for (let i = 0; i < items.length; i++) {
+            const stats = interceptStats(pos, items[i], poseCtx);
+            const probability = stats.p * stats.q;
+            values[i] = probability;
+            weightedReach += itemWeights[i] * probability;
+          }
+          out.push({heading, values, weightedReach});
+        }
+        return out;
+      }
+
+      function makeJointPoseEvaluator(items, itemWeights, sumW, ctxA, ctxB) {
+        const cache = new Map();
+        const profileFor = (pose, ctx, side) => {
+          const key = [
+            side,
+            pose.x.toFixed(5),
+            pose.y.toFixed(5),
+            (Number.isFinite(pose.heading) ? pose.heading : 0).toFixed(6)
+          ].join(':');
+          let profile = cache.get(key);
+          if (profile) return profile;
+          const poseCtx = {
+            ...ctx,
+            heading: Number.isFinite(pose.heading) ? pose.heading : 0
+          };
+          const values = new Float32Array(items.length);
+          let weightedReach = 0;
+          for (let i = 0; i < items.length; i++) {
+            const stats = interceptStats(pose, items[i], poseCtx);
+            const probability = stats.p * stats.q;
+            values[i] = probability;
+            weightedReach += itemWeights[i] * probability;
+          }
+          profile = {values, weightedReach};
+          cache.set(key, profile);
+          return profile;
+        };
+
+        return (poseA, poseB) => {
+          const a = profileFor(poseA, ctxA, 'a');
+          const b = profileFor(poseB, ctxB, 'b');
+          let overlap = 0;
+          for (let i = 0; i < items.length; i++) overlap += itemWeights[i] * a.values[i] * b.values[i];
+          return (a.weightedReach + b.weightedReach - overlap - sumW) / sumW -
+            overlapPenalty(poseA, poseB);
+        };
+      }
+
+      function refineJointPose(seed, evaluate, ctxA, ctxB, positionSteps, headingSteps) {
+        let poseA = {
+          x: seed.P1.x,
+          y: seed.P1.y,
+          heading: Number.isFinite(seed.P1.heading) ? seed.P1.heading : 0
+        };
+        let poseB = {
+          x: seed.P2.x,
+          y: seed.P2.y,
+          heading: Number.isFinite(seed.P2.heading) ? seed.P2.heading : 0
+        };
+        let bestV = evaluate(poseA, poseB);
+        const clampX = value => clamp(value, -2.7, 2.7);
+        const clampY = value => clamp(value, -6.3, -0.5);
+
+        const movesFor = (pose, positionStep, headingStep, turnEnabled) => {
+          const moves = [];
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              if (dx === 0 && dy === 0) continue;
+              moves.push({
+                x: clampX(pose.x + dx * positionStep),
+                y: clampY(pose.y + dy * positionStep),
+                heading: pose.heading
+              });
+            }
+          }
+          if (turnEnabled) {
+            moves.push({x: pose.x, y: pose.y, heading: wrapMotionAngle(pose.heading - headingStep)});
+            moves.push({x: pose.x, y: pose.y, heading: wrapMotionAngle(pose.heading + headingStep)});
+          }
+          return moves;
+        };
+
+        const stageCount = Math.min(positionSteps.length, headingSteps.length);
+        for (let stage = 0; stage < stageCount; stage++) {
+          const positionStep = positionSteps[stage];
+          const headingStep = headingSteps[stage];
+          let updateAFirst = true;
+          let guard = 0;
+
+          while (guard++ < 16) {
+            let improved = false;
+            const improveA = () => {
+              let candidateV = bestV;
+              let candidatePose = poseA;
+              for (const move of movesFor(poseA, positionStep, headingStep, ctxA.turnEnabled)) {
+                const value = evaluate(move, poseB, bestV);
+                if (value > candidateV + 1e-9) {
+                  candidateV = value;
+                  candidatePose = move;
+                }
+              }
+              if (candidateV <= bestV + 1e-9) return false;
+              poseA = candidatePose;
+              bestV = candidateV;
+              return true;
+            };
+
+            const improveB = () => {
+              let candidateV = bestV;
+              let candidatePose = poseB;
+              for (const move of movesFor(poseB, positionStep, headingStep, ctxB.turnEnabled)) {
+                const value = evaluate(poseA, move, bestV);
+                if (value > candidateV + 1e-9) {
+                  candidateV = value;
+                  candidatePose = move;
+                }
+              }
+              if (candidateV <= bestV + 1e-9) return false;
+              poseB = candidatePose;
+              bestV = candidateV;
+              return true;
+            };
+
+            if (updateAFirst) {
+              improved = improveA() || improved;
+              improved = improveB() || improved;
+            } else {
+              improved = improveB() || improved;
+              improved = improveA() || improved;
+            }
+            updateAFirst = !updateAFirst;
+            if (!improved) break;
+          }
+        }
+
+        return {P1: poseA, P2: poseB, V: bestV};
+      }
+
+      function optimizeDoubleJoint(items, fast, ctxA, ctxB) {
+        const N = items.length;
+        if (!N) {
+          const a = {x: -1.5, y: -3, heading: 0};
+          const b = {x: 1.5, y: -3, heading: 0};
+          return {best: [a, b], cands: [{P1: a, P2: b, V: 0}]};
+        }
+
+        const coarseItems = buildItemsFromLandings(cachedLandings, fast ? 1.2 : 0.9);
+        const searchItems = coarseItems.length ? coarseItems : items;
+        const aArr = new Float32Array(searchItems.length);
+        let sumW = 0;
+        for (let i = 0; i < searchItems.length; i++) {
+          sumW += searchItems[i].w;
+          aArr[i] = searchItems[i].w * (cValue(searchItems[i].type, searchItems[i].L.y) + 1);
+        }
+
+        const xs = symmetricAxisGrid(2.7, 0.9);
+        const ys = descendingAxisGrid(-0.5, -6.3, 0.9);
+        const positions = [];
+        for (const y of ys) for (const x of xs) positions.push({x, y});
+
+        const headingsA = jointHeadingAngles(ctxA.turnEnabled);
+        const headingsB = jointHeadingAngles(ctxB.turnEnabled);
+        const profilesA = positions.map(pos =>
+          buildHeadingProfiles(pos, headingsA, searchItems, ctxA, aArr)
+        );
+        const profilesB = positions.map(pos =>
+          buildHeadingProfiles(pos, headingsB, searchItems, ctxB, aArr)
+        );
+
+        const cands = [];
+        for (let i = 0; i < positions.length; i++) {
+          const posA = positions[i];
+          for (let j = 0; j < positions.length; j++) {
+            const posB = positions[j];
+            const overlap = overlapPenalty(posA, posB);
+            for (const profileA of profilesA[i]) {
+              for (const profileB of profilesB[j]) {
+                let intersection = 0;
+                for (let k = 0; k < searchItems.length; k++) {
+                  intersection += aArr[k] * profileA.values[k] * profileB.values[k];
+                }
+                const value =
+                  (profileA.weightedReach + profileB.weightedReach - intersection - sumW) / sumW -
+                  overlap;
+                cands.push({
+                  P1: {...posA, heading: profileA.heading},
+                  P2: {...posB, heading: profileB.heading},
+                  V: value
+                });
+              }
+            }
+          }
+        }
+        cands.sort((a, b) => b.V - a.V);
+        const coarseEvaluator = makeJointPoseEvaluator(searchItems, aArr, sumW, ctxA, ctxB);
+        const coarseSeeds = Math.min(cands.length, fast ? 6 : 16);
+        for (let i = 0; i < coarseSeeds; i++) {
+          cands[i] = refineJointPose(
+            cands[i],
+            coarseEvaluator,
+            ctxA,
+            ctxB,
+            fast ? [0.45, 0.225, 0.1125] : [0.45, 0.225, 0.1125, 0.05],
+            fast
+              ? [Math.PI / 8, Math.PI / 16, Math.PI / 32]
+              : [Math.PI / 8, Math.PI / 16, Math.PI / 32, Math.PI / 64]
+          );
+        }
+        cands.sort((a, b) => b.V - a.V);
+
+        const fineWeights = new Float32Array(items.length);
+        let fineSumW = 0;
+        for (let i = 0; i < items.length; i++) {
+          fineSumW += items[i].w;
+          fineWeights[i] = items[i].w * (cValue(items[i].type, items[i].L.y) + 1);
+        }
+        const fineEvaluator = makeJointPoseEvaluator(items, fineWeights, fineSumW, ctxA, ctxB);
+        const exactCount = Math.min(cands.length, fast ? 24 : 64);
+        for (let i = 0; i < exactCount; i++) cands[i].V = fineEvaluator(cands[i].P1, cands[i].P2);
+        cands.sort((a, b) => b.V - a.V);
+
+        const fineSeeds = Math.min(cands.length, fast ? 3 : 6);
+        for (let i = 0; i < fineSeeds; i++) {
+          cands[i] = refineJointPose(
+            cands[i],
+            fineEvaluator,
+            ctxA,
+            ctxB,
+            [0.10, 0.05, 0.02],
+            [Math.PI / 16, Math.PI / 32, Math.PI / 64]
+          );
+        }
+        cands.sort((a, b) => b.V - a.V);
+
+        if (ctxEqual(ctxA, ctxB)) {
+          for (const cand of cands) {
+            if (cand.P1.x > cand.P2.x + 1e-9) {
+              const tmp = cand.P1;
+              cand.P1 = cand.P2;
+              cand.P2 = tmp;
+            }
+          }
+        }
+
+        return {
+          best: [cands[0].P1, cands[0].P2],
+          cands
+        };
+      }
+
+      function optimizeDoubleJointExact(items, fast, ctxA, ctxB) {
+        const searchItems = items.slice().sort((a, b) =>
+          b.w * cValue(b.type, b.L.y) - a.w * cValue(a.type, a.L.y)
+        );
+        const N = searchItems.length;
+        if (!N) {
+          const a = {x: -1.5, y: -3, heading: 0};
+          const b = {x: 1.5, y: -3, heading: 0};
+          return {best: [a, b], cands: [{P1: a, P2: b, V: 0}], legalCount: 1};
+        }
+
+        const itemWeights = new Float32Array(N);
+        const tailMax = new Float32Array(N + 1);
+        let sumW = 0;
+        for (let i = 0; i < N; i++) {
+          sumW += searchItems[i].w;
+          itemWeights[i] =
+            searchItems[i].w * (cValue(searchItems[i].type, searchItems[i].L.y) + 1);
+        }
+        for (let i = N - 1; i >= 0; i--) {
+          tailMax[i] = tailMax[i + 1] +
+            searchItems[i].w * cValue(searchItems[i].type, searchItems[i].L.y);
+        }
+        const evaluator = (poseA, poseB, cutoff) => {
+          const overlap = overlapPenalty(poseA, poseB);
+          const ctxAP = {
+            ...ctxA,
+            heading: Number.isFinite(poseA.heading) ? poseA.heading : 0
+          };
+          const ctxBP = {
+            ...ctxB,
+            heading: Number.isFinite(poseB.heading) ? poseB.heading : 0
+          };
+          let unionScore = 0;
+          for (let i = 0; i < N; i++) {
+            const statsA = interceptStats(poseA, searchItems[i], ctxAP);
+            const statsB = interceptStats(poseB, searchItems[i], ctxBP);
+            const pa = statsA.p * statsA.q;
+            const pb = statsB.p * statsB.q;
+            unionScore += itemWeights[i] * (pa + pb - pa * pb);
+            const upper =
+              (unionScore + tailMax[i + 1] - sumW) / sumW - overlap;
+            if (upper <= cutoff + 1e-9) return -Infinity;
+          }
+          return (unionScore - sumW) / sumW - overlap;
+        };
+
+        const step = fast ? 0.70 : 0.45;
+        const xs = symmetricAxisGrid(2.7, step);
+        const ys = descendingAxisGrid(-0.5, -6.3, step);
+        const positions = [];
+        for (const y of ys) for (const x of xs) positions.push({x, y});
+
+        const headingsA = jointHeadingAngles(ctxA.turnEnabled);
+        const headingsB = jointHeadingAngles(ctxB.turnEnabled);
+        let profilesA = positions.map(pos =>
+          buildHeadingProfiles(pos, headingsA, searchItems, ctxA, itemWeights)
+        );
+        const sameContext = ctxEqual(ctxA, ctxB);
+        let profilesB = sameContext
+          ? profilesA
+          : positions.map(pos =>
+            buildHeadingProfiles(pos, headingsB, searchItems, ctxB, itemWeights)
+          );
+
+        profilesA = profilesA.map(pruneDominatedHeadingProfiles);
+        if (!sameContext) profilesB = profilesB.map(pruneDominatedHeadingProfiles);
+
+        const legalCount =
+          positions.length * positions.length * headingsA.length * headingsB.length;
+        const basePoseCount = positions.length * positions.length;
+        const pairs = [];
+        for (let i = 0; i < positions.length; i++) {
+          const posA = positions[i];
+          const maxA = profilesA[i][0].weightedReach;
+          const minA = profilesA[i][profilesA[i].length - 1].weightedReach;
+          for (let j = 0; j < positions.length; j++) {
+            const overlap = overlapPenalty(posA, positions[j]);
+            const maxB = profilesB[j][0].weightedReach;
+            const minB = profilesB[j][profilesB[j].length - 1].weightedReach;
+            const intersectionLower = Math.max(0, minA + minB - sumW);
+            pairs.push({
+              i,
+              j,
+              overlap,
+              upperBound:
+                (maxA + maxB - intersectionLower - sumW) / sumW - overlap
+            });
+          }
+        }
+        pairs.sort((a, b) => b.upperBound - a.upperBound);
+
+        const cands = [];
+        let bestV = -Infinity;
+        let bestPoseA = null;
+        let bestPoseB = null;
+
+        for (const pair of pairs) {
+          if (pair.upperBound <= bestV + 1e-9) break;
+          const posA = positions[pair.i];
+          const posB = positions[pair.j];
+
+          for (const profileA of profilesA[pair.i]) {
+            for (const profileB of profilesB[pair.j]) {
+              const sumProfiles = profileA.weightedReach + profileB.weightedReach;
+              const intersectionLower = Math.max(0, sumProfiles - sumW);
+              const headingUpperBound =
+                (sumProfiles - intersectionLower - sumW) / sumW -
+                pair.overlap;
+              if (headingUpperBound <= bestV + 1e-9) continue;
+
+              let unionScore = 0;
+              let aborted = false;
+              for (let k = 0; k < N; k++) {
+                const pa = profileA.values[k];
+                const pb = profileB.values[k];
+                unionScore += itemWeights[k] * (pa + pb - pa * pb);
+                const runningUpper =
+                  (unionScore + tailMax[k + 1] - sumW) / sumW - pair.overlap;
+                if (runningUpper <= bestV + 1e-9) {
+                  aborted = true;
+                  break;
+                }
+              }
+              if (aborted) continue;
+              const value =
+                (unionScore - sumW) / sumW - pair.overlap;
+              const poseA = {...posA, heading: profileA.heading};
+              const poseB = {...posB, heading: profileB.heading};
+              cands.push({P1: poseA, P2: poseB, V: value});
+
+              if (value > bestV + 1e-9) {
+                bestV = value;
+                bestPoseA = poseA;
+                bestPoseB = poseB;
+              }
+            }
+          }
+        }
+
+        if (bestPoseA) {
+          const catalogLimit = Math.min(
+            8192,
+            Math.max(512, Math.round(basePoseCount * 0.20))
+          );
+          const catalogEvaluateLimit = catalogLimit + cands.length;
+          let evaluatedCatalogPoses = 0;
+          const seen = new Set(cands.map(cand =>
+            [
+              cand.P1.x.toFixed(5), cand.P1.y.toFixed(5), cand.P1.heading.toFixed(6),
+              cand.P2.x.toFixed(5), cand.P2.y.toFixed(5), cand.P2.heading.toFixed(6)
+            ].join(':')
+          ));
+
+          for (const pair of pairs) {
+            if (evaluatedCatalogPoses >= catalogEvaluateLimit) break;
+            const posA = positions[pair.i];
+            const posB = positions[pair.j];
+
+            for (const profileA of profilesA[pair.i]) {
+              for (const profileB of profilesB[pair.j]) {
+                let unionScore = 0;
+                for (let k = 0; k < N; k++) {
+                  const pa = profileA.values[k];
+                  const pb = profileB.values[k];
+                  unionScore += itemWeights[k] * (pa + pb - pa * pb);
+                }
+                evaluatedCatalogPoses++;
+
+                const value =
+                  (unionScore - sumW) / sumW - pair.overlap;
+                const poseA = {...posA, heading: profileA.heading};
+                const poseB = {...posB, heading: profileB.heading};
+                const key = [
+                  poseA.x.toFixed(5), poseA.y.toFixed(5), poseA.heading.toFixed(6),
+                  poseB.x.toFixed(5), poseB.y.toFixed(5), poseB.heading.toFixed(6)
+                ].join(':');
+                if (seen.has(key)) continue;
+                seen.add(key);
+                cands.push({P1: poseA, P2: poseB, V: value});
+                if (evaluatedCatalogPoses >= catalogEvaluateLimit) break;
+              }
+              if (evaluatedCatalogPoses >= catalogEvaluateLimit) break;
+            }
+          }
+        }
+
+        if (!bestPoseA) {
+          const pair = pairs[0];
+          bestPoseA = {...positions[pair.i], heading: headingsA[0]};
+          bestPoseB = {...positions[pair.j], heading: headingsB[0]};
+          bestV = evaluator(bestPoseA, bestPoseB);
+          cands.push({P1: bestPoseA, P2: bestPoseB, V: bestV});
+        }
+
+        cands.sort((a, b) => b.V - a.V);
+        const exactSeeds = Math.min(cands.length, fast ? 3 : 8);
+        for (let i = 0; i < exactSeeds; i++) {
+          cands[i] = refineJointPose(
+            cands[i],
+            evaluator,
+            ctxA,
+            ctxB,
+            [0.14, 0.07, 0.025],
+            [Math.PI / 16, Math.PI / 32, Math.PI / 64]
+          );
+        }
+        cands.sort((a, b) => b.V - a.V);
+
+        if (sameContext) {
+          for (const cand of cands) {
+            if (cand.P1.x > cand.P2.x + 1e-9) {
+              const tmp = cand.P1;
+              cand.P1 = cand.P2;
+              cand.P2 = tmp;
+            }
+          }
+        }
+
+        return {
+          best: [cands[0].P1, cands[0].P2],
+          cands,
+          legalCount,
+          basePoseCount
+        };
       }
 
       function sampleCandidates(list, n) {
@@ -3071,8 +4077,58 @@
         return out;
       }
 
+      function finalizeSolve(r, items, fast, clearTMin, useJointPose) {
+        const precise = !fast;
+        legalCandidateCount = 0;
+        let topUnitCount = 0;
+        const ctxA = ctxOf('a');
+        const ctxB = ctxOf('b');
+        const bestP1 = mode === 'single' ? r.best : r.best[0];
+        const bestP2 = mode === 'single' ? null : r.best[1];
+        const cands = r.cands;
+        if (mode === 'single') {
+          topUnitCount = ctxA.turnEnabled
+            ? Math.max(1, Math.round(cands.length / 8))
+            : cands.length;
+        } else {
+          if (r.legalCount) legalCandidateCount = r.legalCount;
+          topUnitCount = useJointPose
+            ? (r.basePoseCount || r.cands.length)
+            : cands.length;
+        }
+        const totalCandidates = Math.max(1, legalCandidateCount || cands.length);
+        legalCandidateCount = totalCandidates;
+        topMax = Math.max(1, Math.round(topUnitCount * 0.20));
+        topDefault = Math.max(1, Math.round(topUnitCount * 0.001));
+        topMax = Math.min(topMax, Math.max(1, cands.length));
+        topDefault = Math.min(topDefault, topMax);
+        topN = topDefault;
+        selectedRank = 1;
+
+        candidateItems = items;
+        candidateList = sampleCandidates(cands, topMax);
+        if (candidateList.length) {
+          candidateList[0] = {P1: bestP1, P2: bestP2, V: cands.length ? cands[0].V : 0};
+        } else {
+          candidateList = [{P1: bestP1, P2: bestP2, V: 0}];
+          topMax = 1;
+          topDefault = 1;
+          topN = 1;
+        }
+
+        const pick = candidateList[Math.min(selectedRank - 1, candidateList.length - 1)];
+        const ctxAP = ctxForStoredPose(pick.P1, items, ctxA);
+        const ctxBP = pick.P2 ? ctxForStoredPose(pick.P2, items, ctxB) : null;
+        const reachStats = mode === 'single'
+          ? avgReachByType(items, pick.P1, null, ctxAP, null)
+          : avgReachByType(items, pick.P1, pick.P2, ctxAP, ctxBP);
+
+        return {P1: pick.P1, P2: pick.P2, valid: true, precise, reachStats, clearTMin};
+      }
+
       function solve(fast) {
         const stepPos = fast ? 0.45 : 0.20;
+        headingCache.clear();
 
         const probs = getProbs();
         rebuildLandings(probs, fast);
@@ -3090,49 +4146,186 @@
         if (!items.length) {
           items = [{L: {x: 0, y: -PRM.clearLineY}, w: 1, type: 'clear', t: 0.6, trace: null}];
         }
-
-        const precise = !fast;
         const ctxA = ctxOf('a');
         const ctxB = ctxOf('b');
-
-        let bestP1, bestP2, cands;
-        if (mode === 'single') {
-          const r = optimizeSolo(items, stepPos, ctxA);
-          bestP1 = r.best;
-          bestP2 = null;
-          cands = r.cands;
-        } else {
-          const r = optimizeDouble(items, fast, ctxA, ctxB);
-          bestP1 = r.best[0];
-          bestP2 = r.best[1];
-          cands = r.cands;
+        const useJointPose = mode === 'double' && (ctxA.turnEnabled || ctxB.turnEnabled);
+        if (useJointPose) {
+          const exactPaths = buildExactPathItems(cachedLandings);
+          if (exactPaths.length) items = exactPaths;
         }
 
-        const totalCandidates = Math.max(1, cands.length);
-        legalCandidateCount = cands.length;
-        topMax = Math.max(1, Math.min(totalCandidates, Math.round(totalCandidates * 0.20)));
-        topDefault = Math.max(1, Math.min(topMax, Math.round(totalCandidates * 0.001)));
-        topN = topDefault;
-        selectedRank = 1;
+        const r = mode === 'single'
+          ? optimizeSolo(items, stepPos, ctxA)
+          : useJointPose
+            ? optimizeDoubleJointExact(items, fast, ctxA, ctxB)
+            : optimizeDouble(items, fast, ctxA, ctxB);
+        return finalizeSolve(r, items, fast, clearTMin, useJointPose);
+      }
 
-        candidateItems = items;
-        candidateList = sampleCandidates(cands, topMax);
-        if (candidateList.length) {
-          candidateList[0] = {P1: bestP1, P2: bestP2, V: cands.length ? cands[0].V : 0};
-        } else {
-          candidateList = [{P1: bestP1, P2: bestP2, V: 0}];
-          topMax = 1;
-          topDefault = 1;
-          topN = 1;
+      function cancelJointWorkerSolve() {
+        if (!jointWorkerBusy) return;
+        jointWorkerJobId++;
+        if (jointWorker) jointWorker.terminate();
+        jointWorker = null;
+        jointWorkerBusy = false;
+        jointWorkerPrepared = null;
+      }
+
+      function createJointWorker() {
+        const constantSource = [
+          'const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);',
+          `const PRM = ${JSON.stringify(PRM)};`,
+          `const REACH_PMAX = ${REACH_PMAX};`,
+          `const DROP_EXTRA_T = ${DROP_EXTRA_T};`,
+          `const T_INTERCEPT = ${JSON.stringify(T_INTERCEPT)};`,
+          `const V_FWD_K = ${V_FWD_K};`,
+          `const V_SIDE_K = ${V_SIDE_K};`,
+          `const LAMBDA_RUN = ${LAMBDA_RUN};`,
+          `const OUR_HEADING = ${OUR_HEADING};`,
+          `const SEP_MIN_DIST = ${SEP_MIN_DIST};`,
+          `const SEP_PEN_K = ${SEP_PEN_K};`
+        ].join('\n');
+        const workerFunctions = [
+          touchScale,
+          smoothRamp,
+          wrapMotionAngle,
+          motionTimeToPoint,
+          cValue,
+          reachProb,
+          runTime,
+          interceptFallback,
+          interceptStats,
+          ctxEqual,
+          overlapPenalty,
+          symmetricAxisGrid,
+          descendingAxisGrid,
+          jointHeadingAngles,
+          buildHeadingProfiles,
+          pruneDominatedHeadingProfiles,
+          refineJointPose,
+          optimizeDoubleJointExact
+        ].map(fn => fn.toString()).join('\n\n');
+        const handler = `
+self.onmessage = function (event) {
+  const data = event.data;
+  try {
+    const result = optimizeDoubleJointExact(
+      data.items,
+      data.fast,
+      data.ctxA,
+      data.ctxB
+    );
+    self.postMessage({jobId: data.jobId, ok: true, result});
+  } catch (error) {
+    self.postMessage({
+      jobId: data.jobId,
+      ok: false,
+      error: String(error && (error.stack || error.message) || error)
+    });
+  }
+};`;
+        const source = `'use strict';\n${constantSource}\n${workerFunctions}\n${handler}`;
+        const url = URL.createObjectURL(new Blob([source], {type: 'text/javascript'}));
+        const worker = new Worker(url);
+        URL.revokeObjectURL(url);
+        worker.onmessage = handleJointWorkerMessage;
+        worker.onerror = event => {
+          jointWorkerBusy = false;
+          jointWorkerPrepared = null;
+          console.error('joint worker error:', event.message || event);
+          needsSolve = true;
+          manualSolvePending = true;
+          candidateStatusDot.classList.remove('is-ready');
+          candidateStatusDot.title = '后台计算失败，请重新更新';
+          updateManualUpdateUI();
+          updateStats();
+        };
+        return worker;
+      }
+
+      function prepareJointWorkerSolve(fast) {
+        headingCache.clear();
+        rebuildLandings(getProbs(), fast);
+        let clearTMin = null;
+        for (const landing of cachedLandings) {
+          if (landing.type === 'clear' &&
+              (clearTMin == null || landing.t < clearTMin)) {
+            clearTMin = landing.t;
+          }
+        }
+        let items = buildExactPathItems(cachedLandings);
+        if (!items.length) {
+          items = [{
+            L: {x: 0, y: -PRM.clearLineY},
+            w: 1, type: 'clear', t: 0.6, trace: null
+          }];
+        }
+        return {
+          items,
+          clearTMin,
+          ctxA: ctxOf('a'),
+          ctxB: ctxOf('b')
+        };
+      }
+
+      function startJointWorkerSolve(fast) {
+        if (jointWorkerBusy) return false;
+        const prepared = prepareJointWorkerSolve(fast);
+        const jobId = ++jointWorkerJobId;
+        if (!jointWorker) jointWorker = createJointWorker();
+        jointWorkerPrepared = prepared;
+        jointWorkerBusy = true;
+        jointWorkerStarted = performance.now();
+        jointWorkerFast = fast;
+        needsSolve = false;
+        manualSolvePending = false;
+        manualResultsCleared = true;
+        candidateStatusDot.classList.remove('is-ready');
+        candidateStatusDot.title = '后台计算中';
+        updateManualUpdateUI();
+        jointWorker.postMessage({
+          jobId,
+          fast,
+          items: prepared.items,
+          ctxA: prepared.ctxA,
+          ctxB: prepared.ctxB
+        });
+        return true;
+      }
+
+      function handleJointWorkerMessage(event) {
+        const data = event.data || {};
+        if (data.jobId !== jointWorkerJobId) return;
+        const prepared = jointWorkerPrepared;
+        const elapsed = performance.now() - jointWorkerStarted;
+        jointWorkerBusy = false;
+        jointWorkerPrepared = null;
+        if (!data.ok || !prepared) {
+          console.error('joint worker solve failed:', data.error);
+          needsSolve = true;
+          manualSolvePending = true;
+          candidateStatusDot.classList.remove('is-ready');
+          candidateStatusDot.title = '后台计算失败，请重新更新';
+          updateManualUpdateUI();
+          return;
         }
 
-        const pick = candidateList[Math.min(selectedRank - 1, candidateList.length - 1)];
-
-        const reachStats = mode === 'single'
-          ? avgReachByType(items, pick.P1, null, ctxA, null)
-          : avgReachByType(items, pick.P1, pick.P2, ctxA, ctxB);
-
-        return {P1: pick.P1, P2: pick.P2, valid: true, precise, reachStats, clearTMin};
+        result = finalizeSolve(
+          data.result,
+          prepared.items,
+          jointWorkerFast,
+          prepared.clearTMin,
+          true
+        );
+        needsSolve = false;
+        manualSolvePending = false;
+        manualResultsCleared = false;
+        heatDirty = true;
+        sideHeatDirty = true;
+        suboptDirty = true;
+        detectSlowSolve(elapsed, jointWorkerFast);
+        updateStats();
+        updateManualUpdateUI();
       }
 
       function applyScore() {
@@ -3147,9 +4340,11 @@
         if (candidateItems) {
           const ctxA = ctxOf('a');
           const ctxB = ctxOf('b');
+          const ctxAP = ctxForStoredPose(c.P1, candidateItems, ctxA);
+          const ctxBP = c.P2 ? ctxForStoredPose(c.P2, candidateItems, ctxB) : null;
           result.reachStats = mode === 'single'
-            ? avgReachByType(candidateItems, c.P1, null, ctxA, null)
-            : avgReachByType(candidateItems, c.P1, c.P2, ctxA, ctxB);
+            ? avgReachByType(candidateItems, c.P1, null, ctxAP, null)
+            : avgReachByType(candidateItems, c.P1, c.P2, ctxAP, ctxBP);
         }
 
         updateStats();
@@ -3160,13 +4355,16 @@
          ============================================================ */
       function drawCourtBase() {
         const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
+        const x = Math.min(tl.x, br.x), y = Math.min(tl.y, br.y);
+        const w = Math.abs(br.x - tl.x), h = Math.abs(br.y - tl.y);
         ctx.fillStyle = '#f7fbf9';
-        ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+        ctx.fillRect(x, y, w, h);
       }
 
       function drawCourtLines() {
         const tl = w2c({x: -HW, y: HL}), br = w2c({x: HW, y: -HL});
-        const w = br.x - tl.x, h = br.y - tl.y;
+        const x = Math.min(tl.x, br.x), y = Math.min(tl.y, br.y);
+        const w = Math.abs(br.x - tl.x), h = Math.abs(br.y - tl.y);
 
         ctx.save();
         ctx.strokeStyle = C_COURT_LINE;
@@ -3185,7 +4383,7 @@
         ctx.restore();
 
         ctx.strokeStyle = C_COURT_FRAME; ctx.lineWidth = 2 / mainScale;
-        ctx.strokeRect(tl.x, tl.y, w, h);
+        ctx.strokeRect(x, y, w, h);
 
         const n1 = w2c({x: -HW, y: 0}), n2 = w2c({x: HW, y: 0});
         ctx.beginPath(); ctx.strokeStyle = C_NET; ctx.lineWidth = 4 / mainScale;
@@ -3207,7 +4405,7 @@
       }
 
       function drawCourtTags() {
-        const tagRightX = w2c({x: -HW, y: 0}).x - 6;
+        const tagRightX = PAD_L - 6;
         const lineV = PRM.clearLineY.toFixed(1) + ' m';
 
         drawCourtTag(t('lblNearDrop'), nearDropLabel(), tagRightX, w2c({x: 0, y: -DROP_NEAR_EDGE}).y, '#1f6f8b', 'right');
@@ -3222,7 +4420,7 @@
           'right'
         );
 
-        const courtLeft = w2c({x: -HW, y: HL}).x - 7;
+        const courtLeft = PAD_L - 7;
         const courtTop = w2c({x: -HW, y: HL}).y + 15;
         const courtBottom = w2c({x: -HW, y: -HL}).y - 15;
         drawLabelWithHalo(
@@ -3357,7 +4555,14 @@
 
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(heatCanvas, 0, 0, LW, LH);
+        drawRotatedImage(
+          ctx,
+          heatCanvas,
+          LW,
+          LH,
+          PAD_L + HW * SCALE,
+          PAD_T + HL * SCALE
+        );
         ctx.restore();
       }
 
@@ -3586,7 +4791,14 @@
         if (suboptCanvas.width < 2) return;
         ctx.save();
         ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(suboptCanvas, 0, 0, LW, LH);
+        drawRotatedImage(
+          ctx,
+          suboptCanvas,
+          LW,
+          LH,
+          PAD_L + HW * SCALE,
+          PAD_T + HL * SCALE
+        );
         ctx.restore();
       }
 
@@ -3603,7 +4815,15 @@
         ctx.arc(c.x, c.y, 8, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2 / mainScale; ctx.stroke();
 
-        drawLabelWithHalo(lang === 'zh' ? '对手' : 'Opp', c.x, c.y - 11, C_PERSON, FONT_PLAYER, 'center', 'bottom');
+        drawLabelWithHalo(
+          lang === 'zh' ? '对手' : 'Opp',
+          c.x,
+          mirror180 ? c.y + 11 : c.y - 11,
+          C_PERSON,
+          FONT_PLAYER,
+          'center',
+          mirror180 ? 'top' : 'bottom'
+        );
       }
 
       function speedDotRadius(vRun) {
@@ -3617,12 +4837,60 @@
         return d > 0 ? t('tagFast') : t('tagSlow');
       }
 
-      function drawOurPoint(p, label, vRun) {
+      function drawOurPoint(p, label, vRun, index) {
         const c = w2c(p);
         const col = C_PERSON;
         const lineCol = 'rgba(0,0,0,.30)';
         const rad = speedDotRadius(vRun);
         const arm = rad * 1.9;
+
+        if (ourTurnEnabled[index]) {
+          const longRadius = rad * 2.25;
+          const shortRadius = Math.max(6.5, rad * 1.08);
+          const bodyHeading = (Number.isFinite(p.heading) ? p.heading : 0) + (mirror180 ? Math.PI : 0);
+          const screenHeading = Math.atan2(-Math.cos(bodyHeading), Math.sin(bodyHeading));
+          const ellipseAngle = screenHeading + Math.PI / 2;
+          const footSign = ourHand[index] === 'left' ? -1 : 1;
+          const footLocalX = footSign * longRadius * 0.62;
+          const footX = c.x + footLocalX * Math.cos(ellipseAngle);
+          const footY = c.y + footLocalX * Math.sin(ellipseAngle);
+          const footColor = ourHand[index] === 'left'
+            ? '#62c6eb'
+            : '#1e88e5';
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(c.x, c.y, longRadius, shortRadius, ellipseAngle, 0, Math.PI * 2);
+          ctx.fillStyle = '#fff';
+          ctx.fill();
+          ctx.strokeStyle = C_PERSON;
+          ctx.lineWidth = 2 / mainScale;
+          ctx.stroke();
+          const faceLen = longRadius * 0.72;
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(
+            c.x + Math.cos(screenHeading) * faceLen,
+            c.y + Math.sin(screenHeading) * faceLen
+          );
+          ctx.strokeStyle = 'rgba(0,0,0,.42)';
+          ctx.lineWidth = 1.4 / mainScale;
+          ctx.stroke();
+          ctx.font = FONT_PLAYER;
+          ctx.fillStyle = C_PERSON;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, c.x, c.y + 0.5);
+          ctx.beginPath();
+          ctx.fillStyle = footColor;
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 1.2 / mainScale;
+          ctx.arc(footX, footY, 2.8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+          return;
+        }
 
         ctx.beginPath(); ctx.fillStyle = col;
         ctx.arc(c.x, c.y, rad, 0, Math.PI * 2); ctx.fill();
@@ -3636,7 +4904,15 @@
         ctx.stroke();
         ctx.restore();
 
-        drawLabelWithHalo(label, c.x, c.y + rad + 3, col, FONT_OUR, 'center', 'top');
+        drawLabelWithHalo(
+          label,
+          c.x,
+          mirror180 ? c.y - rad - 3 : c.y + rad + 3,
+          col,
+          FONT_OUR,
+          'center',
+          mirror180 ? 'bottom' : 'top'
+        );
       }
 
       function drawOurs() {
@@ -3644,7 +4920,7 @@
 
         if (mode === 'single') {
           if (result.P1) {
-            drawOurPoint(result.P1, t('ourSolo'), PRM.v_run_a);
+            drawOurPoint(result.P1, 'A', PRM.v_run_a, 0);
           }
           return;
         }
@@ -3652,26 +4928,8 @@
         const P1 = result.P1, P2 = result.P2;
         if (!P1 || !P2) return;
 
-        const dX = Math.abs(P1.x - P2.x);
-        const dY = Math.abs(P1.y - P2.y);
-
-        let baseA, baseB;
-        if (dX >= dY) {
-          const aIsLeft = P1.x <= P2.x;
-          baseA = aIsLeft ? t('labelLeft') : t('labelRight');
-          baseB = aIsLeft ? t('labelRight') : t('labelLeft');
-        } else {
-          const aIsRear = P1.y < P2.y;
-          baseA = aIsRear ? t('ourBack') : t('ourFront');
-          baseB = aIsRear ? t('ourFront') : t('ourBack');
-        }
-
-        const tagAB = abDiffers();
-        const lblA = (tagAB ? 'A·' : '') + speedTag(PRM.v_run_a, PRM.v_run_b) + baseA;
-        const lblB = (tagAB ? 'B·' : '') + speedTag(PRM.v_run_b, PRM.v_run_a) + baseB;
-
-        drawOurPoint(P1, lblA, PRM.v_run_a);
-        drawOurPoint(P2, lblB, PRM.v_run_b);
+        drawOurPoint(P1, 'A', PRM.v_run_a, 0);
+        drawOurPoint(P2, 'B', PRM.v_run_b, 1);
       }
 
       function draw() {
@@ -3692,9 +4950,17 @@
       const candidateCount = $('candidateCount');
       const candidateStatusDot = $('candidateStatusDot');
       const manualUpdateBtn = $('manualUpdateBtn');
+      const calcWaitBubble = $('calcWaitBubble');
+      const calcWaitBubbleText = $('calcWaitBubbleText');
       const pageSub = $('pageSub');
       const pageTitle = $('pageTitle');
       const modeToggle = $('modeToggle');
+      const symmetryBtn = $('symmetryBtn');
+      const ourFootLegend = $('ourFootLegend');
+      const ourFootLegendText = $('ourFootLegendText');
+      const ourHandCluster = $('ourHandCluster');
+      const ourHandA = $('ourHandA');
+      const ourHandB = $('ourHandB');
       const pillKill = $('pillKill');
       const pillDrop = $('pillDrop');
       const pillClear = $('pillClear');
@@ -3750,8 +5016,14 @@
       }
 
       function updateStats() {
+        updateOurHandUI();
         updateScorePill();
         updateHeightPill();
+        const single = mode === 'single';
+        const probs = getProbs();
+        updatePill(pillKill, probs.ps, SHOT_RGB.kill);
+        updatePill(pillDrop, probs.pd, SHOT_RGB.drop);
+        updatePill(pillClear, probs.pc, SHOT_RGB.clear);
         candidateCount.innerHTML =
           `<b>${legalCandidateCount.toLocaleString('zh-CN')}</b> 条合法候选 · ` +
           `显示 <b>${Math.min(topN, candidateList.length).toLocaleString('zh-CN')}</b> 条`;
@@ -3760,13 +5032,6 @@
         candidateStatusDot.title = ready ? '完整计算完成' : '快速预览 / 正在计算';
         rankLegend.hidden = !showSubopt || showHeat || !candidateList.length;
         if (!result.valid) return;
-
-        const single = mode === 'single';
-        const probs = getProbs();
-
-        updatePill(pillKill, probs.ps, SHOT_RGB.kill);
-        updatePill(pillDrop, probs.pd, SHOT_RGB.drop);
-        updatePill(pillClear, probs.pc, SHOT_RGB.clear);
 
         const ps = Math.round(probs.ps * 100);
         const pc = Math.round(probs.pc * 100);
@@ -3809,7 +5074,28 @@
           ' · ' + t('infoGap') + ' <b>' + dist.toFixed(1) + 'm</b>' + clearPart + dispPart;
       }
 
-      function fmtSliderVal(val, step, isProb) {
+      function updateOurHandUI() {
+        const single = mode === 'single';
+        const showA = ourTurnEnabled[0];
+        const showB = !single && ourTurnEnabled[1];
+        ourHandCluster.classList.toggle('is-visible', showA || showB);
+        ourFootLegend.classList.toggle('is-visible', showA || showB);
+        ourHandA.hidden = !showA;
+        ourHandB.hidden = !showB;
+        ourHandA.textContent = 'A ' + (ourHand[0] === 'left' ? t('labelLeft') : t('labelRight'));
+        ourHandB.textContent = 'B ' + (ourHand[1] === 'left' ? t('labelLeft') : t('labelRight'));
+        ourHandA.classList.toggle('is-left-hand', ourHand[0] === 'left');
+        ourHandB.classList.toggle('is-left-hand', ourHand[1] === 'left');
+        ourHandA.setAttribute('aria-pressed', String(ourHand[0] === 'left'));
+        ourHandB.setAttribute('aria-pressed', String(ourHand[1] === 'left'));
+      }
+
+      function fmtSliderVal(val, step, isProb, key) {
+        if (key && key.startsWith('our_')) {
+          if (key === 'our_turn_deadzone') return Math.round(val) + '°';
+          if (key === 'our_turn_tmax') return val.toFixed(2) + ' s';
+          return Math.round(val * 100) + '%';
+        }
         if (step >= 1) return Math.round(val) + (isProb ? '%' : '');
         const digits = step >= 0.1 ? 1 : 2;
         return val.toFixed(digits);
@@ -3961,7 +5247,7 @@
         input.value = PRM[d.key];
 
         const val = document.createElement('b');
-        val.textContent = fmtSliderVal(PRM[d.key], d.step, gname === 'prob');
+        val.textContent = fmtSliderVal(PRM[d.key], d.step, gname === 'prob', d.key);
         const meta = document.createElement('div');
         meta.className = 's-meta';
         meta.appendChild(label);
@@ -3980,7 +5266,7 @@
             setSyncing(false);
           } else {
             PRM[d.key] = parseFloat(input.value);
-            val.textContent = fmtSliderVal(PRM[d.key], d.step, false);
+            val.textContent = fmtSliderVal(PRM[d.key], d.step, false, d.key);
             if (gname === 'reach') requestAnimationFrame(drawReachCurve);
           }
           if (gname === 'subopt') {
@@ -4122,11 +5408,11 @@
         }
 
         const groupTitles = {
-          speed: 'gSpeed', prob: 'gProb', reach: 'gReach',
+          speed: 'gSpeed', prob: 'gProb', reach: 'gReach', turn: 'gTurn',
           filter: 'gFilter', zrange: 'gZRange', subopt: 'gSubopt'
         };
         const groupHints = {
-          speed: 'gSpeedHint', prob: 'gProbHint', reach: 'gReachHint',
+          speed: 'gSpeedHint', prob: 'gProbHint', reach: 'gReachHint', turn: 'gTurnHint',
           filter: 'gFilterHint', zrange: 'gZRangeHint', subopt: 'gSuboptHint'
         };
         let syncing = false;
@@ -4366,6 +5652,8 @@
         topN = topDefault;
         showHeat = false;
         showSubopt = true;
+        ourTurnEnabled = [false, false];
+        ourHand = ['right', 'right'];
         suboptDirty = true;
         buildSliders();
         updateHeightPill();
@@ -4375,6 +5663,7 @@
         sideHeatDirty = true;
         if (slowMode) clearResultsForManualUpdate();
         updateManualUpdateUI();
+        updateOurHandUI();
       });
 
       /* ============================================================
@@ -4385,7 +5674,10 @@
         document.title = t('title');
         pageTitle.textContent = t('title');
         pageSub.textContent = t('sub');
+        symmetryBtn.title = t('symmetryHint');
+        symmetryBtn.setAttribute('aria-label', t('symmetryHint'));
         footerText.textContent = t('footer');
+        ourFootLegendText.textContent = t('ourFootLegend');
         sidebarTitle.textContent = t('params');
         resetBtn.textContent = t('reset');
         updateManualUpdateUI();
@@ -4419,6 +5711,7 @@
         heatDirty = true;
         sideHeatDirty = true;
         suboptDirty = true;
+        if (calcWaitBubble.classList.contains('is-visible')) positionCalcWaitBubble();
       });
 
       collapseBtn.addEventListener('click', () => {
@@ -4447,10 +5740,67 @@
         return -1;
       }
 
+      function hitOurPoint(w) {
+        if (!result.valid) return -1;
+        const points = mode === 'single'
+          ? (result.P1 ? [result.P1] : [])
+          : [result.P1, result.P2].filter(Boolean);
+        let best = -1, bestDist = DR_HIT * DR_HIT;
+        points.forEach((p, index) => {
+          const dx = w.x - p.x;
+          const dy = w.y - p.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestDist) {
+            bestDist = d2;
+            best = index;
+          }
+        });
+        return best;
+      }
+
+      function toggleOurTurn() {
+        const next = mode === 'single'
+          ? !ourTurnEnabled[0]
+          : !(ourTurnEnabled[0] && ourTurnEnabled[1]);
+        ourTurnEnabled[0] = next;
+        ourTurnEnabled[1] = next;
+        selectedRank = 1;
+        resetSolvePerformanceMode();
+        markDirty(true);
+        updateOurHandUI();
+        updateStats();
+      }
+
+      function toggleOurHand(index) {
+        if (index === 1 && mode === 'single') return;
+        ourHand[index] = ourHand[index] === 'left' ? 'right' : 'left';
+        selectedRank = 1;
+        markDirty(true);
+        if (slowMode) {
+          needsSolve = true;
+          manualSolvePending = true;
+          quality = 'full';
+          candidateStatusDot.classList.remove('is-ready');
+          updateManualUpdateUI();
+        }
+        updateOurHandUI();
+        updateStats();
+      }
+
       modeToggle.addEventListener('click', () => {
         mode = (mode === 'double') ? 'single' : 'double';
+        resetSolvePerformanceMode();
         markDirty(true);
         refreshStaticText();
+      });
+
+      ourHandA.addEventListener('click', () => toggleOurHand(0));
+      ourHandB.addEventListener('click', () => toggleOurHand(1));
+
+      symmetryBtn.addEventListener('click', () => {
+        mirror180 = !mirror180;
+        symmetryBtn.classList.toggle('is-active', mirror180);
+        symmetryBtn.setAttribute('aria-pressed', String(mirror180));
       });
 
       canvas.addEventListener('pointerdown', ev => {
@@ -4458,11 +5808,26 @@
         const now = performance.now();
         const oppIdx = hitOpponent(w);
 
+        const ownIdx = hitOurPoint(w);
+        if (ownIdx >= 0) {
+          const dt = now - lastTap.time;
+          const dd = Math.sqrt((ev.clientX - lastTap.x) ** 2 + (ev.clientY - lastTap.y) ** 2);
+          if (lastTap.ownIdx === ownIdx && lastTap.time > 0 &&
+              dt < DOUBLE_TAP_MS && dd < DOUBLE_TAP_DIST) {
+            lastTap = {time: 0, x: 0, y: 0, ownIdx: -1};
+            toggleOurTurn();
+          } else {
+            lastTap = {time: now, x: ev.clientX, y: ev.clientY, ownIdx};
+          }
+          ev.preventDefault();
+          return;
+        }
+
         if (oppIdx < 0) {
           const dt = now - lastTap.time;
           const dd = Math.sqrt((ev.clientX - lastTap.x) ** 2 + (ev.clientY - lastTap.y) ** 2);
           if (lastTap.time > 0 && dt < DOUBLE_TAP_MS && dd < DOUBLE_TAP_DIST) {
-            lastTap = {time: 0, x: 0, y: 0};
+            lastTap = {time: 0, x: 0, y: 0, ownIdx: -1};
             const toHeat = showSubopt;
             showSubopt = !toHeat;
             showHeat = toHeat;
@@ -4473,11 +5838,11 @@
             ev.preventDefault();
             return;
           }
-          lastTap = {time: now, x: ev.clientX, y: ev.clientY};
+          lastTap = {time: now, x: ev.clientX, y: ev.clientY, ownIdx: -1};
           return;
         }
 
-        lastTap = {time: 0, x: 0, y: 0};
+        lastTap = {time: 0, x: 0, y: 0, ownIdx: -1};
 
         dragIdx = oppIdx;
         dragStarted = false;
@@ -4535,7 +5900,7 @@
       }
 
       function hitSideTarget(px, py) {
-        const sy = sideCourtTop + (HL - opponents[0].y) * sideScaleY;
+        const sy = sideScreenY(opponents[0].y);
         const hx = sideGroundX + PRM.hh * sideScaleZ;
         const racketHit = ((px - hx) / 16) ** 2 + ((py - sy) / 12) ** 2 <= 1;
         if (racketHit) return 'racket';
@@ -4578,11 +5943,7 @@
         }
         if (!sideDrag.moved) return;
 
-        const newY = clamp(
-          HL - (p.y - sideCourtTop) / sideScaleY,
-          0.25,
-          HL - 0.15
-        );
+        const newY = clamp(sideWorldYFromScreen(p.y), 0.25, HL - 0.15);
         opponents[0].y = newY;
         if (sideDrag.type === 'racket') {
           PRM.hh = clamp(
@@ -4645,21 +6006,27 @@
         if (shouldSolve && (manualSolvePending || ts - last > (quality === 'fast' ? 70 : 0))) {
           const started = performance.now();
           const useFast = manualSolvePending ? false : quality === 'fast';
-          try {
-            result = solve(useFast);
-            heatDirty = true;
-            sideHeatDirty = true;
-            suboptDirty = true;
-          } catch (err) {
-            console.error('solve error:', err);
+          const useJointWorker = mode === 'double' &&
+            (ourTurnEnabled[0] || ourTurnEnabled[1]);
+          if (useJointWorker) {
+            startJointWorkerSolve(useFast);
+          } else {
+            try {
+              result = solve(useFast);
+              heatDirty = true;
+              sideHeatDirty = true;
+              suboptDirty = true;
+            } catch (err) {
+              console.error('solve error:', err);
+            }
+            needsSolve = false;
+            manualSolvePending = false;
+            manualResultsCleared = false;
+            detectSlowSolve(performance.now() - started, useFast);
+            updateStats();
+            updateManualUpdateUI();
           }
-          needsSolve = false;
-          manualSolvePending = false;
-          manualResultsCleared = false;
-          detectSlowSolve(performance.now() - started, useFast);
           last = ts;
-          updateStats();
-          updateManualUpdateUI();
         }
         try {draw();}
         catch (err) {console.error('draw error:', err);}
@@ -4702,6 +6069,7 @@
         heatDirty = true;
         sideHeatDirty = true;
         suboptDirty = true;
+        if (calcWaitBubble.classList.contains('is-visible')) positionCalcWaitBubble();
       });
       window.addEventListener('orientationchange', () => setTimeout(() => {
         setup();
