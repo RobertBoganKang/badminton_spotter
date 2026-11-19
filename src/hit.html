@@ -2727,7 +2727,7 @@
           <h3>转身模型</h3>
           <div class="param-grid">
             <div class="param-item">
-              <div class="param-item-head"><label for="turnTmax">回身耗时上限</label><output
+              <div class="param-item-head"><label for="turnTmax">转身耗时上限</label><output
                   id="turnTmaxValue">0.55 s</output></div>
               <input id="turnTmax" data-param="turnTmax" type="range" min="0" max="1.2" step="0.01" value="0.55">
             </div>
@@ -2737,38 +2737,50 @@
               <input id="turnTheta0" data-param="turnTheta0" type="range" min="0" max="70" step="1" value="25">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="turnSpeedK">转身速度折扣</label><output
-                  id="turnSpeedKValue">0.45</output></div>
+              <div class="param-item-head"><label for="turnSpeedK">转身速度损失上限</label><output
+                  id="turnSpeedKValue">45%</output></div>
               <input id="turnSpeedK" data-param="turnSpeedK" type="range" min="0" max="0.8" step="0.01"
                 value="0.45">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="fhBias">正反手速度偏置</label><output
-                  id="fhBiasValue">0.18</output></div>
-              <input id="fhBias" data-param="fhBias" type="range" min="0" max="0.5" step="0.01" value="0.18">
+              <div class="param-item-head"><label for="moveAccel">移动加速度</label><output
+                  id="moveAccelValue">10 m/s²</output></div>
+              <input id="moveAccel" data-param="moveAccel" type="range" min="0" max="20" step="0.5"
+                value="10">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="turnOverlapK">转身/移动重叠</label><output
+              <div class="param-item-head"><label for="turnOverlapK">转身/移动重叠系数</label><output
                   id="turnOverlapKValue">25%</output></div>
               <input id="turnOverlapK" data-param="turnOverlapK" type="range" min="0" max="1" step="0.01" value="0.25">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="leadFootBoost">持拍脚方向加速</label><output
+              <div class="param-item-head"><label for="fhBias">正反手速度偏置</label><output
+                  id="fhBiasValue">18%</output></div>
+              <input id="fhBias" data-param="fhBias" type="range" min="0" max="0.5" step="0.01" value="0.18">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="leadFootBoost">持拍脚方向速度加成</label><output
                   id="leadFootBoostValue">10%</output></div>
               <input id="leadFootBoost" data-param="leadFootBoost" type="range" min="0" max="0.3" step="0.01"
                 value="0.10">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="crossLineSpeedK">跨线速度</label><output
+              <div class="param-item-head"><label for="crossLineSpeedK">跨线速度系数</label><output
                   id="crossLineSpeedKValue">92%</output></div>
               <input id="crossLineSpeedK" data-param="crossLineSpeedK" type="range" min="0.70" max="1" step="0.01"
                 value="0.92">
             </div>
             <div class="param-item">
-              <div class="param-item-head"><label for="backhandTurnK">反手转身附加</label><output
+              <div class="param-item-head"><label for="backhandTurnK">反手转身附加惩罚</label><output
                   id="backhandTurnKValue">18%</output></div>
               <input id="backhandTurnK" data-param="backhandTurnK" type="range" min="0" max="0.5" step="0.01"
                 value="0.18">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="backhandTouchK">反手触球比例</label><output
+                  id="backhandTouchKValue">88%</output></div>
+              <input id="backhandTouchK" data-param="backhandTouchK" type="range" min="0.60" max="1"
+                step="0.01" value="0.88">
             </div>
           </div>
         </section>
@@ -2889,14 +2901,16 @@
           runSpeed: '跑动速度',
           touchRadius: '触球半径',
           turnSection: '转身模型',
-          turnTmax: '回身耗时上限',
+          turnTmax: '转身耗时上限',
           turnTheta0: '转身死区',
-          turnSpeedK: '转身速度折扣',
+          turnSpeedK: '转身速度损失上限',
+          moveAccel: '移动加速度',
           fhBias: '正反手速度偏置',
-          turnOverlapK: '转身/移动重叠',
-          leadFootBoost: '持拍脚方向加速',
-          crossLineSpeedK: '跨线速度',
-          backhandTurnK: '反手转身附加',
+          turnOverlapK: '转身/移动重叠系数',
+          leadFootBoost: '持拍脚方向速度加成',
+          crossLineSpeedK: '跨线速度系数',
+          backhandTurnK: '反手转身附加惩罚',
+          backhandTouchK: '反手触球比例',
           racketFootLegend: '持拍侧脚',
           rotationControl: '对手旋转角度',
           zMin: '可接高度下限',
@@ -2915,7 +2929,7 @@
         <p>采用重力与速度相关空气阻力模型，仿真步长 0.005 s。通过相邻步插值获得过网位置、落点和飞行时间；主视图与侧视图使用同一组三维轨迹数据。</p>
         <h3>四、对手反应和截击</h3>
         <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、转身代价和触球半径计算接球概率。</p>
-        <p>未双击对手时使用原始不考虑转身的方向速度模型。双击对手进入速度手柄模式后启用转身模型：总移动耗时按“<code>max(转身时间, 移动时间) + k × min(转身时间, 移动时间)</code>”计算，再叠加跨步延迟和关节极限时间。<code>k=0</code> 表示完全并行，<code>k=1</code> 表示转身完成后才移动；默认 <code>k=0.25</code>，表示两者部分重叠。移动阶段继续叠加前向、侧向和后退速度差异，反手触球半径按 88% 计算；转身参数全部归零时与原始方向速度一致。球员默认面向球网。关闭速度手柄后恢复原始模型。椭圆长轴表示双脚连线，长轴一侧的圆点表示持拍侧脚。</p>
+        <p>未双击对手时使用原始不考虑转身的方向速度模型。双击对手进入速度手柄模式后启用转身模型：平移时间采用加速—匀速结构，短距离只处于加速阶段，长距离先加速再匀速；随后按“<code>max(转身时间, 移动时间) + k × min(转身时间, 移动时间)</code>”与转身时间合成，再叠加跨步延迟和关节极限时间。<code>k=0</code> 表示完全并行，<code>k=1</code> 表示转身完成后才移动；默认 <code>k=0.25</code>，表示两者部分重叠。移动加速度和反手触球比例可在参数面板调整；反手触球默认按 88% 计算。关掉加速、把反手触球设为 100% 并令其余转身参数归零时与原始方向速度一致。球员默认面向球网。关闭速度手柄后恢复原始模型。椭圆长轴表示双脚连线，长轴一侧的圆点表示持拍侧脚。</p>
         <p>移动速度进一步按照身体朝向建立椭圆速度场：持拍脚方向获得额外加速，跨线方向速度较低，后退方向不获得该加速；两个比例均可在“转身模型”中调整。反手侧惩罚随绝对转身角平滑增加，并额外作用于转身时间、跨步延迟和关节极限，避免小角度时突然跳变。开启 180° 对称视图后，顶部角度读数也按显示方向换算，拖动角度时会反向转换回物理坐标，因此显示与画面一致且不改变求解结果。</p>
         <h3>五、后台计算与精度</h3>
         <p>开启对手速度手柄后，候选球路生成、轨迹仿真和截击评分会放入单个内联 Web Worker 中执行，主页面线程保持可操作。重复更新会取消旧任务；计算期间显示“正在计算中”，完成后自动更新图形。截击概率和期望得分使用 <code>Float32 / Math.fround</code> 精度，轨迹几何仍保留双精度。</p>
@@ -2979,12 +2993,14 @@
           turnSection: 'Turning model',
           turnTmax: 'Maximum turn time',
           turnTheta0: 'Turn dead zone',
-          turnSpeedK: 'Turn speed loss',
+          turnSpeedK: 'Maximum turn speed loss',
+          moveAccel: 'Movement acceleration',
           fhBias: 'Forehand/backhand bias',
-          turnOverlapK: 'Turn/move overlap',
-          leadFootBoost: 'Lead-foot speed boost',
-          crossLineSpeedK: 'Cross-line speed',
+          turnOverlapK: 'Turn/move overlap factor',
+          leadFootBoost: 'Lead-foot direction speed boost',
+          crossLineSpeedK: 'Cross-line speed factor',
           backhandTurnK: 'Backhand turn penalty',
+          backhandTouchK: 'Backhand touch ratio',
           racketFootLegend: 'Racket-side foot',
           rotationControl: 'Opponent rotation angles',
           zMin: 'Reach height min',
@@ -3003,7 +3019,7 @@
         <p>The model uses gravity and speed-dependent air drag with a 0.005 s timestep. Net crossing, landing and flight time are interpolated between simulation steps. The top view and side view share the same 3D trajectory data.</p>
         <h3>4. Reach and interception</h3>
         <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, turning cost and touch radius into a reach probability.</p>
-        <p>Before interaction, the model uses the original directional speed calculation without turning. Double-clicking an opponent opens velocity-handle mode and enables the turning model: total movement time is <code>max(turn time, translation time) + k × min(turn time, translation time)</code>, plus step delay and joint-limit time. <code>k=0</code> means fully parallel, while <code>k=1</code> means turning must finish before translation; the default <code>k=0.25</code> represents partial overlap. The movement stage retains forward, lateral and backward speed differences and uses 88% of the normal touch radius on the backhand side. With all turning parameters at zero, it matches the directional-speed baseline. Opponents face the net by default. Closing the handles restores the original model. The ellipse's long axis marks the line between the feet; the dot on one side marks the racket-side foot.</p>
+        <p>Before interaction, the model uses the original directional speed calculation without turning. Double-clicking an opponent opens velocity-handle mode and enables the turning model: translation uses an acceleration-then-cruise profile, with short moves staying in the acceleration phase and long moves continuing at cruise speed. Translation is then combined with turn time by <code>max(turn time, translation time) + k × min(turn time, translation time)</code>, plus step delay and joint-limit time. <code>k=0</code> means fully parallel, while <code>k=1</code> means turning must finish before translation; the default <code>k=0.25</code> represents partial overlap. Movement acceleration and the backhand touch ratio are adjustable; the backhand touch ratio defaults to 88%. Opponents face the net by default. Closing the handles restores the original model. The ellipse's long axis marks the line between the feet; the dot on one side marks the racket-side foot.</p>
         <p>Movement speed also uses a body-aligned elliptical field: the lead-foot direction receives a configurable speed boost, cross-line movement is slower, and backward movement receives no boost. Backhand penalties increase smoothly with absolute turn angle and additionally affect turn time, step delay, and joint-limit time to avoid a sudden jump at small angles. In the 180° mirrored view, angle readouts are converted to display coordinates while drag input is converted back to world coordinates, keeping the displayed orientation consistent without changing solver results.</p>
         <h3>5. Background calculation and precision</h3>
         <p>When opponent velocity handles are enabled, candidate generation, trajectory simulation and interception scoring run in one inline Web Worker, keeping the main page responsive. Repeated updates cancel stale jobs, a calculating bubble is shown, and results update automatically when complete. Interception probabilities and expected scores use <code>Float32 / Math.fround</code>; trajectory geometry remains double precision.</p>
@@ -3057,8 +3073,7 @@
         jointSoftStart: 70 * DEG,
         jointHardLimit: 120 * DEG,
         jointSoftPenalty: 0.15,
-        jointHardPenalty: 0.3,
-        backhandTouchK: 0.88
+        jointHardPenalty: 0.3
       });
 
       const TYPE_DELTA = Object.freeze({
@@ -3091,11 +3106,13 @@
         turnTmax: 0.55,
         turnTheta0: 25 * DEG,
         turnSpeedK: 0.45,
+        moveAccel: 10,
         fhBias: 0.18,
         turnOverlapK: 0.25,
         leadFootBoost: 0.10,
         crossLineSpeedK: 0.92,
         backhandTurnK: 0.18,
+        backhandTouchK: 0.88,
         zMin: 0.1,
         zMax: 2.5,
         k2: 1.3,
@@ -3436,12 +3453,13 @@
           state.params.fhBias > 0 ||
           state.params.leadFootBoost > 0 ||
           state.params.crossLineSpeedK < 0.999 ||
-          state.params.backhandTurnK > 0;
+          state.params.backhandTurnK > 0 ||
+          state.params.backhandTouchK < 0.999;
         const backhand = ctx.hand === 'right' ? rawDeltaTheta < 0 : rawDeltaTheta > 0;
         const backhandBlend = turningEnabled && backhand
           ? smoothRamp(Math.abs(rawDeltaTheta), 0, Math.PI / 2)
           : 0;
-        const handTouchScale = 1 - (1 - TURN.backhandTouchK) * backhandBlend;
+        const handTouchScale = 1 - (1 - state.params.backhandTouchK) * backhandBlend;
         const touchRadius = ctx.touch * touchScale(type) * handTouchScale;
         const runDistance = Math.max(0, d - touchRadius);
         const deltaTheta = runDistance > 0 ? rawDeltaTheta : 0;
@@ -3474,7 +3492,17 @@
         );
         const footSpeedFactor = turningEnabled && footInv > 1e-8 ? 1 / footInv : 1;
         const vEff = Math.max(0.01, baseSpeed * asym * turnFactor * footSpeedFactor);
-        const translationTime = runDistance / vEff;
+        const acceleration = Math.max(0, Number(state.params.moveAccel) || 0);
+        const accelerationTime = acceleration > 0 ? vEff / acceleration : 0;
+        const accelerationDistance = 0.5 * vEff * accelerationTime;
+        let translationTime = runDistance / vEff;
+        if (runDistance <= 0) {
+          translationTime = 0;
+        } else if (acceleration > 0) {
+          translationTime = runDistance <= accelerationDistance
+            ? Math.sqrt(2 * runDistance / acceleration)
+            : accelerationTime + (runDistance - accelerationDistance) / vEff;
+        }
         const backhandTurnScale = 1 + state.params.backhandTurnK * backhandBlend;
         const rotationTime = runDistance > 0
           ? turnTimeForDelta(absTheta, ctx.stance) * backhandTurnScale
@@ -3490,6 +3518,8 @@
             + state.params.turnOverlapK * Math.min(translationTime, rotationTime)
             + stepDelay + limitPenalty,
           translationTime,
+          accelerationTime,
+          accelerationDistance,
           rotationTime,
           stepDelay,
           limitPenalty,
@@ -4378,6 +4408,10 @@ self.onmessage = function (event) {
               text = fmt(value / DEG, 0) + '°';
             } else if (key === 'turnTmax') {
               text = fmt(value, 2) + ' s';
+            } else if (key === 'moveAccel') {
+              text = value > 0 ? `${fmt(value, value % 1 ? 1 : 0)} m/s²` : L('关闭', 'Off');
+            } else if (key === 'turnSpeedK' || key === 'fhBias' || key === 'backhandTouchK') {
+              text = Math.round(value * 100) + '%';
             } else if (key === 't0a' || key === 't1a' || key === 't0b' || key === 't1b') {
               text = fmt(value, 2) + ' s';
             } else if (key === 'heatOpacity') {
@@ -4450,11 +4484,13 @@ self.onmessage = function (event) {
           turnTmax: 'turnTmax',
           turnTheta0: 'turnTheta0',
           turnSpeedK: 'turnSpeedK',
+          moveAccel: 'moveAccel',
           fhBias: 'fhBias',
           turnOverlapK: 'turnOverlapK',
           leadFootBoost: 'leadFootBoost',
           crossLineSpeedK: 'crossLineSpeedK',
           backhandTurnK: 'backhandTurnK',
+          backhandTouchK: 'backhandTouchK',
           zMin: 'zMin',
           zMax: 'zMax',
           k2: 'k2',

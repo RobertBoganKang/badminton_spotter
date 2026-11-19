@@ -1102,14 +1102,16 @@
       <section class="sidebar-group">
         <h3>转身模型</h3>
         <div class="sidebar-param"><label for="turnReaction">反应时间<output id="turnReactionValue">0.20 s</output></label><input id="turnReaction" data-turn="reaction" type="range" min="0" max="0.8" step="0.01" value="0.20"></div>
-        <div class="sidebar-param"><label for="turnTmax">回身耗时上限<output id="turnTmaxValue">0.55 s</output></label><input id="turnTmax" data-turn="turnTmax" type="range" min="0" max="1.2" step="0.01" value="0.55"></div>
+        <div class="sidebar-param"><label for="turnTmax">转身耗时上限<output id="turnTmaxValue">0.55 s</output></label><input id="turnTmax" data-turn="turnTmax" type="range" min="0" max="1.2" step="0.01" value="0.55"></div>
         <div class="sidebar-param"><label for="turnTheta0">转身死区<output id="turnTheta0Value">25°</output></label><input id="turnTheta0" data-turn="turnTheta0" type="range" min="0" max="70" step="1" value="25"></div>
-        <div class="sidebar-param"><label for="turnSpeedK">转身速度折扣<output id="turnSpeedKValue">45%</output></label><input id="turnSpeedK" data-turn="turnSpeedK" type="range" min="0" max="0.8" step="0.01" value="0.45"></div>
-        <div class="sidebar-param"><label for="turnOverlapK">转身/移动重叠<output id="turnOverlapKValue">25%</output></label><input id="turnOverlapK" data-turn="turnOverlapK" type="range" min="0" max="1" step="0.01" value="0.25"></div>
+        <div class="sidebar-param"><label for="turnSpeedK">转身速度损失上限<output id="turnSpeedKValue">45%</output></label><input id="turnSpeedK" data-turn="turnSpeedK" type="range" min="0" max="0.8" step="0.01" value="0.45"></div>
+        <div class="sidebar-param"><label for="moveAccel">移动加速度<output id="moveAccelValue">10 m/s²</output></label><input id="moveAccel" data-turn="moveAccel" type="range" min="0" max="20" step="0.5" value="10"></div>
+        <div class="sidebar-param"><label for="turnOverlapK">转身/移动重叠系数<output id="turnOverlapKValue">25%</output></label><input id="turnOverlapK" data-turn="turnOverlapK" type="range" min="0" max="1" step="0.01" value="0.25"></div>
         <div class="sidebar-param"><label for="fhBias">正反手速度偏置<output id="fhBiasValue">18%</output></label><input id="fhBias" data-turn="fhBias" type="range" min="0" max="0.5" step="0.01" value="0.18"></div>
-        <div class="sidebar-param"><label for="leadFootBoost">持拍脚方向加速<output id="leadFootBoostValue">10%</output></label><input id="leadFootBoost" data-turn="leadFootBoost" type="range" min="0" max="0.3" step="0.01" value="0.10"></div>
-        <div class="sidebar-param"><label for="crossLineSpeedK">跨线速度<output id="crossLineSpeedKValue">92%</output></label><input id="crossLineSpeedK" data-turn="crossLineSpeedK" type="range" min="0.70" max="1" step="0.01" value="0.92"></div>
-        <div class="sidebar-param"><label for="backhandTurnK">反手转身附加<output id="backhandTurnKValue">18%</output></label><input id="backhandTurnK" data-turn="backhandTurnK" type="range" min="0" max="0.5" step="0.01" value="0.18"></div>
+        <div class="sidebar-param"><label for="leadFootBoost">持拍脚方向速度加成<output id="leadFootBoostValue">10%</output></label><input id="leadFootBoost" data-turn="leadFootBoost" type="range" min="0" max="0.3" step="0.01" value="0.10"></div>
+        <div class="sidebar-param"><label for="crossLineSpeedK">跨线速度系数<output id="crossLineSpeedKValue">92%</output></label><input id="crossLineSpeedK" data-turn="crossLineSpeedK" type="range" min="0.70" max="1" step="0.01" value="0.92"></div>
+        <div class="sidebar-param"><label for="backhandTurnK">反手转身附加惩罚<output id="backhandTurnKValue">18%</output></label><input id="backhandTurnK" data-turn="backhandTurnK" type="range" min="0" max="0.5" step="0.01" value="0.18"></div>
+        <div class="sidebar-param"><label for="backhandTouchK">反手触球比例<output id="backhandTouchKValue">88%</output></label><input id="backhandTouchK" data-turn="backhandTouchK" type="range" min="0.60" max="1" step="0.01" value="0.88"></div>
       </section>
     </div>
     <div class="sidebar-foot">
@@ -1195,7 +1197,7 @@
       <p>红点 = 全场 J 最大。四角次优 = 四个角附近 2 m 内 J 最大（从全局网格筛选，与红点同源），按 J 排序后标 ②③④⑤。</p>
 
       <h3>十、绝对速度与转身模式</h3>
-      <p>参数侧栏分别设置 A、B 的绝对跑动速度，范围 2–8 m/s，旧的速度比不再作为主要输入。开启转身模式后，再加入身体朝向、左右手持拍、反应时间、回身耗时、转身死区、正反手偏置、持拍脚加速、跨线速度和反手转身附加。转身模式用“反应阶段初速度位移 + 转身时间与移动时间”计算 A/B 到达落点的时间，热力图和等时线也改为比较到达时间。</p>
+      <p>参数侧栏分别设置 A、B 的绝对跑动速度，范围 2–8 m/s，旧的速度比不再作为主要输入。开启转身模式后，再加入身体朝向、左右手持拍、反应时间、转身耗时上限、移动加速度、转身死区、正反手速度偏置、持拍脚方向速度加成、跨线速度系数、反手转身附加惩罚和反手触球比例。移动时间采用加速—匀速结构，再与转身时间按重叠系数合成；热力图和等时线比较最终到达时间。</p>
 
       <h3>十一、可调参数</h3>
       <ul>
@@ -1283,7 +1285,7 @@
       <p>Red dot = global maximum of J. Corner suboptimals = maximum J within 2 m of each corner (filtered from the global grid), sorted by J and labeled ②③④⑤.</p>
 
       <h3>10. Absolute speeds and turning mode</h3>
-      <p>The parameter sidebar sets independent absolute running speeds for A and B, from 2 to 8 m/s. The old relative ratio is no longer the primary input. The optional turning mode adds body heading, handedness, reaction time, turn duration, turn dead zone, forehand/backhand bias, lead-foot boost, cross-line speed and backhand turn penalties. It computes arrival time from reaction-stage velocity displacement plus turn and movement time; the heatmap and equal-arrival line then use the resulting A/B arrival times.</p>
+      <p>The parameter sidebar sets independent absolute running speeds for A and B, from 2 to 8 m/s. The old relative ratio is no longer the primary input. The optional turning mode adds body heading, handedness, reaction time, maximum turn time, movement acceleration, turn dead zone, forehand/backhand speed bias, lead-foot direction speed boost, cross-line speed factor, backhand turn penalty and backhand touch ratio. Translation uses an acceleration-then-cruise profile and is combined with turn time through the overlap factor; the heatmap and equal-arrival line use the resulting A/B arrival times.</p>
 
       <h3>11. Tunable parameters</h3>
       <ul>
@@ -1348,8 +1350,7 @@
         jointSoftStart: 70 * DEG,
         jointHardLimit: 120 * DEG,
         jointSoftPenalty: 0.15,
-        jointHardPenalty: 0.3,
-        backhandTouchK: 0.88
+        jointHardPenalty: 0.3
       });
 
       const SINGLE_RETURN = { x: 0, y: 3.35 };
@@ -1433,11 +1434,13 @@
           turnTmax: 0.55,
           turnTheta0: 25 * DEG,
           turnSpeedK: 0.45,
+          moveAccel: 10,
           turnOverlapK: 0.25,
           fhBias: 0.18,
           leadFootBoost: 0.10,
           crossLineSpeedK: 0.92,
-          backhandTurnK: 0.18
+          backhandTurnK: 0.18,
+          backhandTouchK: 0.88
         },
         showHeat: false,
         hover: null,
@@ -1601,7 +1604,7 @@
         const absTheta = Math.abs(rawDelta);
         const backhand = player.hand === 'right' ? rawDelta < 0 : rawDelta > 0;
         const backhandBlend = backhand ? smoothRamp(absTheta, 0, Math.PI / 2) : 0;
-        const touchRadius = BODY_R * (1 - (1 - TURN.backhandTouchK) * backhandBlend);
+        const touchRadius = BODY_R * (1 - (1 - p.backhandTouchK) * backhandBlend);
         const runDistance = Math.max(0, distance - touchRadius);
         if (runDistance <= 0) return reaction;
 
@@ -1629,7 +1632,15 @@
           Math.pow(backwardMove, 2)
         ));
         const effectiveSpeed = Math.max(0.01, baseSpeed * forehandBias * turnSpeedFactor * footFactor);
-        const translationTime = runDistance / effectiveSpeed;
+        const acceleration = Math.max(0, Number(p.moveAccel) || 0);
+        const accelerationTime = acceleration > 0 ? effectiveSpeed / acceleration : 0;
+        const accelerationDistance = 0.5 * effectiveSpeed * accelerationTime;
+        let translationTime = runDistance / effectiveSpeed;
+        if (acceleration > 0) {
+          translationTime = runDistance <= accelerationDistance
+            ? Math.sqrt(2 * runDistance / acceleration)
+            : accelerationTime + (runDistance - accelerationDistance) / effectiveSpeed;
+        }
         const rotationTime = turnPhaseTime(absTheta) * (1 + p.backhandTurnK * backhandBlend);
         const stepDelay = turnStepDelay(absTheta) * (1 + p.backhandTurnK * 0.6 * backhandBlend);
         const limitPenalty = turnJointPenalty(absTheta) * (1 + p.backhandTurnK * 0.5 * backhandBlend);
@@ -2714,11 +2725,13 @@
           turnTmax: p.turnTmax.toFixed(2) + ' s',
           turnTheta0: Math.round(p.turnTheta0 / DEG) + '°',
           turnSpeedK: Math.round(p.turnSpeedK * 100) + '%',
+          moveAccel: p.moveAccel > 0 ? fmtNum(p.moveAccel) + ' m/s²' : tr('关闭', 'Off'),
           turnOverlapK: Math.round(p.turnOverlapK * 100) + '%',
           fhBias: Math.round(p.fhBias * 100) + '%',
           leadFootBoost: Math.round(p.leadFootBoost * 100) + '%',
           crossLineSpeedK: Math.round(p.crossLineSpeedK * 100) + '%',
-          backhandTurnK: Math.round(p.backhandTurnK * 100) + '%'
+          backhandTurnK: Math.round(p.backhandTurnK * 100) + '%',
+          backhandTouchK: Math.round(p.backhandTouchK * 100) + '%'
         };
         for (const [id, text] of Object.entries(values)) {
           const out = document.getElementById(id + 'Value');

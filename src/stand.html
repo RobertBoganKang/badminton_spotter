@@ -1362,6 +1362,7 @@
           symmetryHint: '以球场中心旋转 180°',
           doubles: '双打', singles: '单打',
           params: '参数', reset: '恢复默认参数', updateButton: '更新',
+          off: '关闭',
           calculating: '正在计算中',
           footer: '创作 · 保留所有权利',
           principleTitle: '羽毛球场站位点 · 计算方法',
@@ -1381,15 +1382,16 @@
           sl_v_run_a: 'A 跑动速度', sl_v_run_b: 'B 跑动速度',
           sl_r_touch_a: 'A 触及半径', sl_r_touch_b: 'B 触及半径',
           sl_k2: '上网/后退',
-          sl_our_turn_tmax: '回身耗时上限',
-          sl_our_turn_deadzone: '转身死区（度）',
-          sl_our_turn_speed_loss: '转身速度折扣',
-          sl_our_turn_overlap: '转身/移动重叠',
+          sl_our_turn_tmax: '转身耗时上限',
+          sl_our_turn_deadzone: '转身死区',
+          sl_our_turn_speed_loss: '转身速度损失上限',
+          sl_our_move_accel: '移动加速度',
+          sl_our_turn_overlap: '转身/移动重叠系数',
           sl_our_fh_bias: '正反手速度偏置',
-          sl_our_backhand_turn: '反手转身附加',
+          sl_our_backhand_turn: '反手转身附加惩罚',
           sl_our_backhand_touch: '反手触球比例',
-          sl_our_lead_boost: '持拍脚方向加速',
-          sl_our_cross_line: '跨线速度',
+          sl_our_lead_boost: '持拍脚方向速度加成',
+          sl_our_cross_line: '跨线速度系数',
           sl_dropMaxOverNet: '吊球过网高',
           sl_clearLineY: '控高参考线',
           sl_clearHeight: '高球过网最低',
@@ -1428,7 +1430,7 @@
 
       <h3>二、三种球路的生成（两端等角切分 + 多初速度扫描）</h3>
       <p><b>落点方向由目标线上的等距采样点决定</b>：把参考线两端各向外延伸 1 m 得到一条扩展线段，在这条线段上<b>等距离取 N+1 个采样点</b>；从击球点分别连向每个采样点，就得到 N+1 条扫描方位角——中间角度疏、两侧角度密，更贴近“瞄点”直觉，而 1 m 的外延仍保证边线附近有足够可选角度；仰角在该方位角下扫描，找出物理可行的弹道。<b>所有方位角等权</b>，落点再按距离核（落点深浅偏好）与初速度权重加权。</p>
-      <p><b>杀球</b>：瞄<b>控高线</b>。「杀球最大初速度」滑块（默认 60 m/s）代表个人能打出的<b>最大</b>球速；实际生成时在 <code>0.55×～1.00×（最大值 × 高度因子）</code> 之间做多档速度扫描（快模式 4 档 / 完整模式 6 档），速度权重 <code>0.20 + 0.80·u²</code> 向高速端倾斜。仰角只扫「球拍→球网上沿连线角」到 +10° 这一段，始终平射或向下，略微向上不超过 10°。</p>
+      <p><b>杀球</b>：瞄<b>控高线</b>。「杀球最大初速度」滑块范围为 15–120 m/s，默认 60 m/s，代表个人能打出的<b>最大</b>球速；实际生成时在 <code>0.55×～1.00×（最大值 × 高度因子）</code> 之间做多档速度扫描（快模式 4 档 / 完整模式 6 档），速度权重 <code>0.20 + 0.80·u²</code> 向高速端倾斜。仰角只扫「球拍→球网上沿连线角」到 +10° 这一段，始终平射或向下，略微向上不超过 10°。</p>
       <p><b>吊球</b>：瞄<b>球网线</b>，初速度在「吊球初速度」区间内多档扫描，接近上限的权重按 <code>exp(−2.5·u²)</code> 衰减；仰角 <b>−80°~+88° 全扫</b>并用几何预筛分段（保留近网陡压与向上挑吊）。</p>
       <p><b>高球</b>：瞄<b>控高线</b>，目标是“<b>最快到达控高参考线</b>”。初速度在「高球初速度」区间内几何扫描（粗筛 + 几何插值加密），仰角 −10~60° 扫描，直接模拟到真实落地：</p>
       <ul>
@@ -1451,7 +1453,7 @@
       <h3>四、期望净得分与优化器</h3>
       <div class="formula">V(站位) = Σ<sub>L</sub> w(L) · [reach(L) · c(L) − (1 − reach(L))] / Σ w(L)</div>
       <p><b>单打</b>使用位置网格与局部精修。<b>双打普通模式</b>联合枚举 A/B 位置对，A、B 分别使用自己的跑速、反应曲线和触及范围，并保留两人距离 &lt; 2 m 的重叠惩罚。</p>
-      <p><b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
+      <p><b>转身模式</b>的移动时间采用加速—匀速结构：短距离停留在加速阶段，长距离先加速再匀速，加速度可在参数侧栏调整；随后再与转身时间按重叠系数合成。<b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
 
       <h3>五、优劣与 Top</h3>
       <p>候选按期望净得分 V 从高到低排列。<b>优劣 1</b> 表示当前候选中的最优站位，数字越大表示排名越靠后；上下拖动即可切换。<b>Top</b> 控制当前显示的候选数量：默认取基础数量的千分之一，上限为 20%。开启转身模式后，双打会用位置对数量计算 Top，排除 <code>8×8</code> 朝向枚举的放大；单打排除 8 个方向；普通模式不做这项除法。双击 Top 恢复默认值。</p>
@@ -1485,6 +1487,7 @@
           symmetryHint: 'Rotate 180° around the court centre',
           doubles: 'Doubles', singles: 'Singles',
           params: 'Parameters', reset: 'Reset parameters', updateButton: 'Update',
+          off: 'Off',
           calculating: 'Calculating',
           footer: 'Created · All Rights Reserved',
           principleTitle: 'Badminton Player Ground Position · Methodology',
@@ -1505,14 +1508,15 @@
           sl_r_touch_a: 'A touch radius', sl_r_touch_b: 'B touch radius',
           sl_k2: 'Net / back',
           sl_our_turn_tmax: 'Maximum turn time',
-          sl_our_turn_deadzone: 'Turn dead zone (deg)',
-          sl_our_turn_speed_loss: 'Turn speed loss',
-          sl_our_turn_overlap: 'Turn/move overlap',
+          sl_our_turn_deadzone: 'Turn dead zone',
+          sl_our_turn_speed_loss: 'Maximum turn speed loss',
+          sl_our_move_accel: 'Movement acceleration',
+          sl_our_turn_overlap: 'Turn/move overlap factor',
           sl_our_fh_bias: 'Forehand/backhand bias',
           sl_our_backhand_turn: 'Backhand turn penalty',
           sl_our_backhand_touch: 'Backhand touch ratio',
-          sl_our_lead_boost: 'Lead-foot speed boost',
-          sl_our_cross_line: 'Cross-line speed',
+          sl_our_lead_boost: 'Lead-foot direction speed boost',
+          sl_our_cross_line: 'Cross-line speed factor',
           sl_dropMaxOverNet: 'Drop net max',
           sl_clearLineY: 'Baseline ref',
           sl_clearHeight: 'Clear net min H',
@@ -1549,7 +1553,7 @@
       </ul>
       <h3>2. Shot generation (equal-angle split between the two endpoints + multi initial speed)</h3>
       <p><b>Aim direction comes from equally spaced sample points on the target line</b>: extend the reference line 1 m past each sideline, then place <b>N+1 equally spaced points</b> along that segment; the ray from the contact point to each sample point gives one scanning azimuth — denser near the sidelines, sparser in the middle, which matches a “point-aiming” intuition, while the 1 m overhang still covers edge angles. Elevation is swept at each azimuth to find physically feasible trajectories. <b>All azimuths are equally weighted</b>; landings are then weighted by the distance kernel × initial-speed weight.</p>
-      <p><b>Smash</b>: aims at the <b>baseline reference line</b>. The “smash initial speed max” slider (default 60 m/s) is the player's <b>maximum</b> shuttle speed; generation scans <code>0.55×–1.00× (max × height factor)</code> in multiple steps (4 fast / 6 full) with speed weight <code>0.20 + 0.80·u²</code> biased toward the fast end. Elevation is only swept from the racket→net-top line up to +10°.</p>
+      <p><b>Smash</b>: aims at the <b>baseline reference line</b>. The “smash initial speed max” slider ranges from 15 to 120 m/s with a default of 60 m/s and represents the player's <b>maximum</b> shuttle speed; generation scans <code>0.55×–1.00× (max × height factor)</code> in multiple steps (4 fast / 6 full) with speed weight <code>0.20 + 0.80·u²</code> biased toward the fast end. Elevation is only swept from the racket→net-top line up to +10°.</p>
       <p><b>Drop</b>: aims at the <b>net line</b>, multi initial-speed scan inside the “drop initial speed” range with high-end weighted by <code>exp(−2.5·u²)</code>; elevation swept <b>−80°~+88°</b> (full range, segmented by geometric pre-screening).</p>
       <p><b>Clear</b>: aims at the <b>baseline reference line</b>, goal is <b>fastest arrival at that line</b>. Initial speed scanned geometrically inside the “clear initial speed” range (coarse + geometric interpolation), elevation −10~60°, simulated to real landing:</p>
       <ul>
@@ -1570,7 +1574,7 @@
       <h3>4. Expected net score</h3>
       <div class="formula">V(pos) = Σ<sub>L</sub> w(L) · [reach(L)·c(L) − (1−reach(L))] / Σ w(L)</div>
       <p>Singles uses a position grid plus local refinement. Normal doubles jointly enumerates A/B position pairs, with each player's own speed, reaction curve and touch radius, plus the &lt; 2 m overlap penalty.</p>
-      <p><b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
+      <p>Turning-mode translation uses an acceleration-then-cruise profile: short moves remain in the acceleration phase, while long moves continue at cruise speed. Movement acceleration is adjustable, and translation is then combined with turn time through the overlap factor. <b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
       <h3>5. Rank and Top</h3>
       <p><b>Rank 1</b> is the best currently selected candidate; larger numbers are worse. Drag the Rank pill to browse candidates. Top controls how many candidates are shown: the default is one thousandth of the base count and the cap is 20%. In turning mode, doubles computes Top from position-pair count rather than the <code>8×8</code> heading expansion; singles excludes the eight directions. Normal mode applies no such division. Double-tap Top to restore its default.</p>
       <h3>5b. Sub-optimal cloud (new)</h3>
@@ -1623,12 +1627,13 @@
         {group: 'turn', type: 's', key: 'our_turn_tmax', min: 0, max: 1.20, step: 0.01, def: 0.55},
         {group: 'turn', type: 's', key: 'our_turn_deadzone', min: 0, max: 70, step: 1, def: 25},
         {group: 'turn', type: 's', key: 'our_turn_speed_loss', min: 0, max: 0.80, step: 0.01, def: 0.45},
+        {group: 'turn', type: 's', key: 'our_move_accel', min: 0, max: 20, step: 0.5, def: 10},
         {group: 'turn', type: 's', key: 'our_turn_overlap', min: 0, max: 1.00, step: 0.01, def: 0.25},
         {group: 'turn', type: 's', key: 'our_fh_bias', min: 0, max: 0.50, step: 0.01, def: 0.18},
-        {group: 'turn', type: 's', key: 'our_backhand_turn', min: 0, max: 0.50, step: 0.01, def: 0.18},
-        {group: 'turn', type: 's', key: 'our_backhand_touch', min: 0.60, max: 1.00, step: 0.01, def: 0.88},
         {group: 'turn', type: 's', key: 'our_lead_boost', min: 0, max: 0.30, step: 0.01, def: 0.10},
         {group: 'turn', type: 's', key: 'our_cross_line', min: 0.70, max: 1.00, step: 0.01, def: 0.92},
+        {group: 'turn', type: 's', key: 'our_backhand_turn', min: 0, max: 0.50, step: 0.01, def: 0.18},
+        {group: 'turn', type: 's', key: 'our_backhand_touch', min: 0.60, max: 1.00, step: 0.01, def: 0.88},
 
         {group: 'filter', type: 's', key: 'dropMaxOverNet', min: 0, max: 2.0, step: 0.01, def: 0.20},
         {group: 'filter', type: 's', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
@@ -1639,7 +1644,7 @@
           min: 0, max: 3.5, step: 0.05, gap: 0.05, def: [0.10, 2.50]
         },
 
-        {group: 'speed', type: 's', key: 'v0_smash', min: 15, max: 80, step: 1, def: 60},
+        {group: 'speed', type: 's', key: 'v0_smash', min: 15, max: 120, step: 1, def: 60},
         {
           group: 'speed', type: 'd', keys: ['v0_clear_lo', 'v0_clear_hi'], label: 'sl_v0_clear',
           min: 28, max: 58, step: 1, gap: 1, def: [36, 50]
@@ -2687,7 +2692,15 @@
         );
         const footFactor = 1 / Math.max(1e-9, footInv);
         const vEff = Math.max(0.01, baseSpeed * forehandBias * turnSpeedFactor * footFactor);
-        const translationTime = runDistance / vEff;
+        const acceleration = Math.max(0, Number(PRM.our_move_accel) || 0);
+        const accelerationTime = acceleration > 0 ? vEff / acceleration : 0;
+        const accelerationDistance = 0.5 * vEff * accelerationTime;
+        let translationTime = runDistance / vEff;
+        if (acceleration > 0) {
+          translationTime = runDistance <= accelerationDistance
+            ? Math.sqrt(2 * runDistance / acceleration)
+            : accelerationTime + (runDistance - accelerationDistance) / vEff;
+        }
 
         const deadzone = PRM.our_turn_deadzone * Math.PI / 180;
         const u = clamp(
@@ -5094,6 +5107,7 @@ self.onmessage = function (event) {
         if (key && key.startsWith('our_')) {
           if (key === 'our_turn_deadzone') return Math.round(val) + '°';
           if (key === 'our_turn_tmax') return val.toFixed(2) + ' s';
+          if (key === 'our_move_accel') return val > 0 ? val.toFixed(1).replace(/\.0$/, '') + ' m/s²' : t('off');
           return Math.round(val * 100) + '%';
         }
         if (step >= 1) return Math.round(val) + (isProb ? '%' : '');
