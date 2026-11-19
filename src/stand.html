@@ -1362,7 +1362,6 @@
           symmetryHint: '以球场中心旋转 180°',
           doubles: '双打', singles: '单打',
           params: '参数', reset: '恢复默认参数', updateButton: '更新',
-          off: '关闭',
           calculating: '正在计算中',
           footer: '创作 · 保留所有权利',
           principleTitle: '羽毛球场站位点 · 计算方法',
@@ -1385,7 +1384,6 @@
           sl_our_turn_tmax: '转身耗时上限',
           sl_our_turn_deadzone: '转身死区',
           sl_our_turn_speed_loss: '转身速度损失上限',
-          sl_our_move_accel: '移动加速度',
           sl_our_turn_overlap: '转身/移动重叠系数',
           sl_our_fh_bias: '正反手速度偏置',
           sl_our_backhand_turn: '反手转身附加惩罚',
@@ -1453,10 +1451,10 @@
       <h3>四、期望净得分与优化器</h3>
       <div class="formula">V(站位) = Σ<sub>L</sub> w(L) · [reach(L) · c(L) − (1 − reach(L))] / Σ w(L)</div>
       <p><b>单打</b>使用位置网格与局部精修。<b>双打普通模式</b>联合枚举 A/B 位置对，A、B 分别使用自己的跑速、反应曲线和触及范围，并保留两人距离 &lt; 2 m 的重叠惩罚。</p>
-      <p><b>转身模式</b>的移动时间采用加速—匀速结构：短距离停留在加速阶段，长距离先加速再匀速，加速度可在参数侧栏调整；随后再与转身时间按重叠系数合成。球进入触球半径时平移归零，但超出转身死区的接触方向仍产生原地转身耗时。<b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
+      <p><b>双打转身模式</b>保留 A/B 联合粗筛：每个位置按 30° 间隔建立 12 个基础方向并比较 <code>12×12=144</code> 个基础朝向组合。粗筛后的优胜位姿再进行四轮依次精修：每轮先固定 B 完整优化 A 的位置与左右角度，再固定 A 完整优化 B；随后位置步长按 <code>0.45→0.225→0.1125→0.056 m</code>、角度步长按 <code>15→7.5→3.75→1.875°</code> 同时减半。每一步在当前邻域没有更高得分时停止；如果某一轮 A/B 都没有有效提升，则不再进入更小步长。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
 
       <h3>五、优劣与 Top</h3>
-      <p>候选按期望净得分 V 从高到低排列。<b>优劣 1</b> 表示当前候选中的最优站位，数字越大表示排名越靠后；上下拖动即可切换。<b>Top</b> 控制当前显示的候选数量：默认取基础数量的千分之一，上限为 20%。开启转身模式后，双打会用位置对数量计算 Top，排除 <code>8×8</code> 朝向枚举的放大；单打排除 8 个方向；普通模式不做这项除法。双击 Top 恢复默认值。</p>
+      <p>候选按期望净得分 V 从高到低排列。<b>优劣 1</b> 表示当前候选中的最优站位，数字越大表示排名越靠后；上下拖动即可切换。<b>Top</b> 控制当前显示的候选数量：默认取基础数量的千分之一，上限为 20%。开启转身模式后，双打按位置对数量计算 Top；单打排除 12 个基础方向；普通模式不做这项除法。双击 Top 恢复默认值。</p>
 
       <h3>五之二、次优解点云（新）</h3>
       <p>默认叠加显示在球场上的是<b>次优解点云</b>：把「候选列表」中排名靠前的 N 个站位（单打 1 个点/候选，双打 2 个点/候选）全部画成紫色半透明小圆点，点越密集的区域说明该位置的候选越多、越集中。参数面板「次优解」组里的「前 N 个候选」滑块控制 N 的大小（默认 100，范围 1–1000）。<b>双击场地</b>可在「点云」与「落点热力图」之间切换：双击后点云消失，只留下原来的落点热力图（以及原先热力图开启时才会出现的「优劣」胶囊）。</p>
@@ -1487,7 +1485,6 @@
           symmetryHint: 'Rotate 180° around the court centre',
           doubles: 'Doubles', singles: 'Singles',
           params: 'Parameters', reset: 'Reset parameters', updateButton: 'Update',
-          off: 'Off',
           calculating: 'Calculating',
           footer: 'Created · All Rights Reserved',
           principleTitle: 'Badminton Player Ground Position · Methodology',
@@ -1510,7 +1507,6 @@
           sl_our_turn_tmax: 'Maximum turn time',
           sl_our_turn_deadzone: 'Turn dead zone',
           sl_our_turn_speed_loss: 'Maximum turn speed loss',
-          sl_our_move_accel: 'Movement acceleration',
           sl_our_turn_overlap: 'Turn/move overlap factor',
           sl_our_fh_bias: 'Forehand/backhand bias',
           sl_our_backhand_turn: 'Backhand turn penalty',
@@ -1574,9 +1570,9 @@
       <h3>4. Expected net score</h3>
       <div class="formula">V(pos) = Σ<sub>L</sub> w(L) · [reach(L)·c(L) − (1−reach(L))] / Σ w(L)</div>
       <p>Singles uses a position grid plus local refinement. Normal doubles jointly enumerates A/B position pairs, with each player's own speed, reaction curve and touch radius, plus the &lt; 2 m overlap penalty.</p>
-      <p>Turning-mode translation uses an acceleration-then-cruise profile: short moves remain in the acceleration phase, while long moves continue at cruise speed. Movement acceleration is adjustable, and translation is then combined with turn time through the overlap factor. Inside the touch radius translation becomes zero, but contact directions beyond the turn dead zone still incur pivot-only turn time. <b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
+      <p><b>Turning-mode doubles</b> keeps the joint A/B coarse search: each position has 12 base headings at 30° intervals and all <code>12×12=144</code> base heading pairs are compared. The best coarse poses then receive up to four sequential refinement stages. Each stage fully optimizes A with B fixed, then B with A fixed, using front/back/left/right positions and left/right heading steps. Position steps decrease as <code>0.45→0.225→0.1125→0.056 m</code> and heading steps as <code>15→7.5→3.75→1.875°</code>. Each local search stops when no neighbor improves; if neither player improves in a stage, smaller steps are skipped. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
       <h3>5. Rank and Top</h3>
-      <p><b>Rank 1</b> is the best currently selected candidate; larger numbers are worse. Drag the Rank pill to browse candidates. Top controls how many candidates are shown: the default is one thousandth of the base count and the cap is 20%. In turning mode, doubles computes Top from position-pair count rather than the <code>8×8</code> heading expansion; singles excludes the eight directions. Normal mode applies no such division. Double-tap Top to restore its default.</p>
+      <p><b>Rank 1</b> is the best currently selected candidate; larger numbers are worse. Drag the Rank pill to browse candidates. Top controls how many candidates are shown: the default is one thousandth of the base count and the cap is 20%. In turning mode, doubles computes Top from position-pair count; singles excludes the 12 base directions. Normal mode applies no such division. Double-tap Top to restore its default.</p>
       <h3>5b. Sub-optimal cloud (new)</h3>
       <p>By default a <b>sub-optimal point cloud</b> is overlaid on the court: the top N candidates from the candidate list (1 dot/candidate in singles, 2 dots/candidate in doubles) are drawn as semi-transparent purple dots. Denser regions mean more candidates cluster there. The “Top N candidates” slider in the “Sub-optimal” group controls N (default 100, range 1–1000). <b>Double-tap the court</b> to switch between the point cloud and the landing heatmap — after double-tapping, the cloud disappears and only the original heatmap remains (with the Rank pill shown when the heatmap is on).</p>
       <h3>6. Diagnostics</h3>
@@ -1627,7 +1623,6 @@
         {group: 'turn', type: 's', key: 'our_turn_tmax', min: 0, max: 1.20, step: 0.01, def: 0.55},
         {group: 'turn', type: 's', key: 'our_turn_deadzone', min: 0, max: 70, step: 1, def: 25},
         {group: 'turn', type: 's', key: 'our_turn_speed_loss', min: 0, max: 0.80, step: 0.01, def: 0.45},
-        {group: 'turn', type: 's', key: 'our_move_accel', min: 0, max: 20, step: 0.5, def: 10},
         {group: 'turn', type: 's', key: 'our_turn_overlap', min: 0, max: 1.00, step: 0.01, def: 0.25},
         {group: 'turn', type: 's', key: 'our_fh_bias', min: 0, max: 0.50, step: 0.01, def: 0.18},
         {group: 'turn', type: 's', key: 'our_lead_boost', min: 0, max: 0.30, step: 0.01, def: 0.10},
@@ -2572,7 +2567,7 @@
 
         const mean = weightedHeadingForPosition(pos, items, c);
         const candidates = [0, mean];
-        for (let i = 0; i < 8; i++) candidates.push(i * Math.PI / 4);
+        for (let i = 0; i < 12; i++) candidates.push(i * Math.PI / 6);
 
         let bestHeading = 0;
         let bestScore = -Infinity;
@@ -2589,7 +2584,7 @@
           }
         }
 
-        let step = Math.PI / 8;
+        let step = Math.PI / 12;
         for (let pass = 0; pass < 3; pass++) {
           for (const delta of [-step, step]) {
             const heading = wrapMotionAngle(bestHeading + delta);
@@ -2670,6 +2665,9 @@
         const rTouch = c.rTouch * touchScale(type) *
           (1 - (1 - PRM.our_backhand_touch) * backhandBlend);
         const runDistance = Math.max(0, d - rTouch);
+        if (runDistance <= 0) {
+          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
+        }
 
         const fhSign = c.hand === 'left' ? -1 : 1;
         const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * Math.sin(rawDelta));
@@ -2689,17 +2687,7 @@
         );
         const footFactor = 1 / Math.max(1e-9, footInv);
         const vEff = Math.max(0.01, baseSpeed * forehandBias * turnSpeedFactor * footFactor);
-        const acceleration = Math.max(0, Number(PRM.our_move_accel) || 0);
-        const accelerationTime = acceleration > 0 ? vEff / acceleration : 0;
-        const accelerationDistance = 0.5 * vEff * accelerationTime;
-        let translationTime = 0;
-        if (runDistance > 0 && acceleration > 0) {
-          translationTime = runDistance <= accelerationDistance
-            ? Math.sqrt(2 * runDistance / acceleration)
-            : accelerationTime + (runDistance - accelerationDistance) / vEff;
-        } else if (runDistance > 0) {
-          translationTime = runDistance / vEff;
-        }
+        const translationTime = runDistance / vEff;
 
         const deadzone = PRM.our_turn_deadzone * Math.PI / 180;
         const u = clamp(
@@ -3574,7 +3562,7 @@
       function jointHeadingAngles(enabled) {
         if (!enabled) return [0];
         const out = [];
-        for (let i = 0; i < 8; i++) out.push(wrapMotionAngle(i * Math.PI / 4));
+        for (let i = 0; i < 12; i++) out.push(wrapMotionAngle(i * Math.PI / 6));
         return out;
       }
 
@@ -3589,7 +3577,16 @@
 
       function buildHeadingProfiles(pos, headings, items, ctx, itemWeights) {
         const out = [];
-        for (const heading of headings) {
+        const candidates = headings.slice();
+        if (ctx.turnEnabled) {
+          candidates.push(weightedHeadingForPosition(pos, items, ctx));
+        }
+        const evaluated = new Set();
+        for (const raw of candidates) {
+          const heading = wrapMotionAngle(raw);
+          const key = heading.toFixed(6);
+          if (evaluated.has(key)) continue;
+          evaluated.add(key);
           const poseCtx = {...ctx, heading};
           const values = new Float32Array(items.length);
           let weightedReach = 0;
@@ -3642,7 +3639,7 @@
         };
       }
 
-      function refineJointPose(seed, evaluate, ctxA, ctxB, positionSteps, headingSteps) {
+      function refineJointPose(seed, evaluate, ctxA, ctxB, positionSteps, headingSteps, record) {
         let poseA = {
           x: seed.P1.x,
           y: seed.P1.y,
@@ -3654,6 +3651,7 @@
           heading: Number.isFinite(seed.P2.heading) ? seed.P2.heading : 0
         };
         let bestV = evaluate(poseA, poseB);
+        if (record) record(poseA, poseB, bestV);
         const clampX = value => clamp(value, -2.7, 2.7);
         const clampY = value => clamp(value, -6.3, -0.5);
 
@@ -3727,8 +3725,89 @@
             updateAFirst = !updateAFirst;
             if (!improved) break;
           }
+          if (record) record(poseA, poseB, bestV);
         }
 
+        return {P1: poseA, P2: poseB, V: bestV};
+      }
+
+      function refineSequentialPose(seed, evaluate, ctxA, ctxB, positionSteps, headingSteps, record) {
+        const EPS = 1e-7;
+        let poseA = {
+          x: seed.P1.x,
+          y: seed.P1.y,
+          heading: Number.isFinite(seed.P1.heading) ? seed.P1.heading : 0
+        };
+        let poseB = {
+          x: seed.P2.x,
+          y: seed.P2.y,
+          heading: Number.isFinite(seed.P2.heading) ? seed.P2.heading : 0
+        };
+        let bestV = evaluate(poseA, poseB);
+        const clampX = value => clamp(value, -2.7, 2.7);
+        const clampY = value => clamp(value, -6.3, -0.5);
+
+        const improveOne = (pose, otherPose, side, positionStep, headingStep) => {
+          let current = {...pose};
+          let currentV = bestV;
+          let moved = false;
+          let guard = 0;
+          while (guard++ < 24) {
+            const moves = [];
+            for (let dx = -1; dx <= 1; dx++) {
+              for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                moves.push({
+                  x: clampX(current.x + dx * positionStep),
+                  y: clampY(current.y + dy * positionStep),
+                  heading: current.heading
+                });
+              }
+            }
+            const turnEnabled = side === 'a' ? ctxA.turnEnabled : ctxB.turnEnabled;
+            if (turnEnabled) {
+              moves.push({
+                x: current.x,
+                y: current.y,
+                heading: wrapMotionAngle(current.heading - headingStep)
+              });
+              moves.push({
+                x: current.x,
+                y: current.y,
+                heading: wrapMotionAngle(current.heading + headingStep)
+              });
+            }
+
+            let next = current;
+            let nextV = currentV;
+            for (const move of moves) {
+              const value = side === 'a'
+                ? evaluate(move, otherPose)
+                : evaluate(otherPose, move);
+              if (value > nextV + EPS) {
+                nextV = value;
+                next = move;
+              }
+            }
+            if (nextV <= currentV + EPS) break;
+            current = next;
+            currentV = nextV;
+            bestV = currentV;
+            moved = true;
+          }
+          return {pose: current, moved};
+        };
+
+        const stageCount = Math.min(positionSteps.length, headingSteps.length);
+        for (let stage = 0; stage < stageCount; stage++) {
+          const stageStartV = bestV;
+          const nextA = improveOne(poseA, poseB, 'a', positionSteps[stage], headingSteps[stage]);
+          poseA = nextA.pose;
+          const nextB = improveOne(poseB, poseA, 'b', positionSteps[stage], headingSteps[stage]);
+          poseB = nextB.pose;
+          if (record) record(poseA, poseB, bestV);
+          if ((!nextA.moved && !nextB.moved) || bestV - stageStartV <= EPS) break;
+        }
         return {P1: poseA, P2: poseB, V: bestV};
       }
 
@@ -3798,8 +3877,8 @@
             ctxB,
             fast ? [0.45, 0.225, 0.1125] : [0.45, 0.225, 0.1125, 0.05],
             fast
-              ? [Math.PI / 8, Math.PI / 16, Math.PI / 32]
-              : [Math.PI / 8, Math.PI / 16, Math.PI / 32, Math.PI / 64]
+              ? [Math.PI / 12, Math.PI / 24, Math.PI / 48]
+              : [Math.PI / 12, Math.PI / 24, Math.PI / 48, Math.PI / 96]
           );
         }
         cands.sort((a, b) => b.V - a.V);
@@ -3823,7 +3902,7 @@
             ctxA,
             ctxB,
             [0.10, 0.05, 0.02],
-            [Math.PI / 16, Math.PI / 32, Math.PI / 64]
+            [Math.PI / 24, Math.PI / 48, Math.PI / 96]
           );
         }
         cands.sort((a, b) => b.V - a.V);
@@ -3841,6 +3920,101 @@
         return {
           best: [cands[0].P1, cands[0].P2],
           cands
+        };
+      }
+
+      function optimizeDoubleSequential(items, fast, ctxA, ctxB) {
+        const N = items.length;
+        if (!N) {
+          const a = {x: -1.5, y: -3, heading: 0};
+          const b = {x: 1.5, y: -3, heading: 0};
+          return {best: [a, b], cands: [{P1: a, P2: b, V: 0}], legalCount: 1, basePoseCount: 1};
+        }
+
+        const searchStep = fast ? 0.70 : 0.45;
+        const xs = symmetricAxisGrid(2.7, searchStep);
+        const ys = descendingAxisGrid(-0.5, -6.3, searchStep);
+        const positions = [];
+        for (const y of ys) for (const x of xs) positions.push({x, y});
+
+        const itemWeights = new Float32Array(N);
+        let sumW = 0;
+        for (let i = 0; i < N; i++) {
+          sumW += items[i].w;
+          itemWeights[i] = items[i].w * (cValue(items[i].type, items[i].L.y) + 1);
+        }
+        const evaluator = makeJointPoseEvaluator(items, itemWeights, sumW, ctxA, ctxB);
+        const sameContext = ctxEqual(ctxA, ctxB);
+
+        const pairKey = (a, b) => [
+          a.x.toFixed(5), a.y.toFixed(5), (a.heading || 0).toFixed(6),
+          b.x.toFixed(5), b.y.toFixed(5), (b.heading || 0).toFixed(6)
+        ].join(':');
+        const candidateMap = new Map();
+        const addCandidate = (a, b, v) => {
+          let p1 = {...a}, p2 = {...b};
+          if (sameContext && p1.x > p2.x + 1e-9) {
+            const tmp = p1;
+            p1 = p2;
+            p2 = tmp;
+          }
+          const key = pairKey(p1, p2);
+          const previous = candidateMap.get(key);
+          if (!previous || v > previous.V + 1e-12) candidateMap.set(key, {P1: p1, P2: p2, V: v});
+        };
+
+        const coarsePose = (ctx) => {
+          let best = null;
+          let bestValue = -Infinity;
+          const localCandidates = [];
+          for (const pos of positions) {
+            const heading = ctx.turnEnabled
+              ? weightedHeadingForPosition(pos, items, ctx)
+              : 0;
+            const pose = {...pos, heading};
+            const value = totalV(pos, items, null, {...ctx, heading}, null);
+            localCandidates.push({pose, value});
+            if (value > bestValue + 1e-9) {
+              bestValue = value;
+              best = pose;
+            }
+          }
+          return {best, cands: localCandidates};
+        };
+
+        const coarseA = coarsePose(ctxA);
+        const coarseB = sameContext ? coarseA : coarsePose(ctxB);
+        const poseA = {...coarseA.best};
+        let poseB = {...coarseB.best};
+        let bestV = -Infinity;
+        for (const item of coarseB.cands.slice(0, fast ? 8 : 16)) {
+          const value = evaluator(poseA, item.pose);
+          if (value > bestV + 1e-9) {
+            bestV = value;
+            poseB = item.pose;
+          }
+        }
+        addCandidate(poseA, poseB, bestV);
+
+        const refined = refineJointPose(
+          {P1: poseA, P2: poseB, V: bestV},
+          evaluator,
+          ctxA,
+          ctxB,
+          [searchStep, searchStep * 0.5, searchStep * 0.25, searchStep * 0.125],
+          [Math.PI / 12, Math.PI / 24, Math.PI / 48, Math.PI / 96],
+          addCandidate
+        );
+        addCandidate(refined.P1, refined.P2, refined.V);
+
+        const cands = Array.from(candidateMap.values());
+        cands.sort((a, b) => b.V - a.V);
+        const basePoseCount = positions.length * positions.length;
+        return {
+          best: [cands[0].P1, cands[0].P2],
+          cands,
+          legalCount: basePoseCount,
+          basePoseCount
         };
       }
 
@@ -4042,13 +4216,13 @@
         cands.sort((a, b) => b.V - a.V);
         const exactSeeds = Math.min(cands.length, fast ? 3 : 8);
         for (let i = 0; i < exactSeeds; i++) {
-          cands[i] = refineJointPose(
+          cands[i] = refineSequentialPose(
             cands[i],
             evaluator,
             ctxA,
             ctxB,
-            [0.14, 0.07, 0.025],
-            [Math.PI / 16, Math.PI / 32, Math.PI / 64]
+            [step, step * 0.5, step * 0.25, step * 0.125],
+            [Math.PI / 12, Math.PI / 24, Math.PI / 48, Math.PI / 96]
           );
         }
         cands.sort((a, b) => b.V - a.V);
@@ -4100,7 +4274,7 @@
         const cands = r.cands;
         if (mode === 'single') {
           topUnitCount = ctxA.turnEnabled
-            ? Math.max(1, Math.round(cands.length / 8))
+            ? Math.max(1, Math.round(cands.length / 12))
             : cands.length;
         } else {
           if (r.legalCount) legalCandidateCount = r.legalCount;
@@ -4195,7 +4369,8 @@
           `const LAMBDA_RUN = ${LAMBDA_RUN};`,
           `const OUR_HEADING = ${OUR_HEADING};`,
           `const SEP_MIN_DIST = ${SEP_MIN_DIST};`,
-          `const SEP_PEN_K = ${SEP_PEN_K};`
+          `const SEP_PEN_K = ${SEP_PEN_K};`,
+          'let headingCache = new Map();'
         ].join('\n');
         const workerFunctions = [
           touchScale,
@@ -4209,12 +4384,21 @@
           interceptStats,
           ctxEqual,
           overlapPenalty,
+          weightedHeadingForPosition,
+          headingMotionScore,
+          bestHeadingForPosition,
+          ctxForPosition,
           symmetricAxisGrid,
           descendingAxisGrid,
+          itemV,
+          totalV,
+          optimizeSolo,
+          makeJointPoseEvaluator,
           jointHeadingAngles,
           buildHeadingProfiles,
           pruneDominatedHeadingProfiles,
           refineJointPose,
+          refineSequentialPose,
           optimizeDoubleJointExact
         ].map(fn => fn.toString()).join('\n\n');
         const handler = `
@@ -5106,7 +5290,6 @@ self.onmessage = function (event) {
         if (key && key.startsWith('our_')) {
           if (key === 'our_turn_deadzone') return Math.round(val) + '°';
           if (key === 'our_turn_tmax') return val.toFixed(2) + ' s';
-          if (key === 'our_move_accel') return val > 0 ? val.toFixed(1).replace(/\.0$/, '') + ' m/s²' : t('off');
           return Math.round(val * 100) + '%';
         }
         if (step >= 1) return Math.round(val) + (isProb ? '%' : '');
