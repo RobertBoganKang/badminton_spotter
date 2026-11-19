@@ -1453,7 +1453,7 @@
       <h3>四、期望净得分与优化器</h3>
       <div class="formula">V(站位) = Σ<sub>L</sub> w(L) · [reach(L) · c(L) − (1 − reach(L))] / Σ w(L)</div>
       <p><b>单打</b>使用位置网格与局部精修。<b>双打普通模式</b>联合枚举 A/B 位置对，A、B 分别使用自己的跑速、反应曲线和触及范围，并保留两人距离 &lt; 2 m 的重叠惩罚。</p>
-      <p><b>转身模式</b>的移动时间采用加速—匀速结构：短距离停留在加速阶段，长距离先加速再匀速，加速度可在参数侧栏调整；随后再与转身时间按重叠系数合成。<b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
+      <p><b>转身模式</b>的移动时间采用加速—匀速结构：短距离停留在加速阶段，长距离先加速再匀速，加速度可在参数侧栏调整；随后再与转身时间按重叠系数合成。球进入触球半径时平移归零，但超出转身死区的接触方向仍产生原地转身耗时。<b>双打转身模式</b>把 A位置、A朝向、B位置、B朝向作为一个联合位姿搜索：基础位置步长约 <code>0.45 m</code>，每个位置枚举 8 个基础方向并完整比较 <code>8×8=64</code> 个朝向组合。搜索使用同一位置的劣势朝向支配、位置对安全上界、路径剩余贡献上界和分支限界；不会先用近似聚合结果截掉可能夺冠的位姿。精确路径只合并类型、时间、落点价值与完整截击轨迹完全相同的条目，然后使用 <code>Float32</code> 概率矩阵。计算在内联 Web Worker 中执行，主页面保持响应，旧任务会被取消。</p>
 
       <h3>五、优劣与 Top</h3>
       <p>候选按期望净得分 V 从高到低排列。<b>优劣 1</b> 表示当前候选中的最优站位，数字越大表示排名越靠后；上下拖动即可切换。<b>Top</b> 控制当前显示的候选数量：默认取基础数量的千分之一，上限为 20%。开启转身模式后，双打会用位置对数量计算 Top，排除 <code>8×8</code> 朝向枚举的放大；单打排除 8 个方向；普通模式不做这项除法。双击 Top 恢复默认值。</p>
@@ -1574,7 +1574,7 @@
       <h3>4. Expected net score</h3>
       <div class="formula">V(pos) = Σ<sub>L</sub> w(L) · [reach(L)·c(L) − (1−reach(L))] / Σ w(L)</div>
       <p>Singles uses a position grid plus local refinement. Normal doubles jointly enumerates A/B position pairs, with each player's own speed, reaction curve and touch radius, plus the &lt; 2 m overlap penalty.</p>
-      <p>Turning-mode translation uses an acceleration-then-cruise profile: short moves remain in the acceleration phase, while long moves continue at cruise speed. Movement acceleration is adjustable, and translation is then combined with turn time through the overlap factor. <b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
+      <p>Turning-mode translation uses an acceleration-then-cruise profile: short moves remain in the acceleration phase, while long moves continue at cruise speed. Movement acceleration is adjustable, and translation is then combined with turn time through the overlap factor. Inside the touch radius translation becomes zero, but contact directions beyond the turn dead zone still incur pivot-only turn time. <b>Turning-mode doubles</b> searches a joint pose: A position, A heading, B position and B heading. The base position step is about <code>0.45 m</code>; each position evaluates eight base directions and all <code>8×8=64</code> heading pairs. Safe dominance, position-pair bounds, remaining-path upper bounds and branch-and-bound remove only candidates that cannot win. Exact paths are merged only when type, time, landing value and complete intercept trace are identical, then <code>Float32</code> probability profiles are used. The solve runs in an inline Web Worker, cancels stale jobs and keeps the page responsive.</p>
       <h3>5. Rank and Top</h3>
       <p><b>Rank 1</b> is the best currently selected candidate; larger numbers are worse. Drag the Rank pill to browse candidates. Top controls how many candidates are shown: the default is one thousandth of the base count and the cap is 20%. In turning mode, doubles computes Top from position-pair count rather than the <code>8×8</code> heading expansion; singles excludes the eight directions. Normal mode applies no such division. Double-tap Top to restore its default.</p>
       <h3>5b. Sub-optimal cloud (new)</h3>
@@ -2670,9 +2670,6 @@
         const rTouch = c.rTouch * touchScale(type) *
           (1 - (1 - PRM.our_backhand_touch) * backhandBlend);
         const runDistance = Math.max(0, d - rTouch);
-        if (runDistance <= 0) {
-          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
-        }
 
         const fhSign = c.hand === 'left' ? -1 : 1;
         const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * Math.sin(rawDelta));
@@ -2695,11 +2692,13 @@
         const acceleration = Math.max(0, Number(PRM.our_move_accel) || 0);
         const accelerationTime = acceleration > 0 ? vEff / acceleration : 0;
         const accelerationDistance = 0.5 * vEff * accelerationTime;
-        let translationTime = runDistance / vEff;
-        if (acceleration > 0) {
+        let translationTime = 0;
+        if (runDistance > 0 && acceleration > 0) {
           translationTime = runDistance <= accelerationDistance
             ? Math.sqrt(2 * runDistance / acceleration)
             : accelerationTime + (runDistance - accelerationDistance) / vEff;
+        } else if (runDistance > 0) {
+          translationTime = runDistance / vEff;
         }
 
         const deadzone = PRM.our_turn_deadzone * Math.PI / 180;
