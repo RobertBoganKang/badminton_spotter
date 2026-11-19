@@ -2601,11 +2601,19 @@
       }
 
       function ctxForPosition(pos, items, c) {
-        return {...c, heading: bestHeadingForPosition(pos, items, c)};
+        const heading = bestHeadingForPosition(pos, items, c);
+        return {...c, heading, headingSin: Math.sin(heading), headingCos: Math.cos(heading)};
       }
 
       function ctxForStoredPose(pos, items, c) {
-        if (Number.isFinite(pos.heading)) return {...c, heading: pos.heading};
+        if (Number.isFinite(pos.heading)) {
+          return {
+            ...c,
+            heading: pos.heading,
+            headingSin: Math.sin(pos.heading),
+            headingCos: Math.cos(pos.heading)
+          };
+        }
         return ctxForPosition(pos, items, c);
       }
 
@@ -2657,10 +2665,14 @@
           };
         }
 
-        const movementAngle = Math.atan2(dx, dy);
-        const rawDelta = wrapMotionAngle(movementAngle - (Number.isFinite(c.heading) ? c.heading : OUR_HEADING));
-        const absTheta = Math.abs(rawDelta);
-        const backhand = c.hand === 'right' ? rawDelta < 0 : rawDelta > 0;
+        const heading = Number.isFinite(c.heading) ? c.heading : OUR_HEADING;
+        const headingSin = Number.isFinite(c.headingSin) ? c.headingSin : Math.sin(heading);
+        const headingCos = Number.isFinite(c.headingCos) ? c.headingCos : Math.cos(heading);
+        const cosDelta = clamp(ux * headingSin + uy * headingCos, -1, 1);
+        const sinDelta = ux * headingCos - uy * headingSin;
+        const absTheta = Math.acos(cosDelta);
+        const rawDelta = sinDelta < 0 ? -absTheta : absTheta;
+        const backhand = c.hand === 'right' ? sinDelta < 0 : sinDelta > 0;
         const backhandBlend = backhand ? smoothRamp(absTheta, 0, Math.PI / 2) : 0;
         const rTouch = c.rTouch * touchScale(type) *
           (1 - (1 - PRM.our_backhand_touch) * backhandBlend);
@@ -2670,16 +2682,16 @@
         }
 
         const fhSign = c.hand === 'left' ? -1 : 1;
-        const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * Math.sin(rawDelta));
+        const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * sinDelta);
         const turnSpeedFactor = clamp(
           1 - PRM.our_turn_speed_loss * Math.pow(absTheta / Math.PI, 1),
           0.22,
           1
         );
 
-        const forwardMove = Math.max(0, Math.cos(rawDelta));
-        const backwardMove = Math.max(0, -Math.cos(rawDelta));
-        const lateralMove = Math.abs(Math.sin(rawDelta));
+        const forwardMove = Math.max(0, cosDelta);
+        const backwardMove = Math.max(0, -cosDelta);
+        const lateralMove = Math.abs(sinDelta);
         const footInv = Math.sqrt(
           (forwardMove / (1 + PRM.our_lead_boost)) ** 2 +
           (lateralMove / PRM.our_cross_line) ** 2 +
@@ -3559,6 +3571,31 @@
         return kept;
       }
 
+      function aggregateProfileGroupMins(profiles) {
+        const count = profiles[0] && profiles[0].groupMins
+          ? profiles[0].groupMins.length
+          : 0;
+        if (!count) return null;
+        const out = new Float64Array(count).fill(1);
+        for (const profile of profiles) {
+          for (let i = 0; i < count; i++) {
+            if (profile.groupMins[i] < out[i]) out[i] = profile.groupMins[i];
+          }
+        }
+        return out;
+      }
+
+      function groupedIntersectionLower(minA, minB, groupWeights, scalarLower) {
+        let lower = scalarLower;
+        if (minA && minB && groupWeights) {
+          for (let i = 0; i < groupWeights.length; i++) {
+            const grouped = groupWeights[i] * minA[i] * minB[i];
+            if (grouped > lower) lower = grouped;
+          }
+        }
+        return lower;
+      }
+
       function jointHeadingAngles(enabled) {
         if (!enabled) return [0];
         const out = [];
@@ -3575,7 +3612,7 @@
         return out;
       }
 
-      function buildHeadingProfiles(pos, headings, items, ctx, itemWeights) {
+      function buildHeadingProfiles(pos, headings, items, ctx, itemWeights, groupMap, groupCount) {
         const out = [];
         const candidates = headings.slice();
         if (ctx.turnEnabled) {
@@ -3587,16 +3624,28 @@
           const key = heading.toFixed(6);
           if (evaluated.has(key)) continue;
           evaluated.add(key);
-          const poseCtx = {...ctx, heading};
+          const poseCtx = {
+            ...ctx,
+            heading,
+            headingSin: Math.sin(heading),
+            headingCos: Math.cos(heading)
+          };
           const values = new Float32Array(items.length);
+          const groupMins = groupCount
+            ? new Float64Array(groupCount).fill(1)
+            : null;
           let weightedReach = 0;
           for (let i = 0; i < items.length; i++) {
             const stats = interceptStats(pos, items[i], poseCtx);
             const probability = stats.p * stats.q;
             values[i] = probability;
+            if (groupMins) {
+              const group = groupMap[i];
+              if (probability < groupMins[group]) groupMins[group] = probability;
+            }
             weightedReach += itemWeights[i] * probability;
           }
-          out.push({heading, values, weightedReach});
+          out.push({heading, values, weightedReach, groupMins});
         }
         return out;
       }
@@ -3614,7 +3663,9 @@
           if (profile) return profile;
           const poseCtx = {
             ...ctx,
-            heading: Number.isFinite(pose.heading) ? pose.heading : 0
+            heading: Number.isFinite(pose.heading) ? pose.heading : 0,
+            headingSin: Math.sin(Number.isFinite(pose.heading) ? pose.heading : 0),
+            headingCos: Math.cos(Number.isFinite(pose.heading) ? pose.heading : 0)
           };
           const values = new Float32Array(items.length);
           let weightedReach = 0;
@@ -4031,11 +4082,22 @@
 
         const itemWeights = new Float32Array(N);
         const tailMax = new Float32Array(N + 1);
+        const groupMap = new Uint8Array(N);
+        const groupCount = 16;
+        const groupWeights = new Float64Array(groupCount);
+        const typeGroup = {smash: 0, clear: 1, drop: 2, drive: 3};
         let sumW = 0;
         for (let i = 0; i < N; i++) {
           sumW += searchItems[i].w;
           itemWeights[i] =
             searchItems[i].w * (cValue(searchItems[i].type, searchItems[i].L.y) + 1);
+          const typeIndex = typeGroup[searchItems[i].type] != null
+            ? typeGroup[searchItems[i].type]
+            : 3;
+          const weightBand = Math.min(3, Math.floor(i / Math.max(1, N) * 4));
+          const group = typeIndex * 4 + weightBand;
+          groupMap[i] = group;
+          groupWeights[group] += itemWeights[i];
         }
         for (let i = N - 1; i >= 0; i--) {
           tailMax[i] = tailMax[i + 1] +
@@ -4045,11 +4107,15 @@
           const overlap = overlapPenalty(poseA, poseB);
           const ctxAP = {
             ...ctxA,
-            heading: Number.isFinite(poseA.heading) ? poseA.heading : 0
+            heading: Number.isFinite(poseA.heading) ? poseA.heading : 0,
+            headingSin: Math.sin(Number.isFinite(poseA.heading) ? poseA.heading : 0),
+            headingCos: Math.cos(Number.isFinite(poseA.heading) ? poseA.heading : 0)
           };
           const ctxBP = {
             ...ctxB,
-            heading: Number.isFinite(poseB.heading) ? poseB.heading : 0
+            heading: Number.isFinite(poseB.heading) ? poseB.heading : 0,
+            headingSin: Math.sin(Number.isFinite(poseB.heading) ? poseB.heading : 0),
+            headingCos: Math.cos(Number.isFinite(poseB.heading) ? poseB.heading : 0)
           };
           let unionScore = 0;
           for (let i = 0; i < N; i++) {
@@ -4074,17 +4140,25 @@
         const headingsA = jointHeadingAngles(ctxA.turnEnabled);
         const headingsB = jointHeadingAngles(ctxB.turnEnabled);
         let profilesA = positions.map(pos =>
-          buildHeadingProfiles(pos, headingsA, searchItems, ctxA, itemWeights)
+          buildHeadingProfiles(
+            pos, headingsA, searchItems, ctxA, itemWeights, groupMap, groupCount
+          )
         );
         const sameContext = ctxEqual(ctxA, ctxB);
         let profilesB = sameContext
           ? profilesA
           : positions.map(pos =>
-            buildHeadingProfiles(pos, headingsB, searchItems, ctxB, itemWeights)
+            buildHeadingProfiles(
+              pos, headingsB, searchItems, ctxB, itemWeights, groupMap, groupCount
+            )
           );
 
         profilesA = profilesA.map(pruneDominatedHeadingProfiles);
         if (!sameContext) profilesB = profilesB.map(pruneDominatedHeadingProfiles);
+        const positionGroupMinsA = profilesA.map(aggregateProfileGroupMins);
+        const positionGroupMinsB = sameContext
+          ? positionGroupMinsA
+          : profilesB.map(aggregateProfileGroupMins);
 
         const legalCount =
           positions.length * positions.length * headingsA.length * headingsB.length;
@@ -4098,7 +4172,12 @@
             const overlap = overlapPenalty(posA, positions[j]);
             const maxB = profilesB[j][0].weightedReach;
             const minB = profilesB[j][profilesB[j].length - 1].weightedReach;
-            const intersectionLower = Math.max(0, minA + minB - sumW);
+            const intersectionLower = groupedIntersectionLower(
+              positionGroupMinsA[i],
+              positionGroupMinsB[j],
+              groupWeights,
+              Math.max(0, minA + minB - sumW)
+            );
             pairs.push({
               i,
               j,
@@ -4123,7 +4202,12 @@
           for (const profileA of profilesA[pair.i]) {
             for (const profileB of profilesB[pair.j]) {
               const sumProfiles = profileA.weightedReach + profileB.weightedReach;
-              const intersectionLower = Math.max(0, sumProfiles - sumW);
+              const intersectionLower = groupedIntersectionLower(
+                profileA.groupMins,
+                profileB.groupMins,
+                groupWeights,
+                Math.max(0, sumProfiles - sumW)
+              );
               const headingUpperBound =
                 (sumProfiles - intersectionLower - sumW) / sumW -
                 pair.overlap;
@@ -4397,6 +4481,8 @@
           jointHeadingAngles,
           buildHeadingProfiles,
           pruneDominatedHeadingProfiles,
+          aggregateProfileGroupMins,
+          groupedIntersectionLower,
           refineJointPose,
           refineSequentialPose,
           optimizeDoubleJointExact
