@@ -1391,6 +1391,8 @@
           sl_our_backhand_touch: '反手触球比例',
           sl_our_lead_boost: '持拍脚方向速度加成',
           sl_our_cross_line: '跨线速度系数',
+          sl_our_start_axis_delay: '垂直启动轴最大延迟',
+          sl_our_start_axis_curve: '启动轴曲线陡度',
           sl_formation_weight: '阵型距离权重',
           sl_formation_side_depth: '左右站位深度',
           sl_formation_front_depth: '前后站位前点深度',
@@ -1452,6 +1454,7 @@
       <p>反应曲线由「下限」与「上限」两个参数标定：下限 <code>t₀</code> 处 p≈2%（纯反应时），上限 <code>t₁</code> 处 p≈88%（充分反应 + 一步 + 出手），上限 92%（判断/技术/回球质量损耗）。<b>A、B 两名球员各自拥有一条独立的反应曲线、独立的触及半径与独立的跑动速度</b>，在同一个曲线图里用绿色（A）与红色（B）同时画出；参数完全相同时自动合并为一条并标注“A/B”。</p>
       <p><b>最优截击点</b>：不再假设只能在落地点接球。对每条轨迹，<b>从后往前</b>遍历所有可接高度的点（<code>z ∈ [z_min, z_max]</code>，默认 0.1~2.5 m，可调），求 <code>t<sub>avail</sub> = t_point − runTime(pos, point)</code> 的最大值——球员可以选择“提前在空中截击”或“等到落地”，取最有利的时机。由于轨迹按时间递增，遍历时一旦发现当前点的 <code>t_point ≤ bestT<sub>avail</sub></code> 就直接提前终止（后续点 t 只会更小，不可能更优）。</p>
       <p><b>方向速度分离</b>：上网 <code>1.15 × v_run</code>、横向 <code>0.95 × v_run</code>、后退 <code>v_run / k₂</code>；合成 <code>t<sub>run</sub> = d<sub>touch</sub> / v<sub>eff</sub></code>。双打中 A、B 各用自己的跑动速度，站位大小与“快/慢”标签随之变化。</p>
+      <p><b>启动轴</b>：转身模式额外以两脚连线为容易轴。若移动方向与两脚连线夹角为 α，则 <code>alignment = |cos α|</code>，启动延迟为 <code>最大启动延迟 × (1−alignment^曲线陡度)</code>。沿两脚连线启动时延迟为零，垂直两脚连线时延迟最大；它与转身时间和持续跑动速度独立累加。</p>
       <p><b>触及半径随球种缩放</b>：杀球 ×0.72（贴地，半径最小）、吊球 ×0.95（下落慢 + 0.08 s 缓冲）、高球 ×1.0。</p>
       <p>双打联合接球率：<code>reach = 1 − (1−p₁)(1−p₂)</code>。</p>
 
@@ -1521,6 +1524,8 @@
           sl_our_backhand_touch: 'Backhand touch ratio',
           sl_our_lead_boost: 'Lead-foot direction speed boost',
           sl_our_cross_line: 'Cross-line speed factor',
+          sl_our_start_axis_delay: 'Maximum perpendicular start-axis delay',
+          sl_our_start_axis_curve: 'Start-axis curve steepness',
           sl_formation_weight: 'Formation distance weight',
           sl_formation_side_depth: 'Side-by-side depth',
           sl_formation_front_depth: 'Front-back front depth',
@@ -1579,6 +1584,7 @@
       <p>The reaction curve is calibrated by a <b>lower bound</b> <code>t₀</code> (p≈2%) and an <b>upper bound</b> <code>t₁</code> (p≈88%), cap 92%. <b>A and B each own an independent reaction curve, touch radius and run speed</b>; both curves are drawn in the same chart, green = A, red = B. When all parameters are identical they merge into a single “A/B” curve.</p>
       <p><b>Best intercept point</b>: the model traverses the trajectory <b>back to front</b> over all reachable-height points (<code>z ∈ [z_min, z_max]</code>) and takes the maximum of <code>t<sub>avail</sub> = t_point − runTime(pos, point)</code>. The loop breaks as soon as <code>t_point ≤ bestT<sub>avail</sub></code>.</p>
       <p><b>Directional speed</b>: forward <code>1.15×v_run</code>, sideways <code>0.95×v_run</code>, backward <code>v_run/k₂</code>. In doubles <b>A and B each use their own parameters</b>.</p>
+      <p><b>Startup axis</b>: turning mode also uses the line between the feet as the easy axis. For movement angle α relative to that line, <code>alignment = |cos α|</code> and <code>startup delay = maximum delay × (1−alignment^curve)</code>. Starting parallel to the foot line adds no delay, while starting perpendicular to it adds the maximum delay. This term is independent of turn time and sustained running speed.</p>
       <p><b>Touch radius scale</b>: smash ×0.72, drop ×0.95 (+0.08 s buffer), clear ×1.0.</p>
       <p>Doubles OR: <code>reach = 1−(1−p₁)(1−p₂)</code>.</p>
       <h3>4. Expected net score</h3>
@@ -1643,6 +1649,8 @@
         {group: 'turn', type: 's', key: 'our_cross_line', min: 0.70, max: 1.00, step: 0.01, def: 0.92},
         {group: 'turn', type: 's', key: 'our_backhand_turn', min: 0, max: 0.50, step: 0.01, def: 0.18},
         {group: 'turn', type: 's', key: 'our_backhand_touch', min: 0.60, max: 1.00, step: 0.01, def: 0.88},
+        {group: 'turn', type: 's', key: 'our_start_axis_delay', min: 0, max: 0.25, step: 0.005, def: 0.08},
+        {group: 'turn', type: 's', key: 'our_start_axis_curve', min: 1, max: 4, step: 0.25, def: 2},
 
         {group: 'formation', type: 's', key: 'formation_weight', min: 0, max: 0.08, step: 0.002, def: 0.02},
         {group: 'formation', type: 's', key: 'formation_side_depth', min: 2.0, max: 4.5, step: 0.05, def: 3.30},
@@ -2662,7 +2670,15 @@
         const dy = point.y - pos.y;
         const d = Math.hypot(dx, dy);
         if (d < 1e-9) {
-          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
+          return {
+            tau: 0,
+            translationTime: 0,
+            rotationTime: 0,
+            startupDelay: 0,
+            startAxisAlignment: 1,
+            stepDelay: 0,
+            limitPenalty: 0
+          };
         }
 
         const ux = dx / d;
@@ -2681,6 +2697,8 @@
             tau: runDistance / baseSpeed,
             translationTime: runDistance / baseSpeed,
             rotationTime: 0,
+            startupDelay: 0,
+            startAxisAlignment: 1,
             stepDelay: 0,
             limitPenalty: 0
           };
@@ -2699,9 +2717,21 @@
           (1 - (1 - PRM.our_backhand_touch) * backhandBlend);
         const runDistance = Math.max(0, d - rTouch);
         if (runDistance <= 0) {
-          return {tau: 0, translationTime: 0, rotationTime: 0, stepDelay: 0, limitPenalty: 0};
+          return {
+            tau: 0,
+            translationTime: 0,
+            rotationTime: 0,
+            startupDelay: 0,
+            startAxisAlignment: 1,
+            stepDelay: 0,
+            limitPenalty: 0
+          };
         }
 
+        const startAxisAlignment = Math.abs(sinDelta);
+        const startCurve = Math.max(0.5, PRM.our_start_axis_curve);
+        const startupDelay = PRM.our_start_axis_delay *
+          Math.pow(1 - startAxisAlignment, startCurve);
         const fhSign = c.hand === 'left' ? -1 : 1;
         const forehandBias = Math.max(0.2, 1 + PRM.our_fh_bias * fhSign * sinDelta);
         const turnSpeedFactor = clamp(
@@ -2739,8 +2769,16 @@
           : 0;
         const tau = Math.max(translationTime, rotationTime) +
           PRM.our_turn_overlap * Math.min(translationTime, rotationTime) +
-          stepDelay + limitPenalty;
-        return {tau, translationTime, rotationTime, stepDelay, limitPenalty};
+          stepDelay + limitPenalty + startupDelay;
+        return {
+          tau,
+          translationTime,
+          rotationTime,
+          startupDelay,
+          startAxisAlignment,
+          stepDelay,
+          limitPenalty
+        };
       }
 
       function cValue(type, y) {
@@ -5509,6 +5547,8 @@ self.onmessage = function (event) {
         if (key && key.startsWith('our_')) {
           if (key === 'our_turn_deadzone') return Math.round(val) + '°';
           if (key === 'our_turn_tmax') return val.toFixed(2) + ' s';
+          if (key === 'our_start_axis_delay') return val.toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + ' s';
+          if (key === 'our_start_axis_curve') return val.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
           return Math.round(val * 100) + '%';
         }
         if (step >= 1) return Math.round(val) + (isProb ? '%' : '');
@@ -5961,6 +6001,11 @@ self.onmessage = function (event) {
         el.addEventListener('pointercancel', finish);
       }
 
+      function rankDragDelta(dy, top) {
+        const sensitivity = clamp(Math.max(1, top) / 280, 1 / 36, 3.5);
+        return Math.sign(dy) * Math.round(Math.abs(dy) * sensitivity);
+      }
+
       function setupCompoundDrag(el, kind) {
         let drag = null;
         let lastTapTime = 0, lastTapX = 0, lastTapY = 0;
@@ -6011,7 +6056,7 @@ self.onmessage = function (event) {
           ev.preventDefault();
           const dy = drag.startY - ev.clientY;
           if (kind === 'rank') {
-            const nv = clamp(drag.startRank + Math.round(dy * 2), 1, topN);
+            const nv = clamp(drag.startRank + rankDragDelta(dy, topN), 1, topN);
             if (nv === selectedRank) return;
             selectedRank = nv;
             applyScore();
@@ -6106,7 +6151,7 @@ self.onmessage = function (event) {
         pillClear.dataset.label = t('pillLabelCl');
         [pillKill, pillDrop, pillClear].forEach(p => {p.title = t('pillHint');});
         pillHeight.title = t('heightHint');
-        pillScore.title = '向上拖动增加，向下拖动减小；双击恢复优劣 1';
+        pillScore.title = '向上拖动增加，向下拖动减小；拖动灵敏度随 Top 自动调整；双击恢复优劣 1';
         pillTop.title = '向上拖动增加 Top 数量，向下拖动减小；双击恢复默认值';
 
         const collapsed = appEl.classList.contains('collapsed');

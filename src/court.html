@@ -1109,6 +1109,8 @@
         <div class="sidebar-param"><label for="fhBias">正反手速度偏置<output id="fhBiasValue">18%</output></label><input id="fhBias" data-turn="fhBias" type="range" min="0" max="0.5" step="0.01" value="0.18"></div>
         <div class="sidebar-param"><label for="leadFootBoost">持拍脚方向速度加成<output id="leadFootBoostValue">10%</output></label><input id="leadFootBoost" data-turn="leadFootBoost" type="range" min="0" max="0.3" step="0.01" value="0.10"></div>
         <div class="sidebar-param"><label for="crossLineSpeedK">跨线速度系数<output id="crossLineSpeedKValue">92%</output></label><input id="crossLineSpeedK" data-turn="crossLineSpeedK" type="range" min="0.70" max="1" step="0.01" value="0.92"></div>
+        <div class="sidebar-param"><label for="startAxisDelay">垂直启动轴最大延迟<output id="startAxisDelayValue">0.08 s</output></label><input id="startAxisDelay" data-turn="startAxisDelay" type="range" min="0" max="0.25" step="0.005" value="0.08"></div>
+        <div class="sidebar-param"><label for="startAxisCurve">启动轴曲线陡度<output id="startAxisCurveValue">2</output></label><input id="startAxisCurve" data-turn="startAxisCurve" type="range" min="1" max="4" step="0.25" value="2"></div>
         <div class="sidebar-param"><label for="backhandTurnK">反手转身附加惩罚<output id="backhandTurnKValue">18%</output></label><input id="backhandTurnK" data-turn="backhandTurnK" type="range" min="0" max="0.5" step="0.01" value="0.18"></div>
         <div class="sidebar-param"><label for="backhandTouchK">反手触球比例<output id="backhandTouchKValue">88%</output></label><input id="backhandTouchK" data-turn="backhandTouchK" type="range" min="0.60" max="1" step="0.01" value="0.88"></div>
       </section>
@@ -1197,6 +1199,7 @@
 
       <h3>十、绝对速度与转身模式</h3>
       <p>参数侧栏分别设置 A、B 的绝对跑动速度，范围 2–8 m/s，旧的速度比不再作为主要输入。开启转身模式后，再加入身体朝向、左右手持拍、反应时间、转身耗时上限、转身死区、正反手速度偏置、持拍脚方向速度加成、跨线速度系数、反手转身附加惩罚和反手触球比例。移动时间按方向有效速度计算，再与转身时间按重叠系数合成。球进入触球半径时移动与转身耗时都归零；热力图和等时线比较最终到达时间。</p>
+      <p>增加独立启动轴项：沿两脚连线方向启动最容易，垂直两脚连线时启动最慢。若移动方向与脚线的横向对齐度为 <code>|sin(移动方向−身体朝向)|</code>，则额外延迟为 <code>最大延迟 × (1−对齐度^曲线陡度)</code>。该延迟与转身时间、持续移动速度、跨步和关节极限独立相加，并同时进入热力图和等时线比较。</p>
 
       <h3>十一、可调参数</h3>
       <ul>
@@ -1285,6 +1288,7 @@
 
       <h3>10. Absolute speeds and turning mode</h3>
       <p>The parameter sidebar sets independent absolute running speeds for A and B, from 2 to 8 m/s. The old relative ratio is no longer the primary input. The optional turning mode adds body heading, handedness, reaction time, maximum turn time, turn dead zone, forehand/backhand speed bias, lead-foot direction speed boost, cross-line speed factor, backhand turn penalty and backhand touch ratio. Translation uses the direction-dependent effective speed and is combined with turn time through the overlap factor. Inside the touch radius both movement and turn time return to zero; the heatmap and equal-arrival line use the resulting A/B arrival times.</p>
+      <p>An independent startup-axis term is also applied. Starting parallel to the line between the feet is easiest, while starting perpendicular to it is slowest. With lateral alignment <code>|sin(movement heading−body heading)|</code>, the extra delay is <code>maximum delay × (1−alignment^curve)</code>. It is added independently of turn time, sustained movement speed, step delay and joint limits, and feeds both the heatmap and equal-arrival line.</p>
 
       <h3>11. Tunable parameters</h3>
       <ul>
@@ -1437,6 +1441,8 @@
           fhBias: 0.18,
           leadFootBoost: 0.10,
           crossLineSpeedK: 0.92,
+          startAxisDelay: 0.08,
+          startAxisCurve: 2,
           backhandTurnK: 0.18,
           backhandTouchK: 0.88
         },
@@ -1606,6 +1612,11 @@
         const runDistance = Math.max(0, distance - touchRadius);
         if (runDistance <= 0) return reaction;
 
+        const lateralMove = Math.abs(Math.sin(rawDelta));
+        const startAxisAlignment = lateralMove;
+        const startCurve = Math.max(0.5, p.startAxisCurve);
+        const startupDelay = p.startAxisDelay *
+          Math.pow(1 - startAxisAlignment, startCurve);
         const ux = dx / distance;
         const uy = dy / distance;
         const speed = key === 'b' ? p.speedB : p.speedA;
@@ -1623,7 +1634,6 @@
         );
         const forwardMove = Math.max(0, Math.cos(rawDelta));
         const backwardMove = Math.max(0, -Math.cos(rawDelta));
-        const lateralMove = Math.abs(Math.sin(rawDelta));
         const footFactor = 1 / Math.max(1e-9, Math.sqrt(
           Math.pow(forwardMove / (1 + p.leadFootBoost), 2) +
           Math.pow(lateralMove / p.crossLineSpeedK, 2) +
@@ -1636,7 +1646,7 @@
         const limitPenalty = turnJointPenalty(absTheta) * (1 + p.backhandTurnK * 0.5 * backhandBlend);
         const tau = Math.max(translationTime, rotationTime) +
           p.turnOverlapK * Math.min(translationTime, rotationTime) +
-          stepDelay + limitPenalty;
+          stepDelay + limitPenalty + startupDelay;
         return reaction + tau;
       }
 
@@ -2719,6 +2729,8 @@
           fhBias: Math.round(p.fhBias * 100) + '%',
           leadFootBoost: Math.round(p.leadFootBoost * 100) + '%',
           crossLineSpeedK: Math.round(p.crossLineSpeedK * 100) + '%',
+          startAxisDelay: p.startAxisDelay.toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + ' s',
+          startAxisCurve: p.startAxisCurve.toFixed(2).replace(/0+$/, '').replace(/\.$/, ''),
           backhandTurnK: Math.round(p.backhandTurnK * 100) + '%',
           backhandTouchK: Math.round(p.backhandTouchK * 100) + '%'
         };

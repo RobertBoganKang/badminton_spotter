@@ -2766,6 +2766,18 @@
                 value="0.92">
             </div>
             <div class="param-item">
+              <div class="param-item-head"><label for="startAxisDelay">垂直启动轴最大延迟</label><output
+                  id="startAxisDelayValue">0.08 s</output></div>
+              <input id="startAxisDelay" data-param="startAxisDelay" type="range" min="0" max="0.25" step="0.005"
+                value="0.08">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="startAxisCurve">启动轴曲线陡度</label><output
+                  id="startAxisCurveValue">2</output></div>
+              <input id="startAxisCurve" data-param="startAxisCurve" type="range" min="1" max="4" step="0.25"
+                value="2">
+            </div>
+            <div class="param-item">
               <div class="param-item-head"><label for="backhandTurnK">反手转身附加惩罚</label><output
                   id="backhandTurnKValue">18%</output></div>
               <input id="backhandTurnK" data-param="backhandTurnK" type="range" min="0" max="0.5" step="0.01"
@@ -2960,6 +2972,8 @@
           turnOverlapK: '转身/移动重叠系数',
           leadFootBoost: '持拍脚方向速度加成',
           crossLineSpeedK: '跨线速度系数',
+          startAxisDelay: '垂直启动轴最大延迟',
+          startAxisCurve: '启动轴曲线陡度',
           backhandTurnK: '反手转身附加惩罚',
           backhandTouchK: '反手触球比例',
           racketFootLegend: '持拍侧脚',
@@ -2982,6 +2996,7 @@
         <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、转身代价和触球半径计算接球概率。</p>
         <p>未双击对手时使用原始不考虑转身的方向速度模型。双击对手进入速度手柄模式后启用转身模型：平移时间按方向有效速度计算，随后按“<code>max(转身时间, 移动时间) + k × min(转身时间, 移动时间)</code>”与转身时间合成，再叠加跨步延迟和关节极限时间。<code>k=0</code> 表示完全并行，<code>k=1</code> 表示转身完成后才移动；默认 <code>k=0.25</code>，表示两者部分重叠。球进入触球半径时，平移与转身耗时都归零，沿用旧版处理。反手触球比例可在参数面板调整，默认按 88% 计算。把反手触球设为 100% 并令其余转身参数归零时与原始方向速度一致。球员默认面向球网。关闭速度手柄后恢复原始模型。椭圆长轴表示双脚连线，长轴一侧的圆点表示持拍侧脚。</p>
         <p>移动速度进一步按照身体朝向建立椭圆速度场：持拍脚方向获得额外加速，跨线方向速度较低，后退方向不获得该加速；两个比例均可在“转身模型”中调整。反手侧惩罚随绝对转身角平滑增加，并额外作用于转身时间、跨步延迟和关节极限，避免小角度时突然跳变。开启 180° 对称视图后，顶部角度读数也按显示方向换算，拖动角度时会反向转换回物理坐标，因此显示与画面一致且不改变求解结果。</p>
+        <p>启动方向单独按两脚连线建模：移动方向平行于双脚连线时启动最容易，垂直于连线时达到最大额外启动延迟。设两脚连线方向为 φ、移动方向为 θ，则 <code>alignment = |cos(θ−φ)|</code>，启动延迟为 <code>最大延迟 × (1−alignment^曲线陡度)</code>。该延迟与转身时间和持续跑动速度独立计算，因此在面向球网、双脚左右平行时，向前或向后启动会比沿两脚连线侧向启动多出成本。</p>
         <h3>五、阵型破坏</h3>
         <p>击球后取最可能接球的对手位置：能够空中截击时使用其截击点，否则使用落点；另一名对手保持当前站位。双打把原有左右、前后、半间距参数转换成一个连续阵型环：环心取左右站位深度，横向半径为半间距，纵向半径由前后锚点到环心的平均距离拟合。A/B 始终位于阵型环上的一对相对点，阵型轴可连续旋转，环上任意角度都被视为有效阵型，不再只吸附左右或前后两个离散站位。单打仍比较接球位置到中央偏后锚点的距离。</p>
         <p>阵型偏离距离越大，对手接球后的有效回位质量越低：<code>qRecovery = 1 − 阵型破坏权重 × smoothstep(偏离距离 / 偏离饱和距离)</code>。最终期望得分率为 <code>1 − 接球概率 × 回球质量 × qRecovery</code>。阵型只影响战术收益和排序，不改变轨迹、初速度、旋转或真实接球概率。</p>
@@ -3061,6 +3076,8 @@
           turnOverlapK: 'Turn/move overlap factor',
           leadFootBoost: 'Lead-foot direction speed boost',
           crossLineSpeedK: 'Cross-line speed factor',
+          startAxisDelay: 'Maximum perpendicular start-axis delay',
+          startAxisCurve: 'Start-axis curve steepness',
           backhandTurnK: 'Backhand turn penalty',
           backhandTouchK: 'Backhand touch ratio',
           racketFootLegend: 'Racket-side foot',
@@ -3083,6 +3100,7 @@
         <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, turning cost and touch radius into a reach probability.</p>
         <p>Before interaction, the model uses the original directional speed calculation without turning. Double-clicking an opponent opens velocity-handle mode and enables the turning model: translation time is calculated from the direction-dependent effective speed, then combined with turn time by <code>max(turn time, translation time) + k × min(turn time, translation time)</code>, plus step delay and joint-limit time. <code>k=0</code> means fully parallel, while <code>k=1</code> means turning must finish before translation; the default <code>k=0.25</code> represents partial overlap. Inside the touch radius both movement and turn time return to zero, matching the previous turning model. The backhand touch ratio is adjustable and defaults to 88%. Opponents face the net by default. Closing the handles restores the original model. The ellipse's long axis marks the line between the feet; the dot on one side marks the racket-side foot.</p>
         <p>Movement speed also uses a body-aligned elliptical field: the lead-foot direction receives a configurable speed boost, cross-line movement is slower, and backward movement receives no boost. Backhand penalties increase smoothly with absolute turn angle and additionally affect turn time, step delay, and joint-limit time to avoid a sudden jump at small angles. In the 180° mirrored view, angle readouts are converted to display coordinates while drag input is converted back to world coordinates, keeping the displayed orientation consistent without changing solver results.</p>
+        <p>Startup direction is modelled separately along the line between the feet. Movement parallel to the foot line is easiest, while movement perpendicular to it receives the maximum extra startup delay. With foot-line direction φ and movement direction θ, <code>alignment = |cos(θ−φ)|</code> and <code>startup delay = maximum delay × (1−alignment^curve)</code>. This delay is independent of turn time and sustained running speed, so forward or backward starts cost more than side starts when a player faces the net with feet parallel.</p>
         <h3>5. Formation disruption</h3>
         <p>After the shot, the most likely receiving opponent is placed at the interception point when one exists, otherwise at the landing point; the other opponent stays at the current position. In doubles, the former side-by-side, front-back and half-width parameters are converted into a continuous formation ring. Its centre is the side-by-side depth, its horizontal radius is the configured half-width, and its vertical radius is fitted from the front and rear anchors. A and B occupy opposite points on the ring, and the formation axis can rotate continuously; every angle on the ring is treated as a valid formation rather than snapping to only the side-by-side or front-back layout. Singles still use the central rear recovery anchor.</p>
         <p>A larger formation displacement lowers effective recovery quality: <code>qRecovery = 1 − disruption weight × smoothstep(displacement / saturation distance)</code>. Expected point rate is <code>1 − reach probability × return quality × qRecovery</code>. Formation disruption affects tactical value and ranking only; it does not alter trajectories, initial speed, rotation, or the physical reach probability.</p>
@@ -3175,6 +3193,8 @@
         turnOverlapK: 0.25,
         leadFootBoost: 0.10,
         crossLineSpeedK: 0.92,
+        startAxisDelay: 0.08,
+        startAxisCurve: 2,
         backhandTurnK: 0.18,
         backhandTouchK: 0.88,
         formationDisruptionWeight: 0.15,
@@ -3525,6 +3545,7 @@
           state.params.fhBias > 0 ||
           state.params.leadFootBoost > 0 ||
           state.params.crossLineSpeedK < 0.999 ||
+          state.params.startAxisDelay > 0 ||
           state.params.backhandTurnK > 0 ||
           state.params.backhandTouchK < 0.999;
         const backhand = ctx.hand === 'right' ? rawDeltaTheta < 0 : rawDeltaTheta > 0;
@@ -3536,6 +3557,13 @@
         const runDistance = Math.max(0, d - touchRadius);
         const deltaTheta = runDistance > 0 ? rawDeltaTheta : 0;
         const absTheta = Math.abs(deltaTheta);
+        const cosDelta = Math.cos(deltaTheta);
+        const sinDelta = Math.abs(Math.sin(deltaTheta));
+        const startAxisAlignment = sinDelta;
+        const startCurve = Math.max(0.5, state.params.startAxisCurve);
+        const startupDelay = runDistance > 0 && turningEnabled
+          ? state.params.startAxisDelay * Math.pow(1 - startAxisAlignment, startCurve)
+          : 0;
         const handSign = ctx.hand === 'left' ? -1 : 1;
         const asym = Math.max(0.2, 1 + state.params.fhBias * handSign * Math.sin(deltaTheta));
         const turnFactor = clamp(
@@ -3551,8 +3579,6 @@
         const directionalSpeed = point.y < pos.y ? towardNetSpeed : backwardSpeed;
         const inverseBaseSpeed = Math.hypot(ux / lateralSpeed, uy / directionalSpeed);
         const baseSpeed = inverseBaseSpeed > 1e-8 ? 1 / inverseBaseSpeed : ctx.speed;
-        const cosDelta = Math.cos(deltaTheta);
-        const sinDelta = Math.abs(Math.sin(deltaTheta));
         const forwardMove = Math.max(0, cosDelta);
         const backwardMove = Math.max(0, -cosDelta);
         const leadSpeed = 1 + state.params.leadFootBoost;
@@ -3578,9 +3604,11 @@
         return {
           tau: Math.max(translationTime, rotationTime)
             + state.params.turnOverlapK * Math.min(translationTime, rotationTime)
-            + stepDelay + limitPenalty,
+            + stepDelay + limitPenalty + startupDelay,
           translationTime,
           rotationTime,
+          startupDelay,
+          startAxisAlignment,
           stepDelay,
           limitPenalty,
           deltaTheta,
@@ -3600,6 +3628,8 @@
             tau: 0,
             translationTime: 0,
             rotationTime: 0,
+            startupDelay: 0,
+            startAxisAlignment: 1,
             stepDelay: 0,
             limitPenalty: 0,
             deltaTheta: 0,
@@ -3618,6 +3648,8 @@
           tau,
           translationTime: tau,
           rotationTime: 0,
+          startupDelay: 0,
+          startAxisAlignment: 1,
           stepDelay: 0,
           limitPenalty: 0,
           deltaTheta: 0,
@@ -3689,6 +3721,7 @@
           tau: best.tau,
           turnTime: best.timing.rotationTime,
           translationTime: best.timing.translationTime,
+          startupDelay: best.timing.startupDelay,
           stepDelay: best.timing.stepDelay,
           limitPenalty: best.timing.limitPenalty,
           deltaTheta: best.timing.deltaTheta,
@@ -4292,6 +4325,11 @@ self.onmessage = function (event) {
         scheduleDraw();
       }
 
+      function rankDragDelta(dy, top) {
+        const sensitivity = clamp(Math.max(1, top) / 280, 1 / 36, 3.5);
+        return Math.sign(dy) * Math.round(Math.abs(dy) * sensitivity);
+      }
+
       function resetTopDefault() {
         state.topN = state.defaultTop;
         state.selectedRank = 1;
@@ -4600,6 +4638,8 @@ self.onmessage = function (event) {
               text = fmt(value / DEG, 0) + '°';
             } else if (key === 'turnTmax') {
               text = fmt(value, 2) + ' s';
+            } else if (key === 'startAxisDelay') {
+              text = fmt(value, 3) + ' s';
             } else if (key === 'turnSpeedK' || key === 'fhBias' || key === 'backhandTouchK' ||
               key === 'formationDisruptionWeight') {
               text = Math.round(value * 100) + '%';
@@ -4680,6 +4720,8 @@ self.onmessage = function (event) {
           turnOverlapK: 'turnOverlapK',
           leadFootBoost: 'leadFootBoost',
           crossLineSpeedK: 'crossLineSpeedK',
+          startAxisDelay: 'startAxisDelay',
+          startAxisCurve: 'startAxisCurve',
           backhandTurnK: 'backhandTurnK',
           backhandTouchK: 'backhandTouchK',
           formationDisruptionWeight: 'formationDisruptionWeight',
@@ -4702,7 +4744,10 @@ self.onmessage = function (event) {
         els.paramsBtn.setAttribute('aria-label', t('paramsTitle'));
         els.paramsClose.setAttribute('aria-label', L('关闭参数面板', 'Close parameter panel'));
         els.principleClose.setAttribute('aria-label', L('关闭', 'Close'));
-        els.rankPill.title = L('向上拖动增加数字，向下拖动减小数字；双击恢复优劣 1', 'Drag up to increase, down to decrease; double-click to reset Rank 1');
+        els.rankPill.title = L(
+          '向上拖动增加数字，向下拖动减小数字；拖动灵敏度随 Top 自动调整；双击恢复优劣 1',
+          'Drag up to increase, down to decrease; drag sensitivity follows Top; double-click to reset Rank 1'
+        );
         els.topPill.title = L('向上拖动增加显示数量，向下拖动减小显示数量；双击恢复默认值', 'Drag up to increase, down to decrease; double-click for default Top');
         els.rotationCluster.setAttribute('aria-label', t('rotationControl'));
         els.rotationAPill.title = L('单击切换 A 的持拍手；向上拖动增加角度，向下拖动减小',
@@ -6308,7 +6353,7 @@ self.onmessage = function (event) {
         if (!rankDrag || event.pointerId !== rankDrag.pointerId) return;
         const dy = rankDrag.startY - event.clientY;
         if (Math.abs(dy) > 2) rankDrag.moved = true;
-        selectRank(rankDrag.startRank + Math.round(dy * 1.8));
+        selectRank(rankDrag.startRank + rankDragDelta(dy, state.topN));
         event.preventDefault();
         event.stopPropagation();
       });
