@@ -1373,6 +1373,7 @@
           gProb: '概率', gProbHint: '三者联动 · 总和 100%',
           gReach: '可达性', gReachHint: '反应曲线 · 跑速 · 触及半径',
           gTurn: '我方转身', gTurnHint: 'A/B 独立 · 持拍脚与正反手',
+          gFormation: '阵型与回中', gFormationHint: '双打连续阵型环 · 单打中央偏后',
           gFilter: '过滤', gFilterHint: '高过网 / 控高参考',
           gZRange: '可接高度', gZRangeHint: '贴地 ~ 举拍',
           gSubopt: '次优解', gSuboptHint: '候选密度点云',
@@ -1390,6 +1391,12 @@
           sl_our_backhand_touch: '反手触球比例',
           sl_our_lead_boost: '持拍脚方向速度加成',
           sl_our_cross_line: '跨线速度系数',
+          sl_formation_weight: '阵型距离权重',
+          sl_formation_side_depth: '左右站位深度',
+          sl_formation_front_depth: '前后站位前点深度',
+          sl_formation_back_depth: '前后站位后点深度',
+          sl_formation_half_width: '左右站位半间距',
+          sl_formation_single_depth: '单打回中深度',
           sl_dropMaxOverNet: '吊球过网高',
           sl_clearLineY: '控高参考线',
           sl_clearHeight: '高球过网最低',
@@ -1496,6 +1503,7 @@
           gProb: 'Probabilities', gProbHint: 'linked · sum = 100%',
           gReach: 'Reachability', gReachHint: 'reaction · speed · touch radius',
           gTurn: 'Our turning', gTurnHint: 'A/B independent · lead foot & handedness',
+          gFormation: 'Formation & recovery', gFormationHint: 'continuous doubles ring · singles rear-centre',
           gFilter: 'Filters', gFilterHint: 'net min / baseline ref',
           gZRange: 'Reachable height', gZRangeHint: 'ground ~ racket top',
           gSubopt: 'Sub-optimal', gSuboptHint: 'candidate density',
@@ -1513,6 +1521,12 @@
           sl_our_backhand_touch: 'Backhand touch ratio',
           sl_our_lead_boost: 'Lead-foot direction speed boost',
           sl_our_cross_line: 'Cross-line speed factor',
+          sl_formation_weight: 'Formation distance weight',
+          sl_formation_side_depth: 'Side-by-side depth',
+          sl_formation_front_depth: 'Front-back front depth',
+          sl_formation_back_depth: 'Front-back rear depth',
+          sl_formation_half_width: 'Side-by-side half width',
+          sl_formation_single_depth: 'Singles recovery depth',
           sl_dropMaxOverNet: 'Drop net max',
           sl_clearLineY: 'Baseline ref',
           sl_clearHeight: 'Clear net min H',
@@ -1629,6 +1643,13 @@
         {group: 'turn', type: 's', key: 'our_cross_line', min: 0.70, max: 1.00, step: 0.01, def: 0.92},
         {group: 'turn', type: 's', key: 'our_backhand_turn', min: 0, max: 0.50, step: 0.01, def: 0.18},
         {group: 'turn', type: 's', key: 'our_backhand_touch', min: 0.60, max: 1.00, step: 0.01, def: 0.88},
+
+        {group: 'formation', type: 's', key: 'formation_weight', min: 0, max: 0.08, step: 0.002, def: 0.02},
+        {group: 'formation', type: 's', key: 'formation_side_depth', min: 2.0, max: 4.5, step: 0.05, def: 3.30},
+        {group: 'formation', type: 's', key: 'formation_front_depth', min: 1.0, max: 3.0, step: 0.05, def: 1.80},
+        {group: 'formation', type: 's', key: 'formation_back_depth', min: 3.5, max: 6.3, step: 0.05, def: 4.80},
+        {group: 'formation', type: 's', key: 'formation_half_width', min: 0.5, max: 2.2, step: 0.05, def: 1.30},
+        {group: 'formation', type: 's', key: 'formation_single_depth', min: 2.5, max: 5.5, step: 0.05, def: 3.60},
 
         {group: 'filter', type: 's', key: 'dropMaxOverNet', min: 0, max: 2.0, step: 0.01, def: 0.20},
         {group: 'filter', type: 's', key: 'clearLineY', min: 1.5, max: 6.5, step: 0.1, def: 4.0},
@@ -3286,6 +3307,98 @@
         return SEP_PEN_K * u * u;
       }
 
+      function formationRingGeometry() {
+        const centerY = -PRM.formation_side_depth;
+        const frontOffset = Math.max(0.05, Math.abs(centerY + PRM.formation_front_depth));
+        const backOffset = Math.max(0.05, Math.abs(-PRM.formation_back_depth - centerY));
+        return {
+          centerX: 0,
+          centerY,
+          radiusX: Math.max(0.1, PRM.formation_half_width),
+          radiusY: Math.max(0.1, (frontOffset + backOffset) * 0.5)
+        };
+      }
+
+      function formationRingTargets(angle, geometry) {
+        const ring = geometry || formationRingGeometry();
+        const dx = ring.radiusX * Math.cos(angle);
+        const dy = ring.radiusY * Math.sin(angle);
+        return {
+          p1: {x: ring.centerX - dx, y: ring.centerY - dy},
+          p2: {x: ring.centerX + dx, y: ring.centerY + dy}
+        };
+      }
+
+      function formationMatchForPositions(a, b) {
+        const ring = formationRingGeometry();
+        const project = q => {
+          const magnitude = Math.hypot(q.x / ring.radiusX, q.y / ring.radiusY);
+          if (magnitude < 1e-9) {
+            return {x: ring.radiusX, y: 0};
+          }
+          return {
+            x: q.x / magnitude,
+            y: q.y / magnitude
+          };
+        };
+        const evaluate = raw => {
+          const q = project(raw);
+          const p1 = {
+            x: ring.centerX - q.x,
+            y: ring.centerY - q.y
+          };
+          const p2 = {
+            x: ring.centerX + q.x,
+            y: ring.centerY + q.y
+          };
+          const direct = (
+            Math.hypot(a.x - p1.x, a.y - p1.y) +
+            Math.hypot(b.x - p2.x, b.y - p2.y)
+          ) * 0.5;
+          const swapped = (
+            Math.hypot(a.x - p2.x, a.y - p2.y) +
+            Math.hypot(b.x - p1.x, b.y - p1.y)
+          ) * 0.5;
+          const useSwapped = swapped < direct;
+          return {
+            distance: useSwapped ? swapped : direct,
+            swapped: useSwapped,
+            q
+          };
+        };
+
+        const direct = evaluate({
+          x: (b.x - a.x) * 0.5,
+          y: (b.y - a.y) * 0.5
+        });
+        const swapped = evaluate({
+          x: (a.x - b.x) * 0.5,
+          y: (a.y - b.y) * 0.5
+        });
+        const best = swapped.distance < direct.distance ? swapped : direct;
+        return {
+          distance: best.distance,
+          swapped: best.swapped,
+          angle: Math.atan2(
+            best.q.y / ring.radiusY,
+            best.q.x / ring.radiusX
+          )
+        };
+      }
+
+      function formationPenalty(a, b) {
+        const weight = PRM.formation_weight;
+        if (weight <= 0) return 0;
+        return weight * formationMatchForPositions(a, b).distance;
+      }
+
+      function singleRecoveryPenalty(pos) {
+        const weight = PRM.formation_weight;
+        if (weight <= 0) return 0;
+        const center = {x: 0, y: -PRM.formation_single_depth};
+        return weight * Math.hypot(pos.x - center.x, pos.y - center.y);
+      }
+
       function symmetricAxisGrid(limit, requestedStep) {
         const count = Math.max(1, Math.ceil(limit / requestedStep - 1e-9));
         const step = limit / count;
@@ -3303,7 +3416,8 @@
           sumWV += it.w * itemV(pos, otherPos, it, ctxA, ctxB);
           sumW += it.w;
         }
-        return sumW > 0 ? sumWV / sumW : -1;
+        const value = sumW > 0 ? sumWV / sumW : -1;
+        return value - (otherPos ? 0 : singleRecoveryPenalty(pos));
       }
 
       function optimizeSolo(items, step, ctxA) {
@@ -3420,7 +3534,9 @@
             const Pj = PB[j];
             let s = SA[i] + SB[j];
             for (let k = 0; k < N; k++) s -= aArr[k] * Pi[k] * Pj[k];
-            const V = (s - sumW) / sumW - overlapPenalty(pi, pos[j]);
+            const V = (s - sumW) / sumW -
+              overlapPenalty(pi, pos[j]) -
+              formationPenalty(pi, pos[j]);
             cands.push({
               P1: {...pi, heading: headingAGrid[i]},
               P2: {...pos[j], heading: headingBGrid[j]},
@@ -3470,7 +3586,9 @@
             const r = 1 - (1 - pa) * (1 - pb);
             s += aArr[k] * r;
           }
-          return (s - sumW) / sumW - overlapPenalty(a, b);
+          return (s - sumW) / sumW -
+            overlapPenalty(a, b) -
+            formationPenalty(a, b);
         };
 
         const clampX = v => clamp(v, -2.7, 2.7);
@@ -3686,7 +3804,8 @@
           let overlap = 0;
           for (let i = 0; i < items.length; i++) overlap += itemWeights[i] * a.values[i] * b.values[i];
           return (a.weightedReach + b.weightedReach - overlap - sumW) / sumW -
-            overlapPenalty(poseA, poseB);
+            overlapPenalty(poseA, poseB) -
+            formationPenalty(poseA, poseB);
         };
       }
 
@@ -3899,6 +4018,7 @@
           for (let j = 0; j < positions.length; j++) {
             const posB = positions[j];
             const overlap = overlapPenalty(posA, posB);
+            const formation = formationPenalty(posA, posB);
             for (const profileA of profilesA[i]) {
               for (const profileB of profilesB[j]) {
                 let intersection = 0;
@@ -3907,7 +4027,7 @@
                 }
                 const value =
                   (profileA.weightedReach + profileB.weightedReach - intersection - sumW) / sumW -
-                  overlap;
+                  overlap - formation;
                 cands.push({
                   P1: {...posA, heading: profileA.heading},
                   P2: {...posB, heading: profileB.heading},
@@ -4105,6 +4225,7 @@
         }
         const evaluator = (poseA, poseB, cutoff) => {
           const overlap = overlapPenalty(poseA, poseB);
+          const formation = formationPenalty(poseA, poseB);
           const ctxAP = {
             ...ctxA,
             heading: Number.isFinite(poseA.heading) ? poseA.heading : 0,
@@ -4125,10 +4246,10 @@
             const pb = statsB.p * statsB.q;
             unionScore += itemWeights[i] * (pa + pb - pa * pb);
             const upper =
-              (unionScore + tailMax[i + 1] - sumW) / sumW - overlap;
+              (unionScore + tailMax[i + 1] - sumW) / sumW - overlap - formation;
             if (upper <= cutoff + 1e-9) return -Infinity;
           }
-          return (unionScore - sumW) / sumW - overlap;
+          return (unionScore - sumW) / sumW - overlap - formation;
         };
 
         const step = fast ? 0.70 : 0.45;
@@ -4170,6 +4291,7 @@
           const minA = profilesA[i][profilesA[i].length - 1].weightedReach;
           for (let j = 0; j < positions.length; j++) {
             const overlap = overlapPenalty(posA, positions[j]);
+            const formation = formationPenalty(posA, positions[j]);
             const maxB = profilesB[j][0].weightedReach;
             const minB = profilesB[j][profilesB[j].length - 1].weightedReach;
             const intersectionLower = groupedIntersectionLower(
@@ -4182,8 +4304,9 @@
               i,
               j,
               overlap,
+              formation,
               upperBound:
-                (maxA + maxB - intersectionLower - sumW) / sumW - overlap
+                (maxA + maxB - intersectionLower - sumW) / sumW - overlap - formation
             });
           }
         }
@@ -4210,7 +4333,7 @@
               );
               const headingUpperBound =
                 (sumProfiles - intersectionLower - sumW) / sumW -
-                pair.overlap;
+                pair.overlap - pair.formation;
               if (headingUpperBound <= bestV + 1e-9) continue;
 
               let unionScore = 0;
@@ -4220,7 +4343,8 @@
                 const pb = profileB.values[k];
                 unionScore += itemWeights[k] * (pa + pb - pa * pb);
                 const runningUpper =
-                  (unionScore + tailMax[k + 1] - sumW) / sumW - pair.overlap;
+                  (unionScore + tailMax[k + 1] - sumW) / sumW -
+                  pair.overlap - pair.formation;
                 if (runningUpper <= bestV + 1e-9) {
                   aborted = true;
                   break;
@@ -4228,7 +4352,7 @@
               }
               if (aborted) continue;
               const value =
-                (unionScore - sumW) / sumW - pair.overlap;
+                (unionScore - sumW) / sumW - pair.overlap - pair.formation;
               const poseA = {...posA, heading: profileA.heading};
               const poseB = {...posB, heading: profileB.heading};
               cands.push({P1: poseA, P2: poseB, V: value});
@@ -4272,7 +4396,7 @@
                 evaluatedCatalogPoses++;
 
                 const value =
-                  (unionScore - sumW) / sumW - pair.overlap;
+                  (unionScore - sumW) / sumW - pair.overlap - pair.formation;
                 const poseA = {...posA, heading: profileA.heading};
                 const poseB = {...posB, heading: profileB.heading};
                 const key = [
@@ -4468,6 +4592,11 @@
           interceptStats,
           ctxEqual,
           overlapPenalty,
+          formationRingGeometry,
+          formationRingTargets,
+          formationMatchForPositions,
+          formationPenalty,
+          singleRecoveryPenalty,
           weightedHeadingForPosition,
           headingMotionScore,
           bestHeadingForPosition,
@@ -5373,6 +5502,10 @@ self.onmessage = function (event) {
       }
 
       function fmtSliderVal(val, step, isProb, key) {
+        if (key && key.startsWith('formation_')) {
+          if (key === 'formation_weight') return (val * 100).toFixed(1).replace(/\.0$/, '') + '%/m';
+          return val.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') + ' m';
+        }
         if (key && key.startsWith('our_')) {
           if (key === 'our_turn_deadzone') return Math.round(val) + '°';
           if (key === 'our_turn_tmax') return val.toFixed(2) + ' s';
@@ -5690,11 +5823,11 @@ self.onmessage = function (event) {
         }
 
         const groupTitles = {
-          speed: 'gSpeed', prob: 'gProb', reach: 'gReach', turn: 'gTurn',
+          speed: 'gSpeed', prob: 'gProb', reach: 'gReach', turn: 'gTurn', formation: 'gFormation',
           filter: 'gFilter', zrange: 'gZRange', subopt: 'gSubopt'
         };
         const groupHints = {
-          speed: 'gSpeedHint', prob: 'gProbHint', reach: 'gReachHint', turn: 'gTurnHint',
+          speed: 'gSpeedHint', prob: 'gProbHint', reach: 'gReachHint', turn: 'gTurnHint', formation: 'gFormationHint',
           filter: 'gFilterHint', zrange: 'gZRangeHint', subopt: 'gSuboptHint'
         };
         let syncing = false;

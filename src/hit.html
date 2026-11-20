@@ -2607,6 +2607,7 @@
         <div class="metric-strip">
           <div class="metric"><span data-i18n="hitProbability">对手接球概率</span><strong id="metricHit">—</strong></div>
           <div class="metric"><span data-i18n="missProbability">对手接不到</span><strong id="metricMiss">—</strong></div>
+          <div class="metric"><span data-i18n="formationDistance">阵型偏离</span><strong id="metricFormation">—</strong></div>
           <div class="metric"><span data-i18n="expectedRate">我方期望得分率</span><strong id="metricExpected">—</strong></div>
         </div>
       </div>
@@ -2780,6 +2781,54 @@
         </section>
 
         <section class="param-section">
+          <h3>阵型破坏</h3>
+          <div class="param-grid">
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationDisruptionWeight">阵型破坏权重</label><output
+                  id="formationDisruptionWeightValue">15%</output></div>
+              <input id="formationDisruptionWeight" data-param="formationDisruptionWeight" type="range" min="0" max="0.5"
+                step="0.01" value="0.15">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationDisruptionScale">偏离饱和距离</label><output
+                  id="formationDisruptionScaleValue">2.00 m</output></div>
+              <input id="formationDisruptionScale" data-param="formationDisruptionScale" type="range" min="0.5" max="4"
+                step="0.05" value="2">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationSideDepth">左右阵型深度</label><output
+                  id="formationSideDepthValue">3.30 m</output></div>
+              <input id="formationSideDepth" data-param="formationSideDepth" type="range" min="2" max="4.5"
+                step="0.05" value="3.3">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationFrontDepth">前后阵型前点</label><output
+                  id="formationFrontDepthValue">1.80 m</output></div>
+              <input id="formationFrontDepth" data-param="formationFrontDepth" type="range" min="1" max="3"
+                step="0.05" value="1.8">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationBackDepth">前后阵型后点</label><output
+                  id="formationBackDepthValue">4.80 m</output></div>
+              <input id="formationBackDepth" data-param="formationBackDepth" type="range" min="3.5" max="6.3"
+                step="0.05" value="4.8">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationHalfWidth">左右阵型半间距</label><output
+                  id="formationHalfWidthValue">1.30 m</output></div>
+              <input id="formationHalfWidth" data-param="formationHalfWidth" type="range" min="0.5" max="2.2"
+                step="0.05" value="1.3">
+            </div>
+            <div class="param-item">
+              <div class="param-item-head"><label for="formationSingleDepth">单打回中深度</label><output
+                  id="formationSingleDepthValue">3.60 m</output></div>
+              <input id="formationSingleDepth" data-param="formationSingleDepth" type="range" min="2.5" max="5.5"
+                step="0.05" value="3.6">
+            </div>
+          </div>
+        </section>
+
+        <section class="param-section">
           <h3>截击与显示</h3>
           <div class="param-grid">
             <div class="param-item param-item-dual">
@@ -2895,6 +2944,15 @@
           runSpeed: '跑动速度',
           touchRadius: '触球半径',
           turnSection: '转身模型',
+          formationSection: '阵型破坏',
+          formationDistance: '阵型偏离',
+          formationDisruptionWeight: '阵型破坏权重',
+          formationDisruptionScale: '偏离饱和距离',
+          formationSideDepth: '左右阵型深度',
+          formationFrontDepth: '前后阵型前点',
+          formationBackDepth: '前后阵型后点',
+          formationHalfWidth: '左右阵型半间距',
+          formationSingleDepth: '单打回中深度',
           turnTmax: '转身耗时上限',
           turnTheta0: '转身死区',
           turnSpeedK: '转身速度损失上限',
@@ -2924,11 +2982,14 @@
         <p>对手只能在自己半场截击。模型在轨迹过网后、落地前搜索 0.10–2.50 m 高度范围内的最佳截击点，并结合反应曲线、跑动速度、转身代价和触球半径计算接球概率。</p>
         <p>未双击对手时使用原始不考虑转身的方向速度模型。双击对手进入速度手柄模式后启用转身模型：平移时间按方向有效速度计算，随后按“<code>max(转身时间, 移动时间) + k × min(转身时间, 移动时间)</code>”与转身时间合成，再叠加跨步延迟和关节极限时间。<code>k=0</code> 表示完全并行，<code>k=1</code> 表示转身完成后才移动；默认 <code>k=0.25</code>，表示两者部分重叠。球进入触球半径时，平移与转身耗时都归零，沿用旧版处理。反手触球比例可在参数面板调整，默认按 88% 计算。把反手触球设为 100% 并令其余转身参数归零时与原始方向速度一致。球员默认面向球网。关闭速度手柄后恢复原始模型。椭圆长轴表示双脚连线，长轴一侧的圆点表示持拍侧脚。</p>
         <p>移动速度进一步按照身体朝向建立椭圆速度场：持拍脚方向获得额外加速，跨线方向速度较低，后退方向不获得该加速；两个比例均可在“转身模型”中调整。反手侧惩罚随绝对转身角平滑增加，并额外作用于转身时间、跨步延迟和关节极限，避免小角度时突然跳变。开启 180° 对称视图后，顶部角度读数也按显示方向换算，拖动角度时会反向转换回物理坐标，因此显示与画面一致且不改变求解结果。</p>
-        <h3>五、后台计算与精度</h3>
+        <h3>五、阵型破坏</h3>
+        <p>击球后取最可能接球的对手位置：能够空中截击时使用其截击点，否则使用落点；另一名对手保持当前站位。双打把原有左右、前后、半间距参数转换成一个连续阵型环：环心取左右站位深度，横向半径为半间距，纵向半径由前后锚点到环心的平均距离拟合。A/B 始终位于阵型环上的一对相对点，阵型轴可连续旋转，环上任意角度都被视为有效阵型，不再只吸附左右或前后两个离散站位。单打仍比较接球位置到中央偏后锚点的距离。</p>
+        <p>阵型偏离距离越大，对手接球后的有效回位质量越低：<code>qRecovery = 1 − 阵型破坏权重 × smoothstep(偏离距离 / 偏离饱和距离)</code>。最终期望得分率为 <code>1 − 接球概率 × 回球质量 × qRecovery</code>。阵型只影响战术收益和排序，不改变轨迹、初速度、旋转或真实接球概率。</p>
+        <h3>六、后台计算与精度</h3>
         <p>开启对手速度手柄后，候选球路生成、轨迹仿真和截击评分会放入单个内联 Web Worker 中执行，主页面线程保持可操作。重复更新会取消旧任务；计算期间显示“正在计算中”，完成后自动更新图形。截击概率和期望得分使用 <code>Float32 / Math.fround</code> 精度，轨迹几何仍保留双精度。</p>
-        <h3>六、排序</h3>
-        <p>合法轨迹按对手接球概率从低到高排序，Top #1 为最优。<b>优劣</b>用于选择具体球路，<b>Top</b>用于调整显示和热力图使用的球路数量；默认取合法候选的 1%，上限为 20%。</p>
-        <h3>七、视图与热力图</h3>
+        <h3>七、排序</h3>
+        <p>合法轨迹按我方期望得分率从高到低排序，Top #1 为最优。期望得分率同时考虑对手接球概率、回球质量和击球后破坏阵型的程度。<b>优劣</b>用于选择具体球路，<b>Top</b>用于调整显示和热力图使用的球路数量；默认取合法候选的 1%，上限为 20%。</p>
+        <h3>八、视图与热力图</h3>
         <p>主视图显示俯视球路，侧视图显示场地长度与高度。双击球场开启热力图，红色表示对手接球概率较低（优），蓝色表示较高（劣）。</p>
       `
         },
@@ -2984,6 +3045,15 @@
           runSpeed: 'Running speed',
           touchRadius: 'Touch radius',
           turnSection: 'Turning model',
+          formationSection: 'Formation disruption',
+          formationDistance: 'Formation displacement',
+          formationDisruptionWeight: 'Formation disruption weight',
+          formationDisruptionScale: 'Displacement saturation distance',
+          formationSideDepth: 'Side-by-side formation depth',
+          formationFrontDepth: 'Front-back front depth',
+          formationBackDepth: 'Front-back rear depth',
+          formationHalfWidth: 'Side-by-side half width',
+          formationSingleDepth: 'Singles recovery depth',
           turnTmax: 'Maximum turn time',
           turnTheta0: 'Turn dead zone',
           turnSpeedK: 'Maximum turn speed loss',
@@ -3013,11 +3083,14 @@
         <p>Opponents can intercept only on their own side. The solver searches points between the net and landing within 0.10–2.50 m height, then combines the reaction curve, running speed, turning cost and touch radius into a reach probability.</p>
         <p>Before interaction, the model uses the original directional speed calculation without turning. Double-clicking an opponent opens velocity-handle mode and enables the turning model: translation time is calculated from the direction-dependent effective speed, then combined with turn time by <code>max(turn time, translation time) + k × min(turn time, translation time)</code>, plus step delay and joint-limit time. <code>k=0</code> means fully parallel, while <code>k=1</code> means turning must finish before translation; the default <code>k=0.25</code> represents partial overlap. Inside the touch radius both movement and turn time return to zero, matching the previous turning model. The backhand touch ratio is adjustable and defaults to 88%. Opponents face the net by default. Closing the handles restores the original model. The ellipse's long axis marks the line between the feet; the dot on one side marks the racket-side foot.</p>
         <p>Movement speed also uses a body-aligned elliptical field: the lead-foot direction receives a configurable speed boost, cross-line movement is slower, and backward movement receives no boost. Backhand penalties increase smoothly with absolute turn angle and additionally affect turn time, step delay, and joint-limit time to avoid a sudden jump at small angles. In the 180° mirrored view, angle readouts are converted to display coordinates while drag input is converted back to world coordinates, keeping the displayed orientation consistent without changing solver results.</p>
-        <h3>5. Background calculation and precision</h3>
+        <h3>5. Formation disruption</h3>
+        <p>After the shot, the most likely receiving opponent is placed at the interception point when one exists, otherwise at the landing point; the other opponent stays at the current position. In doubles, the former side-by-side, front-back and half-width parameters are converted into a continuous formation ring. Its centre is the side-by-side depth, its horizontal radius is the configured half-width, and its vertical radius is fitted from the front and rear anchors. A and B occupy opposite points on the ring, and the formation axis can rotate continuously; every angle on the ring is treated as a valid formation rather than snapping to only the side-by-side or front-back layout. Singles still use the central rear recovery anchor.</p>
+        <p>A larger formation displacement lowers effective recovery quality: <code>qRecovery = 1 − disruption weight × smoothstep(displacement / saturation distance)</code>. Expected point rate is <code>1 − reach probability × return quality × qRecovery</code>. Formation disruption affects tactical value and ranking only; it does not alter trajectories, initial speed, rotation, or the physical reach probability.</p>
+        <h3>6. Background calculation and precision</h3>
         <p>When opponent velocity handles are enabled, candidate generation, trajectory simulation and interception scoring run in one inline Web Worker, keeping the main page responsive. Repeated updates cancel stale jobs, a calculating bubble is shown, and results update automatically when complete. Interception probabilities and expected scores use <code>Float32 / Math.fround</code>; trajectory geometry remains double precision.</p>
-        <h3>6. Ranking</h3>
-        <p>Legal shots are sorted from the lowest opponent reach probability to the highest. <b>Rank</b> selects a specific shot and <b>Top</b> controls how many shots are shown and used by the heatmap. Top defaults to 1% of legal candidates and is capped at 20%.</p>
-        <h3>7. Views and heatmap</h3>
+        <h3>7. Ranking</h3>
+        <p>Legal shots are sorted from the highest expected point rate to the lowest. Expected point rate combines opponent reach probability, return quality, and the shot's ability to displace the opponent from its recovery formation. <b>Rank</b> selects a specific shot and <b>Top</b> controls how many shots are shown and used by the heatmap. Top defaults to 1% of legal candidates and is capped at 20%.</p>
+        <h3>8. Views and heatmap</h3>
         <p>The top view shows the horizontal fan and the side view shows court length against height. Double-tap the court to toggle the heatmap: red means a lower opponent reach probability and blue means a higher probability.</p>
       `
         }
@@ -3104,6 +3177,13 @@
         crossLineSpeedK: 0.92,
         backhandTurnK: 0.18,
         backhandTouchK: 0.88,
+        formationDisruptionWeight: 0.15,
+        formationDisruptionScale: 2.0,
+        formationSideDepth: 3.30,
+        formationFrontDepth: 1.80,
+        formationBackDepth: 4.80,
+        formationHalfWidth: 1.30,
+        formationSingleDepth: 3.60,
         zMin: 0.1,
         zMax: 2.5,
         k2: 1.3,
@@ -3203,6 +3283,7 @@
         typeDot: $('typeDot'),
         metricHit: $('metricHit'),
         metricMiss: $('metricMiss'),
+        metricFormation: $('metricFormation'),
         metricExpected: $('metricExpected'),
         chipContact: $('chipContact'),
         chipOppA: $('chipOppA'),
@@ -3624,6 +3705,121 @@
         return u * u * (3 - 2 * u);
       }
 
+      function formationRingGeometry() {
+        const centerY = state.params.formationSideDepth;
+        const frontOffset = Math.max(0.05, centerY - state.params.formationFrontDepth);
+        const backOffset = Math.max(0.05, state.params.formationBackDepth - centerY);
+        return {
+          centerX: 0,
+          centerY,
+          radiusX: Math.max(0.1, state.params.formationHalfWidth),
+          radiusY: Math.max(0.1, (frontOffset + backOffset) * 0.5)
+        };
+      }
+
+      function formationRingTargets(angle, geometry) {
+        const ring = geometry || formationRingGeometry();
+        const dx = ring.radiusX * Math.cos(angle);
+        const dy = ring.radiusY * Math.sin(angle);
+        return {
+          p1: {x: ring.centerX - dx, y: ring.centerY - dy},
+          p2: {x: ring.centerX + dx, y: ring.centerY + dy}
+        };
+      }
+
+      function formationMatchForPositions(positions) {
+        const points = positions && positions.length
+          ? positions
+          : activeOpponents().map(opp => ({x: opp.x, y: opp.y}));
+        if (!points.length) {
+          return {distance: 0, angle: 0, swapped: false};
+        }
+        if (state.mode === 'single' || points.length === 1) {
+          const point = points[0];
+          return {
+            distance: Math.hypot(
+              point.x,
+              point.y - state.params.formationSingleDepth
+            ),
+            angle: null,
+            swapped: false
+          };
+        }
+
+        const a = points[0];
+        const b = points[1];
+        const ring = formationRingGeometry();
+        const distance = (point, x, y) => Math.hypot(point.x - x, point.y - y);
+        const evaluate = angle => {
+          const targets = formationRingTargets(angle, ring);
+          const direct = 0.5 * (
+            distance(a, targets.p1.x, targets.p1.y) +
+            distance(b, targets.p2.x, targets.p2.y)
+          );
+          const swapped = 0.5 * (
+            distance(a, targets.p2.x, targets.p2.y) +
+            distance(b, targets.p1.x, targets.p1.y)
+          );
+          return swapped < direct
+            ? {distance: swapped, swapped: true}
+            : {distance: direct, swapped: false};
+        };
+
+        const samples = 24;
+        const step = Math.PI * 2 / samples;
+        let best = {distance: Infinity, angle: 0, swapped: false};
+        for (let i = 0; i < samples; i++) {
+          const angle = i * step;
+          const result = evaluate(angle);
+          if (result.distance < best.distance) {
+            best = {...result, angle};
+          }
+        }
+
+        let refineStep = step * 0.5;
+        for (let i = 0; i < 3; i++) {
+          for (const testAngle of [best.angle - refineStep, best.angle + refineStep]) {
+            const result = evaluate(testAngle);
+            if (result.distance < best.distance) {
+              best = {...result, angle: testAngle};
+            }
+          }
+          refineStep *= 0.5;
+        }
+        return best;
+      }
+
+      function opponentPositionsAfterShot(shot, oppStats) {
+        const positions = activeOpponents().map(opp => ({x: opp.x, y: opp.y}));
+        if (!positions.length) return positions;
+
+        let receiver = 0;
+        let bestReach = -Infinity;
+        for (let i = 0; i < oppStats.length; i++) {
+          const reach = Number.isFinite(oppStats[i] && oppStats[i].pHit)
+            ? oppStats[i].pHit
+            : 0;
+          if (reach > bestReach) {
+            bestReach = reach;
+            receiver = i;
+          }
+        }
+
+        const stat = oppStats[receiver];
+        if (stat && stat.intercept) {
+          positions[receiver] = {x: stat.x, y: stat.y};
+        } else {
+          positions[receiver] = {x: shot.landing.x, y: shot.landing.y};
+        }
+        return positions;
+      }
+
+      function formationRecoveryQuality(distance) {
+        const weight = clamp(state.params.formationDisruptionWeight, 0, 1);
+        const saturation = Math.max(0.1, state.params.formationDisruptionScale);
+        return 1 - weight * smoothRamp(distance, 0, saturation);
+      }
+
       function returnQuality(type, landingY) {
         const d = Math.max(0, landingY);
         if (type === 'smash') return clamp(0.3 + 0.15 * (1 - smoothRamp(d, 1, 3)), 0, 1);
@@ -3644,13 +3840,20 @@
           pHit = 1 - (1 - oppStats[0].pHit) * (1 - oppStats[1].pHit);
         }
         const qReturn = returnQuality(shot.type, shot.landing.y);
-        const eAttack = 1 - pHit * qReturn;
+        const formationMatch = formationMatchForPositions(
+          opponentPositionsAfterShot(shot, oppStats)
+        );
+        const formationDistance = formationMatch.distance;
+        const qRecovery = formationRecoveryQuality(formationDistance);
+        const eAttack = 1 - pHit * qReturn * qRecovery;
         return {
           ...shot,
           oppStats,
           pHit,
           pMiss: 1 - pHit,
           qReturn,
+          formationDistance,
+          qRecovery,
           eAttack,
           netMargin: shot.net.z - COURT.NET_H
         };
@@ -3788,8 +3991,8 @@
 
       function applySolvedCandidates(candidates, fast, started) {
         candidates.sort((a, b) => {
-          if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
           if (Math.abs(a.eAttack - b.eAttack) > 1e-9) return b.eAttack - a.eAttack;
+          if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
           return b.netMargin - a.netMargin;
         });
 
@@ -3892,6 +4095,11 @@
           legacyRunTimeToPoint,
           interceptForOpponent,
           smoothRamp,
+          formationRingGeometry,
+          formationRingTargets,
+          formationMatchForPositions,
+          opponentPositionsAfterShot,
+          formationRecoveryQuality,
           returnQuality,
           enrichCandidate,
           targetAzimuths,
@@ -3915,6 +4123,7 @@ self.onmessage = function (event) {
       enriched.pMiss = Math.fround(enriched.pMiss);
       enriched.eAttack = Math.fround(enriched.eAttack);
       enriched.qReturn = Math.fround(enriched.qReturn);
+      enriched.qRecovery = Math.fround(enriched.qRecovery);
       for (const stat of enriched.oppStats || []) {
         stat.pHit = Math.fround(stat.pHit);
         stat.reactionP = Math.fround(stat.reactionP);
@@ -3923,8 +4132,8 @@ self.onmessage = function (event) {
       candidates.push(enriched);
     }
     candidates.sort((a, b) => {
-      if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
       if (Math.abs(a.eAttack - b.eAttack) > 1e-9) return b.eAttack - a.eAttack;
+      if (Math.abs(a.pHit - b.pHit) > 1e-9) return a.pHit - b.pHit;
       return b.netMargin - a.netMargin;
     });
     self.postMessage({
@@ -4227,7 +4436,7 @@ self.onmessage = function (event) {
               'Current height, angle or speed limits produce no in-court shot that clears the net'
             );
           }
-          ['metricHit', 'metricMiss', 'metricExpected', 'chipContact', 'chipSpeed',
+          ['metricHit', 'metricMiss', 'metricFormation', 'metricExpected', 'chipContact', 'chipSpeed',
             'chipElevation', 'chipAzimuth', 'chipVelocity', 'chipNet', 'chipLanding', 'chipTime',
             'chipInterceptA', 'chipInterceptB'].forEach((key) => {
               els[key].textContent = '—';
@@ -4250,8 +4459,8 @@ self.onmessage = function (event) {
           `${index === 0 ? 'A' : 'B'} ${pct(stat.pHit)}`
         ).join(' / ');
         els.routeSubtitle.textContent = L(
-          `按接球概率从低到高 · 当前 Top ${state.topN} / 可调至 ${state.maxTop} · ${splitHit}`,
-          `Sorted by opponent reach · Top ${state.topN} / max ${state.maxTop} · ${splitHit}`
+          `按期望得分率从高到低 · 当前 Top ${state.topN} / 可调至 ${state.maxTop} · ${splitHit}`,
+          `Sorted by expected point rate · Top ${state.topN} / max ${state.maxTop} · ${splitHit}`
         );
         els.metricHit.textContent = pct(path.pHit);
         els.hitPill.textContent = L(`接球 ${pct(path.pHit)}`, `Reach ${pct(path.pHit)}`);
@@ -4261,6 +4470,7 @@ self.onmessage = function (event) {
             : path.type === 'drop' ? 'drop' : 'drive';
         els.typePill.className = `seg seg-${typeSeg}`;
         els.metricMiss.textContent = pct(path.pMiss);
+        els.metricFormation.textContent = `${fmt(path.formationDistance, 2)} m`;
         els.metricExpected.textContent = pct(path.eAttack);
         setPositionDetails();
         els.chipSpeed.textContent = `${fmt(path.v0, 1)} m/s`;
@@ -4286,8 +4496,8 @@ self.onmessage = function (event) {
 
         els.liveStatus.textContent =
           L(
-            `当前优劣 ${path.rank}，${typeName}，初速度 ${fmt(path.v0, 1)} 米每秒，接球概率 ${pct(path.pHit)}，接不到概率 ${pct(path.pMiss)}。`,
-            `Current rank ${path.rank}, ${typeName}, initial speed ${fmt(path.v0, 1)} meters per second, reach probability ${pct(path.pHit)}, miss probability ${pct(path.pMiss)}.`
+            `当前优劣 ${path.rank}，${typeName}，初速度 ${fmt(path.v0, 1)} 米每秒，接球概率 ${pct(path.pHit)}，阵型偏离 ${fmt(path.formationDistance, 2)} 米，回位质量 ${pct(path.qRecovery)}，期望得分率 ${pct(path.eAttack)}。`,
+            `Current rank ${path.rank}, ${typeName}, initial speed ${fmt(path.v0, 1)} meters per second, reach probability ${pct(path.pHit)}, formation displacement ${fmt(path.formationDistance, 2)} meters, recovery quality ${pct(path.qRecovery)}, expected point rate ${pct(path.eAttack)}.`
           );
         updateStatus();
       }
@@ -4377,7 +4587,10 @@ self.onmessage = function (event) {
           if (output) {
             let text;
             if (key === 'contactHeight' || key === 'minClear' || key === 'touchA' || key === 'touchB' ||
-              key === 'zMin' || key === 'zMax') {
+              key === 'zMin' || key === 'zMax' || key === 'formationDisruptionScale' ||
+              key === 'formationSideDepth' || key === 'formationFrontDepth' ||
+              key === 'formationBackDepth' || key === 'formationHalfWidth' ||
+              key === 'formationSingleDepth') {
               text = fmt(value, 2) + ' m';
             } else if (key === 'speedMax' || key === 'speedA' || key === 'speedB') {
               text = fmt(value, value % 1 ? 1 : 0) + ' m/s';
@@ -4387,7 +4600,8 @@ self.onmessage = function (event) {
               text = fmt(value / DEG, 0) + '°';
             } else if (key === 'turnTmax') {
               text = fmt(value, 2) + ' s';
-            } else if (key === 'turnSpeedK' || key === 'fhBias' || key === 'backhandTouchK') {
+            } else if (key === 'turnSpeedK' || key === 'fhBias' || key === 'backhandTouchK' ||
+              key === 'formationDisruptionWeight') {
               text = Math.round(value * 100) + '%';
             } else if (key === 't0a' || key === 't1a' || key === 't0b' || key === 't1b') {
               text = fmt(value, 2) + ' s';
@@ -4439,7 +4653,8 @@ self.onmessage = function (event) {
         });
 
         const sectionKeys = [
-          'ability', 'opponentASection', 'opponentBSection', 'turnSection', 'interceptDisplay'
+          'ability', 'opponentASection', 'opponentBSection', 'turnSection',
+          'formationSection', 'interceptDisplay'
         ];
         document.querySelectorAll('.param-section h3').forEach((el, index) => {
           if (sectionKeys[index]) el.textContent = t(sectionKeys[index]);
@@ -4467,6 +4682,13 @@ self.onmessage = function (event) {
           crossLineSpeedK: 'crossLineSpeedK',
           backhandTurnK: 'backhandTurnK',
           backhandTouchK: 'backhandTouchK',
+          formationDisruptionWeight: 'formationDisruptionWeight',
+          formationDisruptionScale: 'formationDisruptionScale',
+          formationSideDepth: 'formationSideDepth',
+          formationFrontDepth: 'formationFrontDepth',
+          formationBackDepth: 'formationBackDepth',
+          formationHalfWidth: 'formationHalfWidth',
+          formationSingleDepth: 'formationSingleDepth',
           zMin: 'zMin',
           zMax: 'zMax',
           k2: 'k2',
